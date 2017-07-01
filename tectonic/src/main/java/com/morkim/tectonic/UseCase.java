@@ -55,8 +55,7 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
 
 		this.request = request;
 
-//		for (UseCaseListener listener : useCaseListener)
-			useCaseListener.onStart();
+		useCaseListener.onStart();
 
 		if (inProgress.get(this.getClass()) == null) {
 			for (UseCaseListener listener : subscriptions.get(this.getClass()))
@@ -150,16 +149,12 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
 	}
 
 	public void subscribe(UseCaseListener<Rs> useCaseListener) {
-//		this.useCaseListener.add(useCaseListener);
 		this.useCaseListener = useCaseListener;
 	}
 
 	protected void updateSubscribers(Rs result) {
 
-//		for (UseCaseListener<Rs> listener : useCaseListener)
-//			listener.onUpdate(result);
 		useCaseListener.onUpdate(result);
-
 		for (UseCaseListener listener : subscriptions.get(this.getClass()))
 			//noinspection unchecked
 			listener.onUpdate(result);
@@ -175,7 +170,6 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
 	}
 
 	public void unsubscribe(UseCaseListener<Rs> useCaseListener) {
-//		this.useCaseListener.remove(useCaseListener);
 		this.useCaseListener = EMPTY_USE_CASE_LISTENER;
 	}
 
@@ -218,11 +212,11 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
 
 		inProgress.remove(this.getClass());
 
-//		for (UseCaseListener listener : useCaseListener)
-//			listener.onComplete();
 		useCaseListener.onComplete();
 		for (UseCaseListener listener : subscriptions.get(this.getClass()))
 			listener.onComplete();
+
+		onPostExecute();
 	}
 
 	public static void cancel(Class<? extends UseCase> useCaseClass) {
@@ -234,8 +228,6 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
 
 	protected void cancel() {
 
-//		for (UseCaseListener listener : useCaseListener)
-//			listener.onCancel();
 		useCaseListener.onCancel();
 		for (UseCaseListener listener : subscriptions.get(this.getClass()))
 			listener.onCancel();
@@ -246,5 +238,9 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
 	protected void requestInput(int code) {
 		inProgress.remove(this.getClass());
 		useCaseListener.onInputRequired(code);
+	}
+
+	protected void onPostExecute() {
+
 	}
 }

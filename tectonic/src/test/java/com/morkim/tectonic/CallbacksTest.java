@@ -18,6 +18,7 @@ public class CallbacksTest {
 	private int isOnUpdateCalledCount;
 	private int isOnCompleteCalledCount;
 	private boolean isOnExecuteCalled;
+	private boolean isOnPostExecuteCalled;
 
 	@Before
 	public void setup() {
@@ -26,6 +27,7 @@ public class CallbacksTest {
 		isOnUpdateCalledCount = 0;
 		isOnCompleteCalledCount = 0;
 		isOnExecuteCalled = false;
+		isOnPostExecuteCalled = false;
 	}
 
 	@Test
@@ -173,6 +175,23 @@ public class CallbacksTest {
 		useCase.execute();
 
 		assertTrue(isOnExecuteCalled);
+	}
+
+	@Test
+	public void executeNoSubscribers_onPostExecuteCalledAfterComplete() throws Exception {
+
+		MainTestUseCase useCase = new MainTestUseCase() {
+
+			@Override
+			protected void onPostExecute() {
+
+				isOnPostExecuteCalled = true;
+			}
+		};
+
+		useCase.execute();
+
+		assertTrue(isOnPostExecuteCalled);
 	}
 
 	@NonNull

@@ -25,7 +25,7 @@ public class SubscriptionTest {
 	@Test
 	public void subscribeThenExecute_SubscribedCallbacksExecuted() throws Exception {
 
-		UseCase.subscribe(TestUseCase.class, new SimpleUseCaseListener<TestResult>() {
+		UseCase.subscribe(TestUseCase.class, new UseCase.OnUpdateListener<TestResult>() {
 			@Override
 			public void onUpdate(TestResult result) {
 				isSubscriptionExecuted = true;
@@ -43,7 +43,7 @@ public class SubscriptionTest {
 	@Test
 	public void unsubscribeThenExecute_NoCallbacksExecuted() throws Exception {
 
-		SimpleUseCaseListener<TestResult> listener = new SimpleUseCaseListener<TestResult>() {
+		UseCase.OnUpdateListener<TestResult> listener = new UseCase.OnUpdateListener<TestResult>() {
 			@Override
 			public void onUpdate(TestResult result) {
 				isSubscriptionExecuted = true;
@@ -65,7 +65,7 @@ public class SubscriptionTest {
 	@Test
 	public void unsubscribeAllForUseCaseThenExecute_NoCallbacksExecuted() throws Exception {
 
-		SimpleUseCaseListener<TestResult> listener = new SimpleUseCaseListener<TestResult>() {
+		UseCase.OnUpdateListener<TestResult> listener = new UseCase.OnUpdateListener<TestResult>() {
 			@Override
 			public void onUpdate(TestResult result) {
 				isSubscriptionExecuted = true;
@@ -87,7 +87,7 @@ public class SubscriptionTest {
 	@Test
 	public void unsubscribeOtherUseCaseThenExecute_SubscribedCallbacksExecuted() throws Exception {
 
-		SimpleUseCaseListener<TestResult> listener = new SimpleUseCaseListener<TestResult>() {
+		UseCase.OnUpdateListener<TestResult> listener = new UseCase.OnUpdateListener<TestResult>() {
 			@Override
 			public void onUpdate(TestResult result) {
 				isSubscriptionExecuted = true;

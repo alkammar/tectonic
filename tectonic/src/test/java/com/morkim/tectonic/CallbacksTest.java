@@ -14,219 +14,264 @@ import static org.junit.Assert.assertTrue;
 
 public class CallbacksTest {
 
-	private int isOnStartCalledCount;
-	private int isOnUpdateCalledCount;
-	private int isOnCompleteCalledCount;
-	private boolean isOnExecuteCalled;
-	private boolean isOnPostExecuteCalled;
+    private int isOnStartCalledCount;
+    private int isOnUpdateCalledCount;
+    private int isOnCompleteCalledCount;
+    private boolean isOnExecuteCalled;
+    private boolean isOnPostExecuteCalled;
 
-	@Before
-	public void setup() {
+    @Before
+    public void setup() {
 
-		isOnStartCalledCount = 0;
-		isOnUpdateCalledCount = 0;
-		isOnCompleteCalledCount = 0;
-		isOnExecuteCalled = false;
-		isOnPostExecuteCalled = false;
-	}
+        isOnStartCalledCount = 0;
+        isOnUpdateCalledCount = 0;
+        isOnCompleteCalledCount = 0;
+        isOnExecuteCalled = false;
+        isOnPostExecuteCalled = false;
+    }
 
-	@Test
-	public void executeNoListener_callbacksNotCalled() throws Exception {
+    @Test
+    public void executeNoListener_callbacksNotCalled() throws Exception {
 
-		UseCase useCase = new MainTestUseCase();
+        UseCase useCase = new MainTestUseCase();
 
-		useCase.execute();
+        useCase.execute();
 
-		assertEquals(0, isOnStartCalledCount);
-		assertEquals(0, isOnUpdateCalledCount);
-		assertEquals(0, isOnCompleteCalledCount);
-	}
+        assertEquals(0, isOnStartCalledCount);
+        assertEquals(0, isOnUpdateCalledCount);
+        assertEquals(0, isOnCompleteCalledCount);
+    }
 
-	@Test
-	public void execute_callbacksCalled() throws Exception {
+    @Test
+    public void execute_callbacksCalled() throws Exception {
 
-		TestUseCase useCase = new TestUseCase();
-		useCase.subscribe(createCallbackCounterListener());
+        TestUseCase useCase = new TestUseCase();
+        useCase.subscribe(createOnStartCounterListener())
+                .subscribe(createOnUpdateCounterListener())
+                .subscribe(createOnCompleteCounterListener());
 
-		useCase.execute();
+        useCase.execute();
 
-		assertEquals(1, isOnStartCalledCount);
-		assertEquals(1, isOnUpdateCalledCount);
-		assertEquals(1, isOnCompleteCalledCount);
-	}
+        assertEquals(1, isOnStartCalledCount);
+        assertEquals(1, isOnUpdateCalledCount);
+        assertEquals(1, isOnCompleteCalledCount);
+    }
 
-	@Test
-	public void executeMultipleSubscription_callbacksCalled() throws Exception {
+    @Test
+    public void executeMultipleSubscription_callbacksCalled() throws Exception {
 
-		TestUseCase useCase = new TestUseCase();
-		useCase.subscribe(createCallbackCounterListener());
-		UseCase.subscribe(TestUseCase.class, createCallbackCounterListener());
-		UseCase.subscribe(TestUseCase.class, createCallbackCounterListener());
+        TestUseCase useCase = new TestUseCase();
+        useCase.subscribe(createOnStartCounterListener())
+                .subscribe(createOnUpdateCounterListener())
+                .subscribe(createOnCompleteCounterListener());
+        UseCase.subscribe(TestUseCase.class, createOnStartCounterListener());
+        UseCase.subscribe(TestUseCase.class, createOnUpdateCounterListener());
+        UseCase.subscribe(TestUseCase.class, createOnCompleteCounterListener());
+        UseCase.subscribe(TestUseCase.class, createOnStartCounterListener());
+        UseCase.subscribe(TestUseCase.class, createOnUpdateCounterListener());
+        UseCase.subscribe(TestUseCase.class, createOnCompleteCounterListener());
 
-		useCase.execute();
+        useCase.execute();
 
-		assertEquals(3, isOnStartCalledCount);
-		assertEquals(3, isOnUpdateCalledCount);
-		assertEquals(3, isOnCompleteCalledCount);
-	}
+        assertEquals(3, isOnStartCalledCount);
+        assertEquals(3, isOnUpdateCalledCount);
+        assertEquals(3, isOnCompleteCalledCount);
+    }
 
-	@Test
-	public void executeMultipleSubscriptionWithUnsubscribe_callbacksCalled() throws Exception {
+    @Test
+    public void executeMultipleSubscriptionWithUnsubscribe_callbacksCalled() throws Exception {
 
-		TestUseCase useCase = new TestUseCase();
-		useCase.subscribe(createCallbackCounterListener());
-		UseCaseListener<TestResult> callbackCounterListener = createCallbackCounterListener();
-		UseCase.subscribe(TestUseCase.class, callbackCounterListener);
-		useCase.unsubscribe(callbackCounterListener);
-		UseCase.subscribe(TestUseCase.class, createCallbackCounterListener());
+        TestUseCase useCase = new TestUseCase();
 
-		useCase.execute();
+        useCase.subscribe(createOnStartCounterListener());
+        useCase.subscribe(createOnUpdateCounterListener());
+        useCase.subscribe(createOnCompleteCounterListener());
 
-		assertEquals(2, isOnStartCalledCount);
-		assertEquals(2, isOnUpdateCalledCount);
-		assertEquals(2, isOnCompleteCalledCount);
-	}
+        UseCase.OnStartListener onStartCounterListener = createOnStartCounterListener();
+        UseCase.OnUpdateListener onUpdateCounterListener = createOnUpdateCounterListener();
+        UseCase.OnCompleteListener onCompleteCounterListener = createOnCompleteCounterListener();
 
-	@Test
-	public void executeAllUnsubscribed_callbacksNotCalled() throws Exception {
+        UseCase.subscribe(TestUseCase.class, onStartCounterListener);
+        UseCase.subscribe(TestUseCase.class, onUpdateCounterListener);
+        UseCase.subscribe(TestUseCase.class, onCompleteCounterListener);
+        UseCase.unsubscribe(TestUseCase.class, onStartCounterListener);
+        UseCase.unsubscribe(TestUseCase.class, onUpdateCounterListener);
+        UseCase.unsubscribe(TestUseCase.class, onCompleteCounterListener);
 
-		TestUseCase useCase = new TestUseCase();
-		UseCaseListener<TestResult> callbackCounterListener1 = createCallbackCounterListener();
-		useCase.subscribe(callbackCounterListener1);
-		UseCaseListener<TestResult> callbackCounterListener2 = createCallbackCounterListener();
-		useCase.subscribe(callbackCounterListener2);
-		UseCaseListener<TestResult> callbackCounterListener3 = createCallbackCounterListener();
-		useCase.subscribe(callbackCounterListener3);
+        UseCase.subscribe(TestUseCase.class, createOnStartCounterListener());
+        UseCase.subscribe(TestUseCase.class, createOnUpdateCounterListener());
+        UseCase.subscribe(TestUseCase.class, createOnCompleteCounterListener());
 
-		useCase.unsubscribe(callbackCounterListener1);
-		useCase.unsubscribe(callbackCounterListener2);
-		useCase.unsubscribe(callbackCounterListener3);
+        useCase.execute();
 
-		useCase.execute();
+        assertEquals(2, isOnStartCalledCount);
+        assertEquals(2, isOnUpdateCalledCount);
+        assertEquals(2, isOnCompleteCalledCount);
+    }
 
-		assertEquals(0, isOnStartCalledCount);
-		assertEquals(0, isOnUpdateCalledCount);
-		assertEquals(0, isOnCompleteCalledCount);
-	}
+    @Test
+    public void executeAllUnsubscribed_callbacksNotCalled() throws Exception {
 
-	@Test
-	public void executeUnsubscribeNonSubscriber_correctCountCalled() throws Exception {
+        TestUseCase useCase = new TestUseCase();
+        UseCase.OnStartListener callbackCounterListener1 = createOnStartCounterListener();
+        useCase.subscribe(callbackCounterListener1);
+        UseCase.OnStartListener callbackCounterListener2 = createOnStartCounterListener();
+        useCase.subscribe(callbackCounterListener2);
+        UseCase.OnStartListener callbackCounterListener3 = createOnStartCounterListener();
+        useCase.subscribe(callbackCounterListener3);
 
-		TestUseCase useCase = new TestUseCase();
-		UseCaseListener<TestResult> callbackCounterListener1 = createCallbackCounterListener();
-		useCase.subscribe(callbackCounterListener1);
-		UseCaseListener<TestResult> callbackCounterListener2 = createCallbackCounterListener();
-		UseCase.subscribe(TestUseCase.class, callbackCounterListener2);
-		UseCaseListener<TestResult> callbackCounterListener3 = createCallbackCounterListener();
-		UseCase.subscribe(TestUseCase.class, callbackCounterListener3);
-		UseCaseListener<TestResult> callbackCounterListener4 = createCallbackCounterListener();
+        useCase.unsubscribe();
+        useCase.unsubscribe();
+        useCase.unsubscribe();
 
-		UseCase.unsubscribe(TestUseCase.class, callbackCounterListener4);
+        useCase.execute();
 
-		useCase.execute();
+        assertEquals(0, isOnStartCalledCount);
+        assertEquals(0, isOnUpdateCalledCount);
+        assertEquals(0, isOnCompleteCalledCount);
+    }
 
-		assertEquals(3, isOnStartCalledCount);
-		assertEquals(3, isOnUpdateCalledCount);
-		assertEquals(3, isOnCompleteCalledCount);
-	}
+    @Test
+    public void executeUnsubscribeNonSubscriber_correctCountCalled() throws Exception {
 
-	@Test
-	public void executeWithFinish_onCompleteCalled() throws Exception {
+        TestUseCase useCase = new TestUseCase();
 
-		TestUseCase useCase = new TestUseCase();
-		useCase.subscribe(createCallbackCounterListener());
+        useCase.subscribe(createOnStartCounterListener());
+        useCase.subscribe(createOnUpdateCounterListener());
+        useCase.subscribe(createOnCompleteCounterListener());
 
-		useCase.execute();
+        UseCase.subscribe(TestUseCase.class, createOnStartCounterListener());
+        UseCase.subscribe(TestUseCase.class, createOnUpdateCounterListener());
+        UseCase.subscribe(TestUseCase.class, createOnCompleteCounterListener());
 
-		assertEquals(1, isOnCompleteCalledCount);
-	}
+        UseCase.subscribe(TestUseCase.class, createOnStartCounterListener());
+        UseCase.subscribe(TestUseCase.class, createOnUpdateCounterListener());
+        UseCase.subscribe(TestUseCase.class, createOnCompleteCounterListener());
 
-	@Test
-	public void executeWithoutFinish_onCompleteNotCalled() throws Exception {
+        UseCase.OnStartListener OnStartCounterListener = createOnStartCounterListener();
+        UseCase.OnUpdateListener OnUpdateCounterListener = createOnUpdateCounterListener();
+        UseCase.OnCompleteListener OnCompleteCounterListener = createOnCompleteCounterListener();
 
-		TestUseCase useCase = new TestUseCase() {
-			@Override
-			protected void onExecute(Request request) {
+        UseCase.unsubscribe(TestUseCase.class, OnStartCounterListener);
+        UseCase.unsubscribe(TestUseCase.class, OnUpdateCounterListener);
+        UseCase.unsubscribe(TestUseCase.class, OnCompleteCounterListener);
 
-				TestResult result = new TestResult();
+        useCase.execute();
 
-				updateSubscribers(result);
-			}
-		};
-		useCase.subscribe(createCallbackCounterListener());
+        assertEquals(3, isOnStartCalledCount);
+        assertEquals(3, isOnUpdateCalledCount);
+        assertEquals(3, isOnCompleteCalledCount);
+    }
 
-		useCase.execute();
+    @Test
+    public void executeWithFinish_onCompleteCalled() throws Exception {
 
-		assertEquals(0, isOnCompleteCalledCount);
-	}
+        TestUseCase useCase = new TestUseCase();
+        useCase.subscribe(createOnCompleteCounterListener());
 
-	@Test
-	public void executeNoSubscribers_onExecuteCalled() throws Exception {
+        useCase.execute();
 
-		TestUseCase useCase = new TestUseCase() {
+        assertEquals(1, isOnCompleteCalledCount);
+    }
 
-			@Override
-			protected void onExecute(Request request) {
+    @Test
+    public void executeWithoutFinish_onCompleteNotCalled() throws Exception {
 
-				isOnExecuteCalled = true;
-			}
-		};
+        TestUseCase useCase = new TestUseCase() {
+            @Override
+            protected void onExecute(Request request) {
 
-		useCase.execute();
+                TestResult result = new TestResult();
 
-		assertTrue(isOnExecuteCalled);
-	}
+                updateSubscribers(result);
+            }
+        };
+        useCase.subscribe(createOnStartCounterListener());
 
-	@Test
-	public void executeNoSubscribers_onPostExecuteCalledAfterComplete() throws Exception {
+        useCase.execute();
 
-		MainTestUseCase useCase = new MainTestUseCase() {
+        assertEquals(0, isOnCompleteCalledCount);
+    }
 
-			@Override
-			protected void onPostExecute() {
+    @Test
+    public void executeNoSubscribers_onExecuteCalled() throws Exception {
 
-				isOnPostExecuteCalled = true;
-			}
-		};
+        TestUseCase useCase = new TestUseCase() {
 
-		useCase.execute();
+            @Override
+            protected void onExecute(Request request) {
 
-		assertTrue(isOnPostExecuteCalled);
-	}
+                isOnExecuteCalled = true;
+            }
+        };
 
-	@NonNull
-	private UseCaseListener<TestResult> createCallbackCounterListener() {
-		return new SimpleUseCaseListener<TestResult>() {
+        useCase.execute();
 
-			@Override
-			public void onStart() {
-				isOnStartCalledCount++;
-			}
+        assertTrue(isOnExecuteCalled);
+    }
 
-			@Override
-			public void onUpdate(TestResult result) {
-				isOnUpdateCalledCount++;
-			}
+    @Test
+    public void executeNoSubscribers_onPostExecuteCalledAfterComplete() throws Exception {
 
-			@Override
-			public void onComplete() {
-				isOnCompleteCalledCount++;
-			}
-		};
-	}
+        MainTestUseCase useCase = new MainTestUseCase() {
 
-	private class MainTestUseCase extends UseCase<PendingActionRequest, TestResult> {
+            @Override
+            protected void onPostExecute() {
 
-		@Override
-		protected void onExecute(PendingActionRequest request) {
+                isOnPostExecuteCalled = true;
+            }
+        };
+
+        useCase.execute();
+
+        assertTrue(isOnPostExecuteCalled);
+    }
+
+    @NonNull
+    private UseCase.OnStartListener createOnStartCounterListener() {
+        return new UseCase.OnStartListener() {
+
+            @Override
+            public void onStart() {
+                isOnStartCalledCount++;
+            }
+        };
+    }
+
+    @NonNull
+    private UseCase.OnUpdateListener<TestResult> createOnUpdateCounterListener() {
+        return new UseCase.OnUpdateListener<TestResult>() {
+
+            @Override
+            public void onUpdate(TestResult result) {
+                isOnUpdateCalledCount++;
+            }
+        };
+    }
+
+    @NonNull
+    private UseCase.OnCompleteListener createOnCompleteCounterListener() {
+        return new UseCase.OnCompleteListener() {
+
+            @Override
+            public void onComplete() {
+                isOnCompleteCalledCount++;
+            }
+        };
+    }
+
+    private class MainTestUseCase extends UseCase<PendingActionRequest, TestResult> {
+
+        @Override
+        protected void onExecute(PendingActionRequest request) {
 
 
-			TestResult result = new TestResult();
+            TestResult result = new TestResult();
 
-			updateSubscribers(result);
+            updateSubscribers(result);
 
-			finish();
-		}
-	}
+            finish();
+        }
+    }
 
 }

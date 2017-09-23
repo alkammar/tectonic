@@ -7,6 +7,6 @@ public class CancelledPrerequisiteTestUseCase extends TestUseCase {
 
 	@Override
 	protected void onExecute(Request request) {
-		cancel();
+		abort();
 	}
 }

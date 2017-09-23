@@ -92,8 +92,8 @@ public class CacheTest {
 	}
 
 	@NonNull
-	private SimpleUseCaseListener<TestResult> createOriginalResultListener() {
-		return new SimpleUseCaseListener<TestResult>() {
+	private UseCase.OnUpdateListener<TestResult> createOriginalResultListener() {
+		return new UseCase.OnUpdateListener<TestResult>() {
 			@Override
 			public void onUpdate(TestResult result) {
 				originalResult = result;
@@ -102,8 +102,8 @@ public class CacheTest {
 	}
 
 	@NonNull
-	private SimpleUseCaseListener<TestResult> createCachedResultListener() {
-		return new SimpleUseCaseListener<TestResult>() {
+	private UseCase.OnUpdateListener<TestResult> createCachedResultListener() {
+		return new UseCase.OnUpdateListener<TestResult>() {
 			@Override
 			public void onUpdate(TestResult result) {
 				cachedResult = result;
@@ -114,7 +114,7 @@ public class CacheTest {
 	private class CachableTestUseCase extends TestUseCase {
 
 		@Override
-		protected boolean isCachable() {
+		protected boolean willCache() {
 			return true;
 		}
 	}

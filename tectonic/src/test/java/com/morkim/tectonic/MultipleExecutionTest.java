@@ -28,7 +28,7 @@ public class MultipleExecutionTest {
 	@Test
 	public void executeMultiple_onlyNewSubscriptionOnStartAndOnExecute() throws Exception {
 
-		UseCase.subscribe(MainTestUseCase.class, new SimpleUseCaseListener<Result>() {
+		UseCase.subscribe(MainTestUseCase.class, new UseCase.OnStartListener() {
 			@Override
 			public void onStart() {
 				useCasesStarted1Count++;
@@ -40,7 +40,7 @@ public class MultipleExecutionTest {
 		useCase.execute();
 
 		useCase = new MainTestUseCase();
-		useCase.subscribe(new SimpleUseCaseListener<Result>() {
+		useCase.subscribe(new UseCase.OnStartListener() {
 			@Override
 			public void onStart() {
 				useCasesStarted2Count++;

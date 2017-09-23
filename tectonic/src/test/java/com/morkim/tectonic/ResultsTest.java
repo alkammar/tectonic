@@ -25,7 +25,7 @@ public class ResultsTest {
 	public void execute_resultReturned() throws Exception {
 
 		TestUseCase useCase = new TestUseCase();
-		useCase.subscribe(new SimpleUseCaseListener<TestResult>() {
+		useCase.subscribe(new UseCase.OnUpdateListener<TestResult>() {
 			@Override
 			public void onUpdate(TestResult result) {
 				updateResult = result;
@@ -43,7 +43,7 @@ public class ResultsTest {
 	public void executeMultipleResults_multipleResultsReturned() throws Exception {
 
 		MultipleResultsUseCase useCase = new MultipleResultsUseCase();
-		useCase.subscribe(new SimpleUseCaseListener<TestResult>() {
+		useCase.subscribe(new UseCase.OnUpdateListener<TestResult>() {
 			@Override
 			public void onUpdate(TestResult result) {
 				updateResult = result;

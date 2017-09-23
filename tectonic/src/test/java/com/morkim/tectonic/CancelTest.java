@@ -3,7 +3,6 @@ package com.morkim.tectonic;
 import com.morkim.tectonic.entities.CancelledPrerequisiteTestUseCase;
 import com.morkim.tectonic.entities.PendingActionRequest;
 import com.morkim.tectonic.entities.PendingActionTestUseCase;
-import com.morkim.tectonic.entities.TestResult;
 import com.morkim.tectonic.entities.TestUseCase;
 
 import org.junit.Before;
@@ -37,12 +36,13 @@ public class CancelTest {
 		TestUseCase useCase;
 
 		useCase = new Main3TestUseCase();
-		useCase.subscribe(new SimpleUseCaseListener<TestResult>() {
+		useCase.subscribe(new UseCase.OnCompleteListener() {
 			@Override
 			public void onComplete() {
 				mainTimeStamp = System.nanoTime();
 			}
-
+		})
+		.subscribe(new UseCase.OnAbortListener() {
 			@Override
 			public void onCancel() {
 				onCancelMainCount++;
@@ -60,20 +60,21 @@ public class CancelTest {
 		TestUseCase useCase;
 
 		useCase = new Main3TestUseCase();
-		useCase.subscribe(new SimpleUseCaseListener<TestResult>() {
+		useCase.subscribe(new UseCase.OnCompleteListener() {
 			@Override
 			public void onComplete() {
 				mainTimeStamp = System.nanoTime();
 			}
-
-			@Override
-			public void onCancel() {
-				onCancelMainCount++;
-			}
-		});
+		})
+				.subscribe(new UseCase.OnAbortListener() {
+					@Override
+					public void onCancel() {
+						onCancelMainCount++;
+					}
+				});
 		useCase.execute();
 
-		UseCase.cancel(Main3TestUseCase.class);
+		UseCase.abort(Main3TestUseCase.class);
 
 		assertEquals(0, mainTimeStamp);
 		assertEquals(1, onCancelMainCount);
@@ -85,7 +86,7 @@ public class CancelTest {
 		TestUseCase useCase;
 
 		useCase = new Main1TestUseCase();
-		useCase.subscribe(new SimpleUseCaseListener<TestResult>() {
+		useCase.subscribe(new UseCase.OnCompleteListener() {
 			@Override
 			public void onComplete() {
 				mainTimeStamp = System.nanoTime();
@@ -103,7 +104,7 @@ public class CancelTest {
 		TestUseCase useCase;
 
 		useCase = new Main2TestUseCase();
-		useCase.subscribe(new SimpleUseCaseListener<TestResult>() {
+		useCase.subscribe(new UseCase.OnCompleteListener() {
 			@Override
 			public void onComplete() {
 				mainTimeStamp = System.nanoTime();
@@ -111,7 +112,7 @@ public class CancelTest {
 		});
 		useCase.execute();
 
-		UseCase.cancel(PendingActionTestUseCase.class);
+		UseCase.abort(PendingActionTestUseCase.class);
 
 		assertNotEquals(0, prerequisiteTimeStamp);
 		assertEquals(0, mainTimeStamp);
@@ -123,7 +124,7 @@ public class CancelTest {
 		TestUseCase useCase;
 
 		useCase = new Main1TestUseCase();
-		useCase.subscribe(new SimpleUseCaseListener<TestResult>() {
+		useCase.subscribe(new UseCase.OnCompleteListener() {
 			@Override
 			public void onComplete() {
 				mainTimeStamp = System.nanoTime();
@@ -131,7 +132,7 @@ public class CancelTest {
 		});
 		useCase.execute();
 
-		UseCase.cancel(CancelledPrerequisiteTestUseCase.class);
+		UseCase.abort(CancelledPrerequisiteTestUseCase.class);
 
 		assertEquals(1, onCancelPrerequisiteCount);
 	}
@@ -142,20 +143,21 @@ public class CancelTest {
 		TestUseCase useCase;
 
 		useCase = new TestUseCase();
-		useCase.subscribe(new SimpleUseCaseListener<TestResult>() {
+		useCase.subscribe(new UseCase.OnCompleteListener() {
 			@Override
 			public void onComplete() {
 				mainTimeStamp = System.nanoTime();
 			}
+		})
+				.subscribe(new UseCase.OnAbortListener() {
+					@Override
+					public void onCancel() {
+						onCancelMainCount++;
+					}
+				})
+				.execute();
 
-			@Override
-			public void onCancel() {
-				onCancelMainCount++;
-			}
-		});
-		useCase.execute();
-
-		UseCase.cancel(TestUseCase.class);
+		UseCase.abort(TestUseCase.class);
 
 		assertEquals(0, onCancelMainCount);
 	}
@@ -166,7 +168,7 @@ public class CancelTest {
 		TestUseCase useCase;
 
 		useCase = new Main2TestUseCase();
-		useCase.subscribe(new SimpleUseCaseListener<TestResult>() {
+		useCase.subscribe(new UseCase.OnCompleteListener() {
 			@Override
 			public void onComplete() {
 				mainTimeStamp = System.nanoTime();
@@ -174,7 +176,7 @@ public class CancelTest {
 		});
 		useCase.execute();
 
-		UseCase.cancel(PendingActionTestUseCase.class);
+		UseCase.abort(PendingActionTestUseCase.class);
 
 		PendingActionTestUseCase prerequisiteUseCase = new PendingActionTestUseCase();
 		prerequisiteUseCase.execute(new PendingActionRequest.Builder().build());
@@ -189,7 +191,7 @@ public class CancelTest {
 
 			addPrerequisite(
 					CancelledPrerequisiteTestUseCase.class,
-					new SimpleUseCaseListener<TestResult>() {
+					new UseCase.OnAbortListener() {
 						@Override
 						public void onCancel() {
 							prerequisiteTimeStamp = System.nanoTime();
@@ -206,7 +208,7 @@ public class CancelTest {
 
 			addPrerequisite(
 					PendingActionTestUseCase.class,
-					new SimpleUseCaseListener<TestResult>() {
+					new OnAbortListener() {
 						@Override
 						public void onCancel() {
 							prerequisiteTimeStamp = System.nanoTime();
@@ -220,7 +222,7 @@ public class CancelTest {
 
 		@Override
 		protected void onExecute(Request request) {
-			cancel();
+			abort();
 		}
 	}
 }

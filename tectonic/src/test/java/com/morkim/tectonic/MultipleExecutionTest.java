@@ -1,18 +1,47 @@
 package com.morkim.tectonic;
 
+import android.support.annotation.NonNull;
+
 import com.morkim.tectonic.entities.PendingActionRequest;
 import com.morkim.tectonic.entities.PendingActionTestUseCase;
 
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
+
+import java.util.concurrent.Callable;
+
+import io.reactivex.Scheduler;
+import io.reactivex.android.plugins.RxAndroidPlugins;
+import io.reactivex.functions.Function;
+import io.reactivex.plugins.RxJavaPlugins;
+import io.reactivex.schedulers.Schedulers;
 
 import static org.junit.Assert.assertEquals;
 
-public class MultipleExecutionTest {
+public class MultipleExecutionTest extends TecTonicTest {
 
 	private int useCasesStarted1Count;
 	private int useCasesStarted2Count;
 	private int onExecuteCount;
+
+	@BeforeClass
+	public static void setupClass() {
+
+		RxAndroidPlugins.setInitMainThreadSchedulerHandler(new Function<Callable<Scheduler>, Scheduler>() {
+			@Override
+			public Scheduler apply(@NonNull Callable<Scheduler> schedulerCallable) throws Exception {
+				return Schedulers.trampoline();
+			}
+		});
+
+		RxJavaPlugins.setIoSchedulerHandler(new Function<Scheduler, Scheduler>() {
+			@Override
+			public Scheduler apply(@io.reactivex.annotations.NonNull Scheduler scheduler) throws Exception {
+				return Schedulers.trampoline();
+			}
+		});
+	}
 
 	@Before
 	public void setup() {

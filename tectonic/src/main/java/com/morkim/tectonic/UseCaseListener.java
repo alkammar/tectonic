@@ -1,7 +1,7 @@
 package com.morkim.tectonic;
 
 
-interface UseCaseListener<Rs extends Result> {
+public interface UseCaseListener<Rs extends Result> {
 
 	void onStart();
 

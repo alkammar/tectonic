@@ -46,6 +46,7 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
     private int prerequisiteIndex;
 
     private static Map<Class<? extends UseCase>, List<UseCaseListener<? extends Result>>> subscriptions = new HashMap<>();
+    private static Map<Class<? extends UseCase>, List<UseCaseListener<? extends Result>>> consumedStarts = new HashMap<>();
 
     private static Map<Class<? extends UseCase>, SparseArray<Result>> cachedResults = new HashMap<>();
 
@@ -54,6 +55,9 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
 
         if (subscriptions.get(this.getClass()) == null)
             subscriptions.put(this.getClass(), new ArrayList<UseCaseListener<? extends Result>>());
+
+        if (consumedStarts.get(this.getClass()) == null)
+            consumedStarts.put(this.getClass(), new ArrayList<UseCaseListener<? extends Result>>());
 
         prerequisites = new ArrayList<>();
         onAddPrerequisites();
@@ -216,8 +220,10 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
 
             switch (update.type) {
                 case START:
-                    for (UseCaseListener listener : subscriptions.get(UseCase.this.getClass()))
-                        listener.onStart();
+                    for (UseCaseListener listener : subscriptions.get(UseCase.this.getClass())) {
+                        if (!consumedStarts.get(UseCase.this.getClass()).contains(listener)) listener.onStart();
+                        consumedStarts.get(UseCase.this.getClass()).add(listener);
+                    }
                     break;
                 case UPDATE:
                     for (UseCaseListener listener : subscriptions.get(UseCase.this.getClass()))
@@ -243,6 +249,7 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
                             useCaseSubscriptions.remove(listener);
                             i++;
                         }
+                        consumedStarts.get(UseCase.this.getClass()).remove(listener);
                     }
                     break;
                 case INPUT:

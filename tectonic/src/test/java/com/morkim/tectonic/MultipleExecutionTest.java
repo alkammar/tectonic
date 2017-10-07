@@ -4,6 +4,8 @@ import android.support.annotation.NonNull;
 
 import com.morkim.tectonic.entities.PendingActionRequest;
 import com.morkim.tectonic.entities.PendingActionTestUseCase;
+import com.morkim.tectonic.entities.TestResult;
+import com.morkim.tectonic.entities.TestUseCase;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -80,6 +82,33 @@ public class MultipleExecutionTest extends TecTonicTest {
 		assertEquals(1, useCasesStarted1Count);
 		assertEquals(1, useCasesStarted2Count);
 		assertEquals(1, onExecuteCount);
+	}
+
+	@Test
+	public void executeAfterComplete_AllSubscribersCalled() throws Exception {
+
+		UseCase.subscribe(TestUseCase.class, new SimpleUseCaseListener<Result>() {
+			@Override
+			public void onStart() {
+				useCasesStarted1Count++;
+			}
+		});
+
+		TestUseCase
+		useCase = new TestUseCase();
+		useCase.execute();
+
+		useCase = new TestUseCase();
+		useCase.subscribe(new SimpleUseCaseListener<TestResult>() {
+			@Override
+			public void onStart() {
+				useCasesStarted2Count++;
+			}
+		});
+		useCase.execute();
+
+		assertEquals(2, useCasesStarted1Count);
+		assertEquals(1, useCasesStarted2Count);
 	}
 
 	private class MainTestUseCase extends PendingActionTestUseCase {

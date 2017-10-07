@@ -6,43 +6,16 @@ import com.morkim.tectonic.entities.TestResult;
 import com.morkim.tectonic.entities.TestUseCase;
 
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
-
-import java.util.concurrent.Callable;
-
-import io.reactivex.Scheduler;
-import io.reactivex.android.plugins.RxAndroidPlugins;
-import io.reactivex.functions.Function;
-import io.reactivex.plugins.RxJavaPlugins;
-import io.reactivex.schedulers.Schedulers;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 
-public class MultipleCacheTest extends TecTonicTest {
+public class MultipleCacheTest {
 
 	private Result originalResult;
 	private Result cachedResult;
-
-	@BeforeClass
-	public static void setupClass() {
-
-		RxAndroidPlugins.setInitMainThreadSchedulerHandler(new Function<Callable<Scheduler>, Scheduler>() {
-			@Override
-			public Scheduler apply(@NonNull Callable<Scheduler> schedulerCallable) throws Exception {
-				return Schedulers.trampoline();
-			}
-		});
-
-		RxJavaPlugins.setIoSchedulerHandler(new Function<Scheduler, Scheduler>() {
-			@Override
-			public Scheduler apply(@io.reactivex.annotations.NonNull Scheduler scheduler) throws Exception {
-				return Schedulers.trampoline();
-			}
-		});
-	}
 
 	@Before
 	public void setup() {
@@ -64,6 +37,8 @@ public class MultipleCacheTest extends TecTonicTest {
 				.param1(65)
 				.build());
 
+		UseCase.unsubscribe(CachableTestUseCase.class);
+
 		useCase = new CachableTestUseCase();
 		useCase.subscribe(createCachedResultListener());
 		useCase.execute(new CashableRequest.Builder()
@@ -84,6 +59,8 @@ public class MultipleCacheTest extends TecTonicTest {
 				.param1(65)
 				.build());
 
+		UseCase.unsubscribe(TestUseCase.class);
+
 		useCase = new TestUseCase();
 		useCase.subscribe(createCachedResultListener());
 		useCase.executeCached(new CashableRequest.Builder()
@@ -103,6 +80,8 @@ public class MultipleCacheTest extends TecTonicTest {
 		useCase.execute(new CashableRequest.Builder()
 				.param1(65)
 				.build());
+
+		UseCase.unsubscribe(CachableTestUseCase.class);
 
 		useCase = new CachableTestUseCase();
 		useCase.subscribe(createCachedResultListener());
@@ -143,6 +122,8 @@ public class MultipleCacheTest extends TecTonicTest {
 		useCase.execute(new CashableRequest.Builder()
 				.param1(65)
 				.build());
+
+		UseCase.unsubscribe(CachableTestUseCase.class);
 
 		useCase = new CachableTestUseCase();
 		useCase.subscribe(createCachedResultListener());

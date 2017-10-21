@@ -2,6 +2,8 @@ apply plugin: 'com.android.library'
 apply plugin: 'de.mobilej.unmock'
 apply plugin: 'com.github.dcendents.android-maven'
 
+group = 'com.github.alkammar'
+
 android {
     compileSdkVersion 26
     buildToolsVersion "26.0.0"

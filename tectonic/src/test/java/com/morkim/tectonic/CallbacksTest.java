@@ -2,7 +2,7 @@ package com.morkim.tectonic;
 
 import android.support.annotation.NonNull;
 
-import com.morkim.tectonic.entities.PendingActionRequest;
+import com.morkim.tectonic.entities.CallbackTestUseCase;
 import com.morkim.tectonic.entities.TestResult;
 import com.morkim.tectonic.entities.TestUseCase;
 
@@ -19,6 +19,7 @@ import io.reactivex.plugins.RxJavaPlugins;
 import io.reactivex.schedulers.Schedulers;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class CallbacksTest extends TecTonicTest {
@@ -26,8 +27,6 @@ public class CallbacksTest extends TecTonicTest {
 	private int isOnStartCalledCount;
 	private int isOnUpdateCalledCount;
 	private int isOnCompleteCalledCount;
-	private boolean isOnExecuteCalled;
-	private boolean isOnPostExecuteCalled;
 
 	@BeforeClass
 	public static void setupClass() {
@@ -53,14 +52,25 @@ public class CallbacksTest extends TecTonicTest {
 		isOnStartCalledCount = 0;
 		isOnUpdateCalledCount = 0;
 		isOnCompleteCalledCount = 0;
-		isOnExecuteCalled = false;
-		isOnPostExecuteCalled = false;
+	}
+
+	@Test
+	public void createNewUseCase_unableToReceiveCallbacks() throws Exception {
+
+		CallbackTestUseCase useCase = new CallbackTestUseCase();
+		useCase.subscribe(createCallbackCounterListener());
+		useCase.execute();
+
+		assertEquals(0, isOnStartCalledCount);
+		assertEquals(0, isOnUpdateCalledCount);
+		assertEquals(0, isOnCompleteCalledCount);
+		assertFalse(useCase.isOnExecuteCalled());
 	}
 
 	@Test
 	public void executeNoListener_callbacksNotCalled() throws Exception {
 
-		UseCase useCase = new MainTestUseCase();
+		UseCase useCase = UseCase.fetch(CallbackTestUseCase.class);
 
 		useCase.execute();
 
@@ -72,7 +82,7 @@ public class CallbacksTest extends TecTonicTest {
 	@Test
 	public void execute_callbacksCalled() throws Exception {
 
-		TestUseCase useCase = new TestUseCase();
+		TestUseCase useCase = UseCase.fetch(TestUseCase.class);
 		useCase.subscribe(createCallbackCounterListener());
 
 		useCase.execute();
@@ -85,7 +95,7 @@ public class CallbacksTest extends TecTonicTest {
 	@Test
 	public void executeMultipleSubscription_callbacksCalled() throws Exception {
 
-		TestUseCase useCase = new TestUseCase();
+		TestUseCase useCase = UseCase.fetch(TestUseCase.class);
 		useCase.subscribe(createCallbackCounterListener());
 		UseCase.subscribe(TestUseCase.class, createCallbackCounterListener());
 		UseCase.subscribe(TestUseCase.class, createCallbackCounterListener());
@@ -100,7 +110,7 @@ public class CallbacksTest extends TecTonicTest {
 	@Test
 	public void executeMultipleSubscriptionWithUnsubscribe_callbacksCalled() throws Exception {
 
-		TestUseCase useCase = new TestUseCase();
+		TestUseCase useCase = UseCase.fetch(TestUseCase.class);
 		useCase.subscribe(createCallbackCounterListener());
 		UseCaseListener<TestResult> callbackCounterListener = createCallbackCounterListener();
 		UseCase.subscribe(TestUseCase.class, callbackCounterListener);
@@ -117,7 +127,7 @@ public class CallbacksTest extends TecTonicTest {
 	@Test
 	public void executeAllUnsubscribed_callbacksNotCalled() throws Exception {
 
-		TestUseCase useCase = new TestUseCase();
+		TestUseCase useCase = UseCase.fetch(TestUseCase.class);
 		UseCaseListener<TestResult> callbackCounterListener1 = createCallbackCounterListener();
 		useCase.subscribe(callbackCounterListener1);
 		UseCaseListener<TestResult> callbackCounterListener2 = createCallbackCounterListener();
@@ -139,7 +149,7 @@ public class CallbacksTest extends TecTonicTest {
 	@Test
 	public void executeUnsubscribeNonSubscriber_correctCountCalled() throws Exception {
 
-		TestUseCase useCase = new TestUseCase();
+		TestUseCase useCase = UseCase.fetch(TestUseCase.class);
 		UseCaseListener<TestResult> callbackCounterListener1 = createCallbackCounterListener();
 		useCase.subscribe(callbackCounterListener1);
 		UseCaseListener<TestResult> callbackCounterListener2 = createCallbackCounterListener();
@@ -160,7 +170,7 @@ public class CallbacksTest extends TecTonicTest {
 	@Test
 	public void executeWithFinish_onCompleteCalled() throws Exception {
 
-		TestUseCase useCase = new TestUseCase();
+		TestUseCase useCase = UseCase.fetch(TestUseCase.class);
 		useCase.subscribe(createCallbackCounterListener());
 
 		useCase.execute();
@@ -190,35 +200,21 @@ public class CallbacksTest extends TecTonicTest {
 	@Test
 	public void executeNoSubscribers_onExecuteCalled() throws Exception {
 
-		TestUseCase useCase = new TestUseCase() {
-
-			@Override
-			protected void onExecute(Request request) {
-
-				isOnExecuteCalled = true;
-			}
-		};
+		CallbackTestUseCase useCase = UseCase.fetch(CallbackTestUseCase.class);
 
 		useCase.execute();
 
-		assertTrue(isOnExecuteCalled);
+		assertTrue(useCase.isOnExecuteCalled());
 	}
 
 	@Test
 	public void executeNoSubscribers_onPostExecuteCalledAfterComplete() throws Exception {
 
-		MainTestUseCase useCase = new MainTestUseCase() {
-
-			@Override
-			protected void onPostExecute() {
-
-				isOnPostExecuteCalled = true;
-			}
-		};
+		CallbackTestUseCase useCase = UseCase.fetch(CallbackTestUseCase.class);
 
 		useCase.execute();
 
-		assertTrue(isOnPostExecuteCalled);
+		assertTrue(useCase.isOnPostExecuteCalled());
 	}
 
 	@NonNull
@@ -240,20 +236,6 @@ public class CallbacksTest extends TecTonicTest {
 				isOnCompleteCalledCount++;
 			}
 		};
-	}
-
-	private class MainTestUseCase extends UseCase<PendingActionRequest, TestResult> {
-
-		@Override
-		protected void onExecute(PendingActionRequest request) {
-
-
-			TestResult result = new TestResult();
-
-			updateSubscribers(result);
-
-			finish();
-		}
 	}
 
 }

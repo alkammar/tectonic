@@ -3,8 +3,7 @@ package com.morkim.tectonic;
 import android.support.annotation.NonNull;
 
 import com.morkim.tectonic.entities.PendingActionRequest;
-import com.morkim.tectonic.entities.PendingActionTestUseCase;
-import com.morkim.tectonic.entities.TestResult;
+import com.morkim.tectonic.entities.RequestInputTestUseCase;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -21,8 +20,6 @@ import io.reactivex.schedulers.Schedulers;
 import static org.junit.Assert.assertTrue;
 
 public class InputRequiredExecutionTest extends TecTonicTest {
-
-	private boolean executionContinued;
 
 	@BeforeClass
 	public static void setupClass() {
@@ -47,40 +44,19 @@ public class InputRequiredExecutionTest extends TecTonicTest {
 
 		UseCase.unsubscribeAll();
 		UseCase.clearAllInProgress();
-
-		executionContinued = false;
 	}
 
 	@Test
 	public void executeMultiple_onlyNewSubscriptionOnStartAndOnExecute() throws Exception {
 
-		MainTestUseCase
-		useCase = new MainTestUseCase();
+		RequestInputTestUseCase
+		useCase = UseCase.fetch(RequestInputTestUseCase.class);
 		useCase.execute();
 
-		useCase = new MainTestUseCase();
+		useCase = UseCase.fetch(RequestInputTestUseCase.class);
 		useCase.execute(new PendingActionRequest.Builder().build());
 
-		assertTrue(executionContinued);
+		assertTrue(useCase.isExecutionContinued());
 	}
 
-	private class MainTestUseCase extends PendingActionTestUseCase {
-
-		@Override
-		protected void onExecute(PendingActionRequest request) {
-
-			if (request == null) {
-				requestInput(0);
-			} else {
-
-				executionContinued = true;
-
-				TestResult result = new TestResult();
-
-				updateSubscribers(result);
-
-				finish();
-			}
-		}
-	}
 }

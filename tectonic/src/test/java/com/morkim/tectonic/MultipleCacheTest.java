@@ -2,6 +2,7 @@ package com.morkim.tectonic;
 
 import android.support.annotation.NonNull;
 
+import com.morkim.tectonic.entities.CachableTestUseCase;
 import com.morkim.tectonic.entities.TestResult;
 import com.morkim.tectonic.entities.TestUseCase;
 
@@ -31,7 +32,7 @@ public class MultipleCacheTest {
 
 		TestUseCase useCase;
 
-		useCase = new CachableTestUseCase();
+		useCase = UseCase.fetch(CachableTestUseCase.class);
 		useCase.subscribe(createOriginalResultListener());
 		useCase.execute(new CashableRequest.Builder()
 				.param1(65)
@@ -39,7 +40,7 @@ public class MultipleCacheTest {
 
 		UseCase.unsubscribe(CachableTestUseCase.class);
 
-		useCase = new CachableTestUseCase();
+		useCase = UseCase.fetch(CachableTestUseCase.class);
 		useCase.subscribe(createCachedResultListener());
 		useCase.execute(new CashableRequest.Builder()
 				.param1(65)
@@ -53,7 +54,7 @@ public class MultipleCacheTest {
 
 		TestUseCase useCase;
 
-		useCase = new TestUseCase();
+		useCase = UseCase.fetch(TestUseCase.class);
 		useCase.subscribe(createOriginalResultListener());
 		useCase.execute(new CashableRequest.Builder()
 				.param1(65)
@@ -61,7 +62,7 @@ public class MultipleCacheTest {
 
 		UseCase.unsubscribe(TestUseCase.class);
 
-		useCase = new TestUseCase();
+		useCase = UseCase.fetch(TestUseCase.class);
 		useCase.subscribe(createCachedResultListener());
 		useCase.executeCached(new CashableRequest.Builder()
 				.param1(65)
@@ -75,7 +76,7 @@ public class MultipleCacheTest {
 
 		TestUseCase useCase;
 
-		useCase = new CachableTestUseCase();
+		useCase = UseCase.fetch(CachableTestUseCase.class);
 		useCase.subscribe(createOriginalResultListener());
 		useCase.execute(new CashableRequest.Builder()
 				.param1(65)
@@ -83,7 +84,7 @@ public class MultipleCacheTest {
 
 		UseCase.unsubscribe(CachableTestUseCase.class);
 
-		useCase = new CachableTestUseCase();
+		useCase = UseCase.fetch(CachableTestUseCase.class);
 		useCase.subscribe(createCachedResultListener());
 		useCase.executeCached(new CashableRequest.Builder()
 				.param1(77)
@@ -97,13 +98,13 @@ public class MultipleCacheTest {
 
 		TestUseCase useCase;
 
-		useCase = new CachableTestUseCase();
+		useCase = UseCase.fetch(CachableTestUseCase.class);
 		useCase.subscribe(createOriginalResultListener());
 		useCase.execute(new CashableRequest.Builder()
 				.param1(65)
 				.build());
 
-		useCase = new CachableTestUseCase();
+		useCase = UseCase.fetch(CachableTestUseCase.class);
 		useCase.subscribe(createCachedResultListener());
 		useCase.executeCached(new CashableRequest.Builder()
 				.param1(65)
@@ -117,7 +118,7 @@ public class MultipleCacheTest {
 
 		TestUseCase useCase;
 
-		useCase = new CachableTestUseCase();
+		useCase = UseCase.fetch(CachableTestUseCase.class);
 		useCase.subscribe(createOriginalResultListener());
 		useCase.execute(new CashableRequest.Builder()
 				.param1(65)
@@ -125,7 +126,7 @@ public class MultipleCacheTest {
 
 		UseCase.unsubscribe(CachableTestUseCase.class);
 
-		useCase = new CachableTestUseCase();
+		useCase = UseCase.fetch(CachableTestUseCase.class);
 		useCase.subscribe(createCachedResultListener());
 		useCase.executeCached(new CashableRequest.Builder()
 				.param1(66)
@@ -153,14 +154,6 @@ public class MultipleCacheTest {
 				cachedResult = result;
 			}
 		};
-	}
-
-	private class CachableTestUseCase extends TestUseCase {
-
-		@Override
-		protected boolean isCachable() {
-			return true;
-		}
 	}
 
 	private static class CashableRequest extends Request {

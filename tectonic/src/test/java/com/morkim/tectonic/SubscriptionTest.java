@@ -63,7 +63,7 @@ public class SubscriptionTest extends TecTonicTest {
 
 		TestUseCase useCase;
 
-		useCase = new TestUseCase();
+		useCase = UseCase.fetch(TestUseCase.class);
 		useCase.execute();
 
 		assertTrue(isSubscriptionExecuted);
@@ -85,7 +85,7 @@ public class SubscriptionTest extends TecTonicTest {
 
 		TestUseCase useCase;
 
-		useCase = new TestUseCase();
+		useCase = UseCase.fetch(TestUseCase.class);
 		useCase.execute();
 
 		assertFalse(isSubscriptionExecuted);
@@ -107,7 +107,7 @@ public class SubscriptionTest extends TecTonicTest {
 
 		TestUseCase useCase;
 
-		useCase = new TestUseCase();
+		useCase = UseCase.fetch(TestUseCase.class);
 		useCase.execute();
 
 		assertFalse(isSubscriptionExecuted);
@@ -129,7 +129,7 @@ public class SubscriptionTest extends TecTonicTest {
 
 		TestUseCase useCase;
 
-		useCase = new TestUseCase();
+		useCase = UseCase.fetch(TestUseCase.class);
 		useCase.execute();
 
 		assertTrue(isSubscriptionExecuted);

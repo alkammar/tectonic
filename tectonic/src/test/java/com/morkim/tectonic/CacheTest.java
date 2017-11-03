@@ -2,6 +2,7 @@ package com.morkim.tectonic;
 
 import android.support.annotation.NonNull;
 
+import com.morkim.tectonic.entities.CachableTestUseCase;
 import com.morkim.tectonic.entities.TestResult;
 import com.morkim.tectonic.entities.TestUseCase;
 
@@ -57,14 +58,14 @@ public class CacheTest extends TecTonicTest {
 
 		TestUseCase useCase;
 
-		useCase = new CachableTestUseCase();
+		useCase = UseCase.fetch(CachableTestUseCase.class);
 		SimpleUseCaseListener<TestResult> originalResultListener = createOriginalResultListener();
 		useCase.subscribe(originalResultListener);
 		useCase.execute();
 
 		useCase.unsubscribe(originalResultListener);
 
-		useCase = new CachableTestUseCase();
+		useCase = UseCase.fetch(CachableTestUseCase.class);
 		useCase.subscribe(createCachedResultListener());
 		useCase.execute();
 
@@ -76,7 +77,7 @@ public class CacheTest extends TecTonicTest {
 
 		TestUseCase useCase;
 
-		useCase = new TestUseCase();
+		useCase = UseCase.fetch(TestUseCase.class);
 		SimpleUseCaseListener<TestResult> originalResultListener = createOriginalResultListener();
 		useCase.subscribe(originalResultListener);
 		useCase.execute();
@@ -95,11 +96,11 @@ public class CacheTest extends TecTonicTest {
 
 		TestUseCase useCase;
 
-		useCase = new CachableTestUseCase();
+		useCase = UseCase.fetch(CachableTestUseCase.class);
 		useCase.subscribe(createOriginalResultListener());
 		useCase.execute();
 
-		useCase = new CachableTestUseCase();
+		useCase = UseCase.fetch(CachableTestUseCase.class);
 		useCase.subscribe(createCachedResultListener());
 		useCase.executeCached();
 
@@ -111,7 +112,7 @@ public class CacheTest extends TecTonicTest {
 
 		TestUseCase useCase;
 
-		useCase = new CachableTestUseCase();
+		useCase = UseCase.fetch(CachableTestUseCase.class);
 		SimpleUseCaseListener<TestResult> originalResultListener = createOriginalResultListener();
 		useCase.subscribe(originalResultListener);
 		useCase.execute();
@@ -119,7 +120,7 @@ public class CacheTest extends TecTonicTest {
 		UseCase.clearCache(CachableTestUseCase.class);
 		useCase.unsubscribe(originalResultListener);
 
-		useCase = new CachableTestUseCase();
+		useCase = UseCase.fetch(CachableTestUseCase.class);
 		useCase.subscribe(createCachedResultListener());
 		useCase.executeCached();
 
@@ -144,13 +145,5 @@ public class CacheTest extends TecTonicTest {
 				cachedResult = result;
 			}
 		};
-	}
-
-	private class CachableTestUseCase extends TestUseCase {
-
-		@Override
-		protected boolean isCachable() {
-			return true;
-		}
 	}
 }

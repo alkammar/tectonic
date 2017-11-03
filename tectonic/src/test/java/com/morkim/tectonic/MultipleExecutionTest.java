@@ -2,7 +2,6 @@ package com.morkim.tectonic;
 
 import android.support.annotation.NonNull;
 
-import com.morkim.tectonic.entities.PendingActionRequest;
 import com.morkim.tectonic.entities.PendingActionTestUseCase;
 import com.morkim.tectonic.entities.TestResult;
 import com.morkim.tectonic.entities.TestUseCase;
@@ -25,7 +24,6 @@ public class MultipleExecutionTest extends TecTonicTest {
 
 	private int useCasesStarted1Count;
 	private int useCasesStarted2Count;
-	private int onExecuteCount;
 
 	@BeforeClass
 	public static void setupClass() {
@@ -53,24 +51,23 @@ public class MultipleExecutionTest extends TecTonicTest {
 
 		useCasesStarted1Count = 0;
 		useCasesStarted2Count = 0;
-		onExecuteCount = 0;
 	}
 
 	@Test
 	public void executeMultiple_onlyNewSubscriptionOnStartAndOnExecute() throws Exception {
 
-		UseCase.subscribe(MainTestUseCase.class, new SimpleUseCaseListener<Result>() {
+		UseCase.subscribe(PendingActionTestUseCase.class, new SimpleUseCaseListener<Result>() {
 			@Override
 			public void onStart() {
 				useCasesStarted1Count++;
 			}
 		});
 
-		MainTestUseCase
-		useCase = new MainTestUseCase();
+		PendingActionTestUseCase
+		useCase = UseCase.fetch(PendingActionTestUseCase.class);
 		useCase.execute();
 
-		useCase = new MainTestUseCase();
+		useCase = UseCase.fetch(PendingActionTestUseCase.class);
 		useCase.subscribe(new SimpleUseCaseListener<Result>() {
 			@Override
 			public void onStart() {
@@ -81,7 +78,7 @@ public class MultipleExecutionTest extends TecTonicTest {
 
 		assertEquals(1, useCasesStarted1Count);
 		assertEquals(1, useCasesStarted2Count);
-		assertEquals(1, onExecuteCount);
+		assertEquals(1, useCase.getOnExecuteCount());
 	}
 
 	@Test
@@ -95,10 +92,10 @@ public class MultipleExecutionTest extends TecTonicTest {
 		});
 
 		TestUseCase
-		useCase = new TestUseCase();
+		useCase = UseCase.fetch(TestUseCase.class);
 		useCase.execute();
 
-		useCase = new TestUseCase();
+		useCase = UseCase.fetch(TestUseCase.class);
 		useCase.subscribe(new SimpleUseCaseListener<TestResult>() {
 			@Override
 			public void onStart() {
@@ -109,15 +106,5 @@ public class MultipleExecutionTest extends TecTonicTest {
 
 		assertEquals(2, useCasesStarted1Count);
 		assertEquals(1, useCasesStarted2Count);
-	}
-
-	private class MainTestUseCase extends PendingActionTestUseCase {
-
-		@Override
-		protected void onExecute(PendingActionRequest request) {
-			super.onExecute(request);
-
-			onExecuteCount++;
-		}
 	}
 }

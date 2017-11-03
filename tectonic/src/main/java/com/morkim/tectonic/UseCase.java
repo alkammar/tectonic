@@ -25,6 +25,7 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
     private Rq request;
 
     private ObservableEmitter<Update> observer;
+    protected State state = State.NOT_CREATED;
 
     private class Prerequisite {
 
@@ -40,7 +41,7 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
         }
     }
 
-    private static Map<Class<? extends UseCase>, UseCase> inProgress = new HashMap<>();
+    private static Map<Class<? extends UseCase>, UseCase> running = new HashMap<>();
 
     private final List<Prerequisite> prerequisites;
     private int prerequisiteIndex;
@@ -50,8 +51,33 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
 
     private static Map<Class<? extends UseCase>, SparseArray<Result>> cachedResults = new HashMap<>();
 
+    private enum State {
+        NOT_CREATED,
+        CREATED,
+        IN_PROGRESS,
+        DEAD,
+    }
 
-    public UseCase() {
+    public static <U extends UseCase> U fetch(Class<U> useCaseClass) {
+
+        //noinspection unchecked
+        U useCase = (U) running.get(useCaseClass);
+        if (useCase == null) {
+            try {
+                useCase = useCaseClass.newInstance();
+                running.put(useCaseClass, useCase);
+                useCase.state = State.CREATED;
+            } catch (InstantiationException e) {
+                e.printStackTrace();
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return useCase;
+    }
+
+    protected UseCase() {
 
         if (subscriptions.get(this.getClass()) == null)
             subscriptions.put(this.getClass(), new ArrayList<UseCaseListener<? extends Result>>());
@@ -95,7 +121,13 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
         }
     }
 
+    /**
+     * Executes this use case instance if it is only in a create state
+     * @param request The use case request
+     */
     public void execute(final Rq request) {
+
+        if (!isExecutable()) return;
 
         this.request = request;
 
@@ -115,13 +147,16 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
             executeOnObservable();
     }
 
+    private boolean isExecutable() {
+        return state == State.CREATED || state == State.IN_PROGRESS;
+    }
+
     private void executeOnObservable() {
 
         observer.onNext(new Update(Type.START));
 
-        if (inProgress.get(UseCase.this.getClass()) == null) {
-
-            inProgress.put(UseCase.this.getClass(), UseCase.this);
+        if (state != State.IN_PROGRESS) {
+            state = State.IN_PROGRESS;
 
             if (!prerequisites.isEmpty()) {
                 prerequisiteIndex = 0;
@@ -151,23 +186,17 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
         final Prerequisite prerequisite = prerequisites.get(prerequisiteIndex);
 
         if (prerequisite.condition) {
-            try {
-                final UseCase prerequisiteUseCase = prerequisite.useCase.newInstance();
-                //noinspection unchecked
-                prerequisiteUseCase.subscribe(prerequisite.listener);
-                //noinspection unchecked
-                subscribe(prerequisite.useCase, new SimpleDisposableUseCaseListener<Result>() {
-                    @Override
-                    public void onComplete() {
-                        executeNextPrerequisite();
-                    }
-                });
-                prerequisiteUseCase.execute();
-
-            } catch (InstantiationException | IllegalAccessException e) {
-                // TODO recover or report error
-                e.printStackTrace();
-            }
+            final UseCase prerequisiteUseCase = UseCase.fetch(prerequisite.useCase);
+            //noinspection unchecked
+            prerequisiteUseCase.subscribe(prerequisite.listener);
+            //noinspection unchecked
+            subscribe(prerequisite.useCase, new SimpleDisposableUseCaseListener<Result>() {
+                @Override
+                public void onComplete() {
+                    executeNextPrerequisite();
+                }
+            });
+            prerequisiteUseCase.execute();
         } else {
             executeNextPrerequisite();
         }
@@ -221,7 +250,8 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
             switch (update.type) {
                 case START:
                     for (UseCaseListener listener : subscriptions.get(UseCase.this.getClass())) {
-                        if (!consumedStarts.get(UseCase.this.getClass()).contains(listener)) listener.onStart();
+                        if (!consumedStarts.get(UseCase.this.getClass()).contains(listener))
+                            listener.onStart();
                         consumedStarts.get(UseCase.this.getClass()).add(listener);
                     }
                     break;
@@ -311,19 +341,22 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
     }
 
     public static void clearAllInProgress() {
-        inProgress.clear();
+        for (UseCase useCase : running.values())
+            useCase.state = State.DEAD;
+        running.clear();
     }
 
     protected void finish() {
 
-        inProgress.remove(UseCase.this.getClass());
+        state = State.DEAD;
+        running.remove(UseCase.this.getClass());
         observer.onNext(new Update(Type.COMPLETE));
         onPostExecute();
     }
 
     public static void cancel(Class<? extends UseCase> useCaseClass) {
 
-        UseCase useCase = inProgress.get(useCaseClass);
+        UseCase useCase = running.get(useCaseClass);
         if (useCase != null)
             useCase.cancel();
     }
@@ -333,12 +366,13 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
         for (UseCaseListener listener : subscriptions.get(this.getClass()))
             listener.onCancel();
 
-        inProgress.remove(this.getClass());
+        state = State.DEAD;
+        running.remove(this.getClass());
     }
 
     protected void requestInput(int code) {
 
-        inProgress.remove(this.getClass());
+        state = State.CREATED;
         observer.onNext(new Update(INPUT, code));
     }
 

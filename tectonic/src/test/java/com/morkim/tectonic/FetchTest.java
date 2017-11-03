@@ -2,8 +2,7 @@ package com.morkim.tectonic;
 
 import android.support.annotation.NonNull;
 
-import com.morkim.tectonic.entities.MultipleResultsUseCase;
-import com.morkim.tectonic.entities.TestResult;
+import com.morkim.tectonic.entities.CreatedTestUseCase;
 import com.morkim.tectonic.entities.TestUseCase;
 
 import org.junit.Before;
@@ -19,12 +18,9 @@ import io.reactivex.plugins.RxJavaPlugins;
 import io.reactivex.schedulers.Schedulers;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotEquals;
 
-public class ResultsTest extends TecTonicTest {
-
-	private TestResult updateResult;
-	private int resultCount;
+public class FetchTest extends TecTonicTest {
 
 	@BeforeClass
 	public static void setupClass() {
@@ -47,44 +43,29 @@ public class ResultsTest extends TecTonicTest {
 	@Before
 	public void setup() {
 
-		updateResult = null;
-		resultCount = 0;
+		UseCase.unsubscribeAll();
 	}
 
 	@Test
-	public void execute_resultReturned() throws Exception {
+	public void fetchCreatedUseCase_returnsOldUseCase() throws Exception {
+
+		CreatedTestUseCase useCase = UseCase.fetch(CreatedTestUseCase.class);
+		useCase.execute();
+
+		CreatedTestUseCase useCase2 = UseCase.fetch(CreatedTestUseCase.class);
+
+		assertEquals(useCase, useCase2);
+	}
+
+	@Test
+	public void fetchCompletedUseCase_returnsNewUseCase() throws Exception {
 
 		TestUseCase useCase = UseCase.fetch(TestUseCase.class);
-		useCase.subscribe(new SimpleUseCaseListener<TestResult>() {
-			@Override
-			public void onUpdate(TestResult result) {
-				updateResult = result;
-				resultCount++;
-			}
-		});
-
 		useCase.execute();
 
-		assertNotNull(updateResult);
-		assertEquals(1, resultCount);
-	}
+		TestUseCase useCase2 = UseCase.fetch(TestUseCase.class);
 
-	@Test
-	public void executeMultipleResults_multipleResultsReturned() throws Exception {
-
-		MultipleResultsUseCase useCase = UseCase.fetch(MultipleResultsUseCase.class);
-		useCase.subscribe(new SimpleUseCaseListener<TestResult>() {
-			@Override
-			public void onUpdate(TestResult result) {
-				updateResult = result;
-				resultCount++;
-			}
-		});
-
-		useCase.execute();
-
-		assertNotNull(updateResult);
-		assertEquals(2, resultCount);
+		assertNotEquals(useCase, useCase2);
 	}
 
 }

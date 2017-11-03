@@ -2,9 +2,12 @@ package com.morkim.tectonic;
 
 import android.support.annotation.NonNull;
 
+import com.morkim.tectonic.entities.CancelCancelledPrerequisiteTestUseCase;
 import com.morkim.tectonic.entities.CancelledPrerequisiteTestUseCase;
+import com.morkim.tectonic.entities.CancelledTestUseCase;
 import com.morkim.tectonic.entities.PendingActionRequest;
 import com.morkim.tectonic.entities.PendingActionTestUseCase;
+import com.morkim.tectonic.entities.CancelPendingPrerequisiteTestUseCase;
 import com.morkim.tectonic.entities.TestResult;
 import com.morkim.tectonic.entities.TestUseCase;
 
@@ -25,10 +28,8 @@ import static org.junit.Assert.assertNotEquals;
 
 public class CancelTest extends TecTonicTest {
 
-	private long prerequisiteTimeStamp;
 	private long mainTimeStamp;
 	private int onCancelMainCount;
-	private int onCancelPrerequisiteCount;
 
 	@BeforeClass
 	public static void setupClass() {
@@ -54,10 +55,8 @@ public class CancelTest extends TecTonicTest {
 		UseCase.unsubscribeAll();
 		UseCase.clearAllInProgress();
 
-		prerequisiteTimeStamp = 0;
 		mainTimeStamp = 0;
 		onCancelMainCount = 0;
-		onCancelPrerequisiteCount = 0;
 	}
 
 	@Test
@@ -65,7 +64,7 @@ public class CancelTest extends TecTonicTest {
 
 		TestUseCase useCase;
 
-		useCase = new Main3TestUseCase();
+		useCase = UseCase.fetch(CancelledTestUseCase.class);
 		useCase.subscribe(new SimpleUseCaseListener<TestResult>() {
 			@Override
 			public void onComplete() {
@@ -88,7 +87,7 @@ public class CancelTest extends TecTonicTest {
 
 		TestUseCase useCase;
 
-		useCase = new Main3TestUseCase();
+		useCase = UseCase.fetch(CancelledTestUseCase.class);
 		useCase.subscribe(new SimpleUseCaseListener<TestResult>() {
 			@Override
 			public void onComplete() {
@@ -102,7 +101,7 @@ public class CancelTest extends TecTonicTest {
 		});
 		useCase.execute();
 
-		UseCase.cancel(Main3TestUseCase.class);
+		UseCase.cancel(CancelledTestUseCase.class);
 
 		assertEquals(0, mainTimeStamp);
 		assertEquals(1, onCancelMainCount);
@@ -111,9 +110,9 @@ public class CancelTest extends TecTonicTest {
 	@Test
 	public void cancelPrerequisite_mainInProgress() throws Exception {
 
-		TestUseCase useCase;
+		CancelCancelledPrerequisiteTestUseCase useCase;
 
-		useCase = new Main1TestUseCase();
+		useCase = UseCase.fetch(CancelCancelledPrerequisiteTestUseCase.class);
 		useCase.subscribe(new SimpleUseCaseListener<TestResult>() {
 			@Override
 			public void onComplete() {
@@ -122,16 +121,16 @@ public class CancelTest extends TecTonicTest {
 		});
 		useCase.execute();
 
-		assertNotEquals(0, prerequisiteTimeStamp);
+		assertNotEquals(0, useCase.getPrerequisiteTimeStamp());
 		assertEquals(0, mainTimeStamp);
 	}
 
 	@Test
 	public void cancelPrerequisiteExternally_mainInProgress() throws Exception {
 
-		TestUseCase useCase;
+		CancelPendingPrerequisiteTestUseCase useCase;
 
-		useCase = new Main2TestUseCase();
+		useCase = UseCase.fetch(CancelPendingPrerequisiteTestUseCase.class);
 		useCase.subscribe(new SimpleUseCaseListener<TestResult>() {
 			@Override
 			public void onComplete() {
@@ -142,16 +141,16 @@ public class CancelTest extends TecTonicTest {
 
 		UseCase.cancel(PendingActionTestUseCase.class);
 
-		assertNotEquals(0, prerequisiteTimeStamp);
+		assertNotEquals(0, useCase.getPrerequisiteTimeStamp());
 		assertEquals(0, mainTimeStamp);
 	}
 
 	@Test
 	public void cancelPrerequisiteTwice_onlyOneOnCancelCallback() throws Exception {
 
-		TestUseCase useCase;
+		CancelCancelledPrerequisiteTestUseCase useCase;
 
-		useCase = new Main1TestUseCase();
+		useCase = UseCase.fetch(CancelCancelledPrerequisiteTestUseCase.class);
 		useCase.subscribe(new SimpleUseCaseListener<TestResult>() {
 			@Override
 			public void onComplete() {
@@ -162,7 +161,7 @@ public class CancelTest extends TecTonicTest {
 
 		UseCase.cancel(CancelledPrerequisiteTestUseCase.class);
 
-		assertEquals(1, onCancelPrerequisiteCount);
+		assertEquals(1, useCase.getOnCancelPrerequisiteCount());
 	}
 
 	@Test
@@ -170,7 +169,7 @@ public class CancelTest extends TecTonicTest {
 
 		TestUseCase useCase;
 
-		useCase = new TestUseCase();
+		useCase = UseCase.fetch(TestUseCase.class);
 		useCase.subscribe(new SimpleUseCaseListener<TestResult>() {
 			@Override
 			public void onComplete() {
@@ -194,7 +193,7 @@ public class CancelTest extends TecTonicTest {
 
 		TestUseCase useCase;
 
-		useCase = new Main2TestUseCase();
+		useCase = UseCase.fetch(CancelPendingPrerequisiteTestUseCase.class);
 		useCase.subscribe(new SimpleUseCaseListener<TestResult>() {
 			@Override
 			public void onComplete() {
@@ -205,51 +204,10 @@ public class CancelTest extends TecTonicTest {
 
 		UseCase.cancel(PendingActionTestUseCase.class);
 
-		PendingActionTestUseCase prerequisiteUseCase = new PendingActionTestUseCase();
+		PendingActionTestUseCase prerequisiteUseCase = UseCase.fetch(PendingActionTestUseCase.class);
 		prerequisiteUseCase.execute(new PendingActionRequest.Builder().build());
 
 		assertNotEquals(0, mainTimeStamp);
 	}
 
-	private class Main1TestUseCase extends TestUseCase {
-
-		@Override
-		protected void onAddPrerequisites() {
-
-			addPrerequisite(
-					CancelledPrerequisiteTestUseCase.class,
-					new SimpleUseCaseListener<TestResult>() {
-						@Override
-						public void onCancel() {
-							prerequisiteTimeStamp = System.nanoTime();
-							onCancelPrerequisiteCount++;
-						}
-					});
-		}
-	}
-
-	private class Main2TestUseCase extends TestUseCase {
-
-		@Override
-		protected void onAddPrerequisites() {
-
-			addPrerequisite(
-					PendingActionTestUseCase.class,
-					new SimpleUseCaseListener<TestResult>() {
-						@Override
-						public void onCancel() {
-							prerequisiteTimeStamp = System.nanoTime();
-							onCancelPrerequisiteCount++;
-						}
-					});
-		}
-	}
-
-	private class Main3TestUseCase extends TestUseCase {
-
-		@Override
-		protected void onExecute(Request request) {
-			cancel();
-		}
-	}
 }

@@ -2,9 +2,8 @@ package com.morkim.tectonic;
 
 import android.support.annotation.NonNull;
 
-import com.morkim.tectonic.entities.PrerequisiteTestUseCase;
+import com.morkim.tectonic.entities.HasPrerequisitesTestUseCase;
 import com.morkim.tectonic.entities.TestResult;
-import com.morkim.tectonic.entities.TestUseCase;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -24,9 +23,6 @@ import static org.junit.Assert.assertTrue;
 
 public class PrerequisiteTest extends TecTonicTest {
 
-	private long prerequisite1TimeStamp;
-	private long prerequisite2TimeStamp;
-	private long prerequisite3TimeStamp;
 	private long mainTimeStamp;
 
 	@BeforeClass
@@ -50,18 +46,15 @@ public class PrerequisiteTest extends TecTonicTest {
 	@Before
 	public void setup() {
 
-		prerequisite1TimeStamp = 0;
-		prerequisite2TimeStamp = 0;
-		prerequisite3TimeStamp = 0;
 		mainTimeStamp = 0;
 	}
 
 	@Test
 	public void execute_prerequisitesExecuted() throws Exception {
 
-		TestUseCase useCase;
+		HasPrerequisitesTestUseCase useCase;
 
-		useCase = new MainTestUseCase();
+		useCase = UseCase.fetch(HasPrerequisitesTestUseCase.class);
 		useCase.subscribe(new SimpleUseCaseListener<TestResult>() {
 			@Override
 			public void onComplete() {
@@ -70,21 +63,21 @@ public class PrerequisiteTest extends TecTonicTest {
 		});
 		useCase.execute();
 
-		assertNotEquals(0, prerequisite1TimeStamp);
-		assertEquals(0, prerequisite2TimeStamp);
-		assertNotEquals(0, prerequisite3TimeStamp);
+		assertNotEquals(0, useCase.getPrerequisite1TimeStamp());
+		assertEquals(0, useCase.getPrerequisite2TimeStamp());
+		assertNotEquals(0, useCase.getPrerequisite3TimeStamp());
 		assertNotEquals(0, mainTimeStamp);
-		assertTrue(prerequisite1TimeStamp < mainTimeStamp);
-		assertTrue(prerequisite1TimeStamp < prerequisite3TimeStamp);
-		assertTrue(prerequisite3TimeStamp < mainTimeStamp);
+		assertTrue(useCase.getPrerequisite1TimeStamp() < mainTimeStamp);
+		assertTrue(useCase.getPrerequisite1TimeStamp() < useCase.getPrerequisite3TimeStamp());
+		assertTrue(useCase.getPrerequisite3TimeStamp() < mainTimeStamp);
 	}
 
 	@Test
 	public void reexecute_prerequisitesExecuted() throws Exception {
 
-		TestUseCase useCase;
+		HasPrerequisitesTestUseCase useCase;
 
-		useCase = new MainTestUseCase();
+		useCase = UseCase.fetch(HasPrerequisitesTestUseCase.class);
 		useCase.subscribe(new SimpleUseCaseListener<TestResult>() {
 			@Override
 			public void onComplete() {
@@ -92,55 +85,18 @@ public class PrerequisiteTest extends TecTonicTest {
 			}
 		}).execute();
 
-		prerequisite1TimeStamp = 0;
-		prerequisite2TimeStamp = 0;
-		prerequisite3TimeStamp = 0;
 		mainTimeStamp = 0;
 
+		useCase = UseCase.fetch(HasPrerequisitesTestUseCase.class);
 		useCase.execute();
 
-		assertNotEquals(0, prerequisite1TimeStamp);
-		assertEquals(0, prerequisite2TimeStamp);
-		assertNotEquals(0, prerequisite3TimeStamp);
+		assertNotEquals(0, useCase.getPrerequisite1TimeStamp());
+		assertEquals(0, useCase.getPrerequisite2TimeStamp());
+		assertNotEquals(0, useCase.getPrerequisite3TimeStamp());
 		assertNotEquals(0, mainTimeStamp);
-		assertTrue(prerequisite1TimeStamp < mainTimeStamp);
-		assertTrue(prerequisite1TimeStamp < prerequisite3TimeStamp);
-		assertTrue(prerequisite3TimeStamp < mainTimeStamp);
-	}
-
-	private class MainTestUseCase extends TestUseCase {
-
-		@Override
-		protected void onAddPrerequisites() {
-
-			addPrerequisite(
-					PrerequisiteTestUseCase.class,
-					new SimpleUseCaseListener<TestResult>() {
-						@Override
-						public void onComplete() {
-							prerequisite1TimeStamp = System.nanoTime();
-						}
-					});
-
-			addPrerequisite(
-					TestUseCase.class,
-					false,
-					new SimpleUseCaseListener<TestResult>() {
-						@Override
-						public void onComplete() {
-							prerequisite2TimeStamp = System.nanoTime();
-						}
-					});
-
-			addPrerequisite(
-					TestUseCase.class,
-					new SimpleUseCaseListener<TestResult>() {
-						@Override
-						public void onComplete() {
-							prerequisite3TimeStamp = System.nanoTime();
-						}
-					});
-		}
+		assertTrue(useCase.getPrerequisite1TimeStamp() < mainTimeStamp);
+		assertTrue(useCase.getPrerequisite1TimeStamp() < useCase.getPrerequisite3TimeStamp());
+		assertTrue(useCase.getPrerequisite3TimeStamp() < mainTimeStamp);
 	}
 
 }

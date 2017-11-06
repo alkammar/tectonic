@@ -73,6 +73,7 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
         if (useCase == null) {
             try {
                 useCase = useCaseClass.newInstance();
+                useCase.onAddPrerequisites();
                 running.put(useCaseClass, useCase);
                 useCase.state = State.CREATED;
             } catch (InstantiationException e) {
@@ -94,7 +95,6 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
             consumedStarts.put(this.getClass(), new ArrayList<UseCaseListener<? extends Result>>());
 
         prerequisites = new ArrayList<>();
-        onAddPrerequisites();
     }
 
     public void execute() {
@@ -186,18 +186,18 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
     protected abstract void onExecute(Rq request);
 
     protected void addPrerequisite(Class<? extends UseCase> useCase) {
-        addPrerequisite(useCase, true, null);
+        addPrerequisite(true, useCase, null);
     }
 
     protected void addPrerequisite(Class<? extends UseCase> useCase, UseCaseListener listener) {
-        addPrerequisite(useCase, true, listener);
+        addPrerequisite(true, useCase, listener);
     }
 
-    protected void addPrerequisite(Class<? extends UseCase> useCase, boolean condition) {
-        addPrerequisite(useCase, condition, null);
+    protected void addPrerequisite(boolean condition, Class<? extends UseCase> useCase) {
+        addPrerequisite(condition, useCase, null);
     }
 
-    protected void addPrerequisite(Class<? extends UseCase> useCase, boolean condition, UseCaseListener listener) {
+    protected void addPrerequisite(boolean condition, Class<? extends UseCase> useCase, UseCaseListener listener) {
         prerequisites.add(new Prerequisite(useCase, condition, listener));
     }
 

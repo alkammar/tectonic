@@ -21,8 +21,7 @@ public class HasPrerequisitesTestUseCase extends TestUseCase {
                 });
 
         addPrerequisite(
-                TestUseCase.class,
-                false,
+                false, TestUseCase.class,
                 new SimpleUseCaseListener<TestResult>() {
                     @Override
                     public void onComplete() {

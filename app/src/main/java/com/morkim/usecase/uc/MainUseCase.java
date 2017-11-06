@@ -1,32 +1,29 @@
 package com.morkim.usecase.uc;
 
 import android.os.SystemClock;
-import android.util.Log;
 
 import com.morkim.tectonic.Request;
 import com.morkim.tectonic.UseCase;
+import com.morkim.usecase.di.AppInjector;
 import com.morkim.usecase.model.Profile;
+
+import javax.inject.Inject;
 
 
 public class MainUseCase extends UseCase<Request, MainUseCaseResult> {
 
-    Profile profile = new Profile();
+    @Inject
+    Profile profile = AppInjector.getAppComponent().getProfile();
 
     @Override
     protected void onAddPrerequisites() {
         super.onAddPrerequisites();
 
-        profile = new Profile();
-
-        addPrerequisite(
-                AuthenticateLogin.class,
-                !profile.isLoggedIn());
+        addPrerequisite(!profile.isLoggedIn(), AuthenticateLogin.class);
     }
 
     @Override
     protected void onExecute(Request request) {
-
-        Log.i(this.getClass().getSimpleName(), "onExecute : " + Thread.currentThread().getName());
 
         for (int i = 0; i < 10; i++) {
             SystemClock.sleep(1000);
@@ -41,5 +38,10 @@ public class MainUseCase extends UseCase<Request, MainUseCaseResult> {
         updateSubscribers(result);
 
         finish();
+    }
+
+    @Override
+    protected boolean supportsCaching() {
+        return true;
     }
 }

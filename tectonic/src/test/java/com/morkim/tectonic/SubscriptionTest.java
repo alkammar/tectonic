@@ -18,12 +18,16 @@ import io.reactivex.functions.Function;
 import io.reactivex.plugins.RxJavaPlugins;
 import io.reactivex.schedulers.Schedulers;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class SubscriptionTest extends TecTonicTest {
 
 	private boolean isSubscriptionExecuted;
+
+	private int normalCount;
+	private int disposableCount;
 
 	@BeforeClass
 	public static void setupClass() {
@@ -133,6 +137,49 @@ public class SubscriptionTest extends TecTonicTest {
 		useCase.execute();
 
 		assertTrue(isSubscriptionExecuted);
+	}
+
+	@Test
+	public void subscribeDisposable() throws Exception {
+
+		UseCase.fetch(TestUseCase.class)
+				.subscribe(new SimpleUseCaseListener<TestResult>() {
+					@Override
+					public void onComplete() {
+						normalCount++;
+					}
+				})
+				.subscribe(new SimpleDisposableUseCaseListener<TestResult>() {
+					@Override
+					public void onComplete() {
+						disposableCount++;
+					}
+				})
+				.subscribe(new SimpleDisposableUseCaseListener<TestResult>() {
+					@Override
+					public void onComplete() {
+						disposableCount++;
+					}
+				})
+				.subscribe(new SimpleUseCaseListener<TestResult>() {
+					@Override
+					public void onComplete() {
+						normalCount++;
+					}
+				})
+				.subscribe(new SimpleDisposableUseCaseListener<TestResult>() {
+					@Override
+					public void onComplete() {
+						disposableCount++;
+					}
+				})
+				.execute();
+
+		UseCase.fetch(TestUseCase.class)
+				.execute();
+
+		assertEquals(4, normalCount);
+		assertEquals(3, disposableCount);
 	}
 
 }

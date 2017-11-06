@@ -58,6 +58,14 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
         DEAD,
     }
 
+    /**
+     * This will fetch the use case if it is already running, otherwise this will create
+     * a new instance of the use case
+     *
+     * @param useCaseClass The use case class that needs to be fetched
+     * @param <U> Use case type
+     * @return The fetched use case
+     */
     public static <U extends UseCase> U fetch(Class<U> useCaseClass) {
 
         //noinspection unchecked
@@ -122,7 +130,7 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
     }
 
     /**
-     * Executes this use case instance if it is only in a create state
+     * Executes this use case instance if it is only executable
      * @param request The use case request
      */
     public void execute(final Rq request) {
@@ -212,13 +220,17 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
         }
     }
 
+    /**
+     * Executes the use case in cached mode, where if a cached result exists it is returned with
+     * executing the use case otherwise if a result does not exist the use case will be executed
+     */
     public void executeCached() {
         executeCached(null);
     }
 
     public void executeCached(final Rq request) {
 
-        if (isCachable()) {
+        if (supportsCaching()) {
             Observable.create(new ObservableOnSubscribe<Update>() {
                 @Override
                 public void subscribe(@NonNull ObservableEmitter<Update> e) throws Exception {
@@ -277,7 +289,7 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
 
                         if (listener instanceof DisposableUseCaseListener) {
                             useCaseSubscriptions.remove(listener);
-                            i++;
+                            i--;
                         }
                         consumedStarts.get(UseCase.this.getClass()).remove(listener);
                     }
@@ -290,24 +302,47 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
         }
     };
 
-    protected boolean isCachable() {
+    protected boolean supportsCaching() {
         return false;
     }
 
+    /**
+     * Subscribes a {@link UseCaseListener} to this use case. The subscribed listener will stay
+     * subscribed to the use case even after the use case has completed.
+     * The subscriber will have to be un-subscribed in order not receive further updates.
+     *
+     * @param useCaseListener Subscriber listener
+     * @return The subscribed use case
+     */
     public UseCase<Rq, Rs> subscribe(UseCaseListener<Rs> useCaseListener) {
         subscribe(this.getClass(), useCaseListener);
 
         return this;
     }
 
+    /**
+     * Broadcasts a use case update to all subscribers
+     *
+     * @param result Update result
+     */
     protected void updateSubscribers(Rs result) {
         observer.onNext(new Update(UPDATE, result));
     }
 
+    /**
+     * Un-subscribes a use listener from this use case instance
+     *
+     * @param useCaseListener Un-subscriber listener
+     */
     public void unsubscribe(UseCaseListener<Rs> useCaseListener) {
         unsubscribe(this.getClass(), useCaseListener);
     }
 
+    /**
+     * Clears cached results for this use case
+     *
+     * @param useCaseClass The use case to its clear cache
+     */
     public static void clearCache(Class<? extends UseCase> useCaseClass) {
         cachedResults.remove(useCaseClass);
     }
@@ -346,6 +381,10 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
         running.clear();
     }
 
+    /**
+     * Marks the use case as completed, changing its state to DEAD and broadcasting
+     * the {@link com.morkim.tectonic.UseCaseListener#onComplete} callback to subscribers.
+     */
     protected void finish() {
 
         state = State.DEAD;

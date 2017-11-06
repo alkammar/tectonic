@@ -38,6 +38,9 @@ public class HasPrerequisitesTestUseCase extends TestUseCase {
                         prerequisite3TimeStamp = System.nanoTime();
                     }
                 });
+
+        addPrerequisite(
+                TestUseCase.class);
     }
 
     public long getPrerequisite1TimeStamp() {

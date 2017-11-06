@@ -19,7 +19,7 @@ import io.reactivex.schedulers.Schedulers;
 import static com.morkim.tectonic.UseCase.Type.INPUT;
 import static com.morkim.tectonic.UseCase.Type.UPDATE;
 
-@SuppressWarnings("WeakerAccess")
+@SuppressWarnings({"WeakerAccess", "unused"})
 public abstract class UseCase<Rq extends Request, Rs extends Result> {
 
     private Rq request;
@@ -63,7 +63,7 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
      * a new instance of the use case
      *
      * @param useCaseClass The use case class that needs to be fetched
-     * @param <U> Use case type
+     * @param <U>          Use case type
      * @return The fetched use case
      */
     public static <U extends UseCase> U fetch(Class<U> useCaseClass) {
@@ -131,6 +131,7 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
 
     /**
      * Executes this use case instance if it is only executable
+     *
      * @param request The use case request
      */
     public void execute(final Rq request) {
@@ -139,20 +140,23 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
 
         this.request = request;
 
-        if (observer == null)
-            Observable.create(new ObservableOnSubscribe<Update>() {
-                @Override
-                public void subscribe(@NonNull ObservableEmitter<Update> e) throws Exception {
+//        if (observer == null) {
+        Observable.create(new ObservableOnSubscribe<Update>() {
+            @Override
+            public void subscribe(@NonNull ObservableEmitter<Update> e) throws Exception {
 
-                    UseCase.this.observer = e;
-                    executeOnObservable();
+                UseCase.this.observer = e;
+                executeOnObservable();
 
-                }
-            }).observeOn(AndroidSchedulers.mainThread())
-                    .subscribeOn(Schedulers.io())
-                    .subscribe(onNext);
-        else
-            executeOnObservable();
+            }
+        }).observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(Schedulers.io())
+                .subscribe(onNext);
+//        }
+//        else {
+//            observer
+//            executeOnObservable();
+//        }
     }
 
     private boolean isExecutable() {
@@ -181,8 +185,16 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
 
     protected abstract void onExecute(Rq request);
 
+    protected void addPrerequisite(Class<? extends UseCase> useCase) {
+        addPrerequisite(useCase, true, null);
+    }
+
     protected void addPrerequisite(Class<? extends UseCase> useCase, UseCaseListener listener) {
         addPrerequisite(useCase, true, listener);
+    }
+
+    protected void addPrerequisite(Class<? extends UseCase> useCase, boolean condition) {
+        addPrerequisite(useCase, condition, null);
     }
 
     protected void addPrerequisite(Class<? extends UseCase> useCase, boolean condition, UseCaseListener listener) {
@@ -195,15 +207,24 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
 
         if (prerequisite.condition) {
             final UseCase prerequisiteUseCase = UseCase.fetch(prerequisite.useCase);
+            if (prerequisite.listener != null)
+                //noinspection unchecked
+                prerequisiteUseCase.subscribe(prerequisite.listener);
             //noinspection unchecked
-            prerequisiteUseCase.subscribe(prerequisite.listener);
-            //noinspection unchecked
-            subscribe(prerequisite.useCase, new SimpleDisposableUseCaseListener<Result>() {
-                @Override
-                public void onComplete() {
-                    executeNextPrerequisite();
-                }
-            });
+            subscribe(prerequisite.useCase,
+                    new SimpleDisposableUseCaseListener<Result>() {
+                        @Override
+                        public void onComplete() {
+                            Observable.create(new ObservableOnSubscribe<Update>() {
+                                @Override
+                                public void subscribe(@NonNull ObservableEmitter<Update> e) throws Exception {
+                                    executeNextPrerequisite();
+                                }
+                            }).observeOn(AndroidSchedulers.mainThread())
+                                    .subscribeOn(Schedulers.io())
+                                    .subscribe();
+                        }
+                    });
             prerequisiteUseCase.execute();
         } else {
             executeNextPrerequisite();

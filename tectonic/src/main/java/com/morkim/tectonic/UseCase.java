@@ -4,6 +4,7 @@ package com.morkim.tectonic;
 import android.util.SparseArray;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,16 +28,30 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
     private ObservableEmitter<Update> observer;
     protected State state = State.NOT_CREATED;
 
-    private class Prerequisite {
+    protected class Prerequisite {
 
         Class<? extends UseCase> useCase;
         UseCaseListener listener;
-        boolean condition;
+        Precondition precondition;
 
-        Prerequisite(Class<? extends UseCase> useCase, boolean condition, UseCaseListener listener) {
+        Prerequisite(Class<? extends UseCase> useCase, Precondition precondition, UseCaseListener listener) {
 
             this.useCase = useCase;
-            this.condition = condition;
+            this.precondition = precondition;
+            this.listener = listener;
+        }
+
+        public Prerequisite(Precondition precondition) {
+            this.precondition = precondition;
+        }
+
+        public Prerequisite otherwiseExecute(Class<? extends UseCase> useCase) {
+
+            this.useCase = useCase;
+            return this;
+        }
+
+        public void subscribe(UseCaseListener listener) {
             this.listener = listener;
         }
     }
@@ -112,10 +127,10 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
 
         Type type;
         Rs result;
-        int code;
+        Integer[] codes;
 
         Update(Type type) {
-            this(type, null);
+            this(type, (Rs) null);
         }
 
         Update(Type type, Rs result) {
@@ -123,9 +138,9 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
             this.result = result;
         }
 
-        Update(Type type, int code) {
+        Update(Type type, Integer[] codes) {
             this.type = type;
-            this.code = code;
+            this.codes = codes;
         }
     }
 
@@ -140,7 +155,6 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
 
         this.request = request;
 
-//        if (observer == null) {
         Observable.create(new ObservableOnSubscribe<Update>() {
             @Override
             public void subscribe(@NonNull ObservableEmitter<Update> e) throws Exception {
@@ -152,11 +166,6 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
         }).observeOn(AndroidSchedulers.mainThread())
                 .subscribeOn(Schedulers.io())
                 .subscribe(onNext);
-//        }
-//        else {
-//            observer
-//            executeOnObservable();
-//        }
     }
 
     private boolean isExecutable() {
@@ -183,29 +192,35 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
 
     }
 
+//    protected Prerequisite checkIf(boolean precondition) {
+//        Prerequisite prerequisite = new Prerequisite(precondition);
+//        prerequisites.add(prerequisite);
+//        return prerequisite;
+//    }
+
     protected abstract void onExecute(Rq request);
 
     protected void addPrerequisite(Class<? extends UseCase> useCase) {
-        addPrerequisite(true, useCase, null);
+        addPrerequisite(Precondition.TRUE_PRECONDITION, useCase, null);
     }
 
     protected void addPrerequisite(Class<? extends UseCase> useCase, UseCaseListener listener) {
-        addPrerequisite(true, useCase, listener);
+        addPrerequisite(Precondition.TRUE_PRECONDITION, useCase, listener);
     }
 
-    protected void addPrerequisite(boolean condition, Class<? extends UseCase> useCase) {
-        addPrerequisite(condition, useCase, null);
+    protected void addPrerequisite(Precondition precondition, Class<? extends UseCase> useCase) {
+        addPrerequisite(precondition, useCase, null);
     }
 
-    protected void addPrerequisite(boolean condition, Class<? extends UseCase> useCase, UseCaseListener listener) {
-        prerequisites.add(new Prerequisite(useCase, condition, listener));
+    protected void addPrerequisite(Precondition precondition, Class<? extends UseCase> useCase, UseCaseListener listener) {
+        prerequisites.add(new Prerequisite(useCase, precondition, listener));
     }
 
     private void executePrerequisite() {
 
         final Prerequisite prerequisite = prerequisites.get(prerequisiteIndex);
 
-        if (prerequisite.condition) {
+        if (prerequisite.precondition.onEvaluate()) {
             final UseCase prerequisiteUseCase = UseCase.fetch(prerequisite.useCase);
             if (prerequisite.listener != null)
                 //noinspection unchecked
@@ -261,19 +276,25 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
                     if (cachedResults.get(UseCase.this.getClass()) == null)
                         cachedResults.put(UseCase.this.getClass(), new SparseArray<Result>());
                     //noinspection unchecked
-                    Rs result = (Rs) cachedResults.get(UseCase.this.getClass())
+                    final Rs result = (Rs) cachedResults.get(UseCase.this.getClass())
                             .get(request == null ? Request.NO_ID : request.id());
-                    if (result != null)
-                        updateSubscribers(result);
-                    else
+                    if (isCachedExecutable(result)) {
+                        e.onNext(new Update(Type.START));
+                        e.onNext(new Update(Type.UPDATE, result));
+                        e.onNext(new Update(Type.COMPLETE));
+                    } else
                         execute(request);
-
                 }
             }).observeOn(AndroidSchedulers.mainThread())
                     .subscribeOn(Schedulers.io())
                     .subscribe(onNext);
         } else
             execute(request);
+    }
+
+    private boolean isCachedExecutable(Rs result) {
+        return (state == State.DEAD || state == State.CREATED) &&
+                result != null;
     }
 
     private Consumer<Update> onNext = new Consumer<Update>() {
@@ -285,6 +306,7 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
                     for (UseCaseListener listener : subscriptions.get(UseCase.this.getClass())) {
                         if (!consumedStarts.get(UseCase.this.getClass()).contains(listener))
                             listener.onStart();
+                        //noinspection unchecked
                         consumedStarts.get(UseCase.this.getClass()).add(listener);
                     }
                     break;
@@ -316,8 +338,11 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
                     }
                     break;
                 case INPUT:
-                    for (UseCaseListener listener : subscriptions.get(UseCase.this.getClass()))
-                        listener.onInputRequired(update.code);
+                    List<UseCaseListener<? extends Result>> useCaseListeners = subscriptions.get(UseCase.this.getClass());
+                    for (int i = useCaseListeners.size() - 1; i >= 0; i--) {
+                        if (useCaseListeners.get(i).onInputRequired(Arrays.asList(update.codes)))
+                            break;
+                    }
                     break;
             }
         }
@@ -430,10 +455,32 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
         running.remove(this.getClass());
     }
 
-    protected void requestInput(int code) {
+    protected void requestInput(Integer ... codes) {
 
         state = State.CREATED;
-        observer.onNext(new Update(INPUT, code));
+        observer.onNext(new Update(INPUT, codes));
+    }
+
+    protected RequiredInputs startInputValidation() {
+        return new RequiredInputs();
+    }
+
+    protected class RequiredInputs {
+
+        private List<Integer> inputs = new ArrayList<>();
+
+        public RequiredInputs check(boolean condition, int code) {
+
+            if (condition) inputs.add(code);
+
+            return this;
+        }
+
+        public boolean validate() {
+            boolean valid = inputs.size() == 0;
+            if (!valid) requestInput(inputs.toArray(new Integer[0]));
+            return valid;
+        }
     }
 
     protected void onPostExecute() {

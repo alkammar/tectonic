@@ -26,6 +26,9 @@ public class CacheTest extends TecTonicTest {
 	private Result originalResult;
 	private Result cachedResult;
 
+	private int onStartCachedCalled;
+	private int onCompleteCachedCalled;
+
 	@BeforeClass
 	public static void setupClass() {
 
@@ -51,6 +54,8 @@ public class CacheTest extends TecTonicTest {
 
 		originalResult = null;
 		cachedResult = null;
+		onStartCachedCalled = 0;
+		onCompleteCachedCalled = 0;
 	}
 
 	@Test
@@ -70,6 +75,8 @@ public class CacheTest extends TecTonicTest {
 		useCase.execute();
 
 		assertNotEquals(originalResult, cachedResult);
+		assertEquals(1, onStartCachedCalled);
+		assertEquals(1, onCompleteCachedCalled);
 	}
 
 	@Test
@@ -89,6 +96,8 @@ public class CacheTest extends TecTonicTest {
 		useCase.executeCached();
 
 		assertNotEquals(originalResult, cachedResult);
+		assertEquals(0, onStartCachedCalled);
+		assertEquals(0, onCompleteCachedCalled);
 	}
 
 	@Test
@@ -105,6 +114,8 @@ public class CacheTest extends TecTonicTest {
 		useCase.executeCached();
 
 		assertEquals(originalResult, cachedResult);
+		assertEquals(1, onStartCachedCalled);
+		assertEquals(1, onCompleteCachedCalled);
 	}
 
 	@Test
@@ -125,6 +136,8 @@ public class CacheTest extends TecTonicTest {
 		useCase.executeCached();
 
 		assertNotEquals(originalResult, cachedResult);
+		assertEquals(1, onStartCachedCalled);
+		assertEquals(1, onCompleteCachedCalled);
 	}
 
 	@NonNull
@@ -140,9 +153,20 @@ public class CacheTest extends TecTonicTest {
 	@NonNull
 	private SimpleUseCaseListener<TestResult> createCachedResultListener() {
 		return new SimpleUseCaseListener<TestResult>() {
+
+			@Override
+			public void onStart() {
+				onStartCachedCalled++;
+			}
+
 			@Override
 			public void onUpdate(TestResult result) {
 				cachedResult = result;
+			}
+
+			@Override
+			public void onComplete() {
+				onCompleteCachedCalled++;
 			}
 		};
 	}

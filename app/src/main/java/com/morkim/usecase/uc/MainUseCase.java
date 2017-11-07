@@ -12,6 +12,8 @@ import javax.inject.Inject;
 
 public class MainUseCase extends UseCase<Request, MainUseCaseResult> {
 
+    private static final int STEP = 1;
+
     @Inject
     Profile profile = AppInjector.getAppComponent().getProfile();
 
@@ -19,17 +21,17 @@ public class MainUseCase extends UseCase<Request, MainUseCaseResult> {
     protected void onAddPrerequisites() {
         super.onAddPrerequisites();
 
-        addPrerequisite(!profile.isLoggedIn(), AuthenticateLogin.class);
+        addPrerequisite(() -> !profile.isLoggedIn(), AuthenticateLogin.class);
     }
 
     @Override
     protected void onExecute(Request request) {
 
-        for (int i = 0; i < 10; i++) {
-            SystemClock.sleep(1000);
+        for (int i = 0; i < 100 / STEP; i++) {
+            SystemClock.sleep(100 * STEP);
 
             MainUseCaseResult result = new MainUseCaseResult();
-            result.data = "" + (i + 1) * 10;
+            result.data = "" + (i + 1) * STEP;
             updateSubscribers(result);
         }
 

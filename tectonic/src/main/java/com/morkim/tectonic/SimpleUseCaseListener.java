@@ -1,6 +1,8 @@
 package com.morkim.tectonic;
 
 
+import java.util.List;
+
 public class SimpleUseCaseListener<Rs extends Result> implements UseCaseListener<Rs> {
 
 	@Override
@@ -24,7 +26,7 @@ public class SimpleUseCaseListener<Rs extends Result> implements UseCaseListener
 	}
 
 	@Override
-	public void onInputRequired(int code) {
-
-	}
+	public boolean onInputRequired(List<Integer> codes) {
+        return true;
+    }
 }

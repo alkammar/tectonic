@@ -1,8 +1,7 @@
 package com.morkim.usecase.uc;
 
-import android.util.Log;
-
 import com.morkim.tectonic.Result;
+import com.morkim.tectonic.SimpleDisposableUseCaseListener;
 import com.morkim.tectonic.UseCase;
 import com.morkim.usecase.di.AppInjector;
 import com.morkim.usecase.model.Profile;
@@ -17,12 +16,27 @@ public class AuthenticateLogin extends UseCase<AuthenticateLoginRequest, Result>
     @Inject
     Profile profile = AppInjector.getAppComponent().getProfile();
 
+    private boolean skip;
+
+    @Override
+    protected void onAddPrerequisites() {
+        super.onAddPrerequisites();
+
+        addPrerequisite(
+                () -> !profile.isRegistered(),
+                RegisterUser.class,
+                new SimpleDisposableUseCaseListener<Result>() {
+                    @Override
+                    public void onComplete() {
+                        skip = true;
+                    }
+                });
+    }
+
     @Override
     protected void onExecute(AuthenticateLoginRequest request) {
 
-        Log.i(this.getClass().getSimpleName(), "onExecute : " + Thread.currentThread().getName());
-
-        if (request == null || request.password.isEmpty())
+        if (!skip && (request == null || request.password.isEmpty()))
             requestInput(PASSWORD);
         else {
             profile.setLoggedIn(true);

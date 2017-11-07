@@ -1,6 +1,9 @@
 package com.morkim.tectonic;
 
 
+import java.util.List;
+
+@SuppressWarnings("WeakerAccess")
 public interface UseCaseListener<Rs extends Result> {
 
 	/**
@@ -31,9 +34,12 @@ public interface UseCaseListener<Rs extends Result> {
 
 	/**
 	 * Called when the use case requires an input to proceed with its execution. The code is passed
-	 * to indicate which input is required.
+	 * to indicate which input is required. The last subscribed listener will be the first to be called.
+	 * If a listener returns true, this means input is handled at that listener and other listeners
+	 * will not receive this callback.
 	 *
-	 * @param code The code for the required input.
+	 * @param codes The codes for the required inputs.
+	 * @return true if the listener is handling the required input.
 	 */
-	void onInputRequired(int code);
+	boolean onInputRequired(List<Integer> codes);
 }

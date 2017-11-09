@@ -24,6 +24,7 @@ public class RegisterUser extends UseCase<RegisterUserRequest, Result> {
             requestInput(EMAIL, PASSWORD, MOBILE);
         } else {
 
+            // Validate the registration inputs (from business model perspective)
             if (startInputValidation()
                     .check(request.email.isEmpty(), EMAIL)
                     .check(request.password.isEmpty(), PASSWORD)
@@ -32,6 +33,8 @@ public class RegisterUser extends UseCase<RegisterUserRequest, Result> {
 
                 profile.setRegistered(true);
 
+                // Registration is done, finish the use case so other blocking use cases can
+                // continue their execution
                 finish();
             }
         }

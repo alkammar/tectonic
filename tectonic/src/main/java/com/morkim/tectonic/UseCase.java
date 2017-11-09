@@ -14,6 +14,7 @@ import io.reactivex.ObservableEmitter;
 import io.reactivex.ObservableOnSubscribe;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.annotations.NonNull;
+import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
 
@@ -27,6 +28,7 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
 
     private ObservableEmitter<Update> observer;
     protected State state = State.NOT_CREATED;
+    private Disposable subscription;
 
     protected class Prerequisite {
 
@@ -78,7 +80,7 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
      * a new instance of the use case
      *
      * @param useCaseClass The use case class that needs to be fetched
-     * @param <U>          Use case type
+     * @param <U>          Use case type class
      * @return The fetched use case
      */
     public static <U extends UseCase> U fetch(Class<U> useCaseClass) {
@@ -155,7 +157,7 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
 
         this.request = request;
 
-        Observable.create(new ObservableOnSubscribe<Update>() {
+        subscription = Observable.create(new ObservableOnSubscribe<Update>() {
             @Override
             public void subscribe(@NonNull ObservableEmitter<Update> e) throws Exception {
 
@@ -192,12 +194,6 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
 
     }
 
-//    protected Prerequisite checkIf(boolean precondition) {
-//        Prerequisite prerequisite = new Prerequisite(precondition);
-//        prerequisites.add(prerequisite);
-//        return prerequisite;
-//    }
-
     protected abstract void onExecute(Rq request);
 
     protected void addPrerequisite(Class<? extends UseCase> useCase) {
@@ -221,16 +217,19 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
         final Prerequisite prerequisite = prerequisites.get(prerequisiteIndex);
 
         if (prerequisite.precondition.onEvaluate()) {
+
             final UseCase prerequisiteUseCase = UseCase.fetch(prerequisite.useCase);
+
             if (prerequisite.listener != null)
                 //noinspection unchecked
                 prerequisiteUseCase.subscribe(prerequisite.listener);
+
             //noinspection unchecked
             subscribe(prerequisite.useCase,
                     new SimpleDisposableUseCaseListener<Result>() {
                         @Override
                         public void onComplete() {
-                            Observable.create(new ObservableOnSubscribe<Update>() {
+                            subscription = Observable.create(new ObservableOnSubscribe<Update>() {
                                 @Override
                                 public void subscribe(@NonNull ObservableEmitter<Update> e) throws Exception {
                                     executeNextPrerequisite();
@@ -267,7 +266,7 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
     public void executeCached(final Rq request) {
 
         if (supportsCaching()) {
-            Observable.create(new ObservableOnSubscribe<Update>() {
+            subscription = Observable.create(new ObservableOnSubscribe<Update>() {
                 @Override
                 public void subscribe(@NonNull ObservableEmitter<Update> e) throws Exception {
 
@@ -304,10 +303,13 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
             switch (update.type) {
                 case START:
                     for (UseCaseListener listener : subscriptions.get(UseCase.this.getClass())) {
-                        if (!consumedStarts.get(UseCase.this.getClass()).contains(listener))
+                        List<UseCaseListener<? extends Result>> consumedListener = consumedStarts.get(UseCase.this.getClass());
+                        if (!consumedListener.contains(listener))
                             listener.onStart();
-                        //noinspection unchecked
-                        consumedStarts.get(UseCase.this.getClass()).add(listener);
+
+                        if (!consumedListener.contains(listener))
+                            //noinspection unchecked
+                            consumedListener.add(listener);
                     }
                     break;
                 case UPDATE:
@@ -372,7 +374,8 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
      * @param result Update result
      */
     protected void updateSubscribers(Rs result) {
-        observer.onNext(new Update(UPDATE, result));
+        if (state != State.DEAD)
+            observer.onNext(new Update(UPDATE, result));
     }
 
     /**
@@ -397,9 +400,14 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
 
         if (subscriptions == null) subscriptions = new HashMap<>();
 
-        if (subscriptions.get(useCaseClass) == null)
-            subscriptions.put(useCaseClass, new ArrayList<UseCaseListener<? extends Result>>());
-        subscriptions.get(useCaseClass).add(listener);
+        List<UseCaseListener<? extends Result>> useCaseListeners = subscriptions.get(useCaseClass);
+        if (useCaseListeners == null) {
+            useCaseListeners = new ArrayList<>();
+            subscriptions.put(useCaseClass, useCaseListeners);
+        }
+
+        useCaseListeners.remove(listener);
+        useCaseListeners.add(listener);
     }
 
     public static void unsubscribe(Class<? extends UseCase> useCaseClass, UseCaseListener<? extends Result> listener) {
@@ -433,10 +441,12 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
      */
     protected void finish() {
 
-        state = State.DEAD;
-        running.remove(UseCase.this.getClass());
-        observer.onNext(new Update(Type.COMPLETE));
-        onPostExecute();
+        if (state != State.DEAD) {
+            state = State.DEAD;
+            running.remove(UseCase.this.getClass());
+            observer.onNext(new Update(Type.COMPLETE));
+            onPostExecute();
+        }
     }
 
     public static void cancel(Class<? extends UseCase> useCaseClass) {
@@ -448,14 +458,18 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
 
     protected void cancel() {
 
-        for (UseCaseListener listener : subscriptions.get(this.getClass()))
+        if (subscription != null) subscription.dispose();
+
+        for (UseCaseListener listener : subscriptions.get(this.getClass())) {
+            consumedStarts.get(UseCase.this.getClass()).remove(listener);
             listener.onCancel();
+        }
 
         state = State.DEAD;
         running.remove(this.getClass());
     }
 
-    protected void requestInput(Integer ... codes) {
+    protected void requestInput(Integer... codes) {
 
         state = State.CREATED;
         observer.onNext(new Update(INPUT, codes));
@@ -469,6 +483,13 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
 
         private List<Integer> inputs = new ArrayList<>();
 
+        /**
+         * Adds the {@code code} to a list of required inputs if the condition is true
+         *
+         * @param condition The condition to validate that the input is required
+         * @param code The code of the required input
+         * @return The required input object for chaining
+         */
         public RequiredInputs check(boolean condition, int code) {
 
             if (condition) inputs.add(code);
@@ -476,6 +497,12 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
             return this;
         }
 
+        /**
+         * Checks that no inputs are required. If inputs are required then a request for inputs to
+         * listeners is fired
+         *
+         * @return True if no inputs are required
+         */
         public boolean validate() {
             boolean valid = inputs.size() == 0;
             if (!valid) requestInput(inputs.toArray(new Integer[0]));

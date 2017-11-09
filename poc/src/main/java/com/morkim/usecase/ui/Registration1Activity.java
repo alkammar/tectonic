@@ -38,20 +38,26 @@ public class Registration1Activity extends AppCompatActivity {
 
                             @Override
                             public boolean onInputRequired(List<Integer> codes) {
-                                if (ourInputsComplete(codes)) {
 
-                                    Intent intent = new Intent(getBaseContext(), Registration2Activity.class);
-                                    intent.putExtra("email", email.getText().toString());
-                                    intent.putExtra("password", password.getText().toString());
-                                    startActivity(intent);
+                                if (ourInputsComplete(codes)) {
+                                    if (codes.contains(RegisterUser.MOBILE)) {
+
+                                        // Navigate to the second screen in the registration screens,
+                                        // passing the data that we entered here
+                                        Intent intent = new Intent(getBaseContext(), Registration2Activity.class);
+                                        intent.putExtra("email", email.getText().toString());
+                                        intent.putExtra("password", password.getText().toString());
+                                        startActivity(intent);
+                                    }
+                                } else {
+                                    // Maybe here we can show some error for the error texts
                                 }
                                 return super.onInputRequired(codes);
                             }
 
                             private boolean ourInputsComplete(List<Integer> codes) {
                                 return !codes.contains(RegisterUser.EMAIL) &&
-                                        !codes.contains(RegisterUser.PASSWORD) &&
-                                        codes.contains(RegisterUser.MOBILE);
+                                        !codes.contains(RegisterUser.PASSWORD);
                             }
 
                             @Override

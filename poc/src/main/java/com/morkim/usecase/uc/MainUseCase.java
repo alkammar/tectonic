@@ -21,6 +21,9 @@ public class MainUseCase extends UseCase<Request, MainUseCaseResult> {
     protected void onAddPrerequisites() {
         super.onAddPrerequisites();
 
+        // The login use case is a prerequisite to the main use case, and it is preconditioned with
+        // this isLoggedIn flag.
+        // There is override to this method where you can omit the precondition
         addPrerequisite(() -> !profile.isLoggedIn(), AuthenticateLogin.class);
     }
 
@@ -28,7 +31,7 @@ public class MainUseCase extends UseCase<Request, MainUseCaseResult> {
     protected void onExecute(Request request) {
 
         for (int i = 0; i < 100 / STEP; i++) {
-            SystemClock.sleep(100 * STEP);
+            SystemClock.sleep(50);
 
             MainUseCaseResult result = new MainUseCaseResult();
             result.data = "" + (i + 1) * STEP;

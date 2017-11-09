@@ -8,6 +8,19 @@
     android:padding="10dp"
     tools:context="com.morkim.usecase.ui.MainActivity">
 
+    <Button
+        android:id="@+id/btn_refresh"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Refresh"/>
+
+    <Button
+        android:id="@+id/btn_abort"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:text="Abort"/>
+
     <TextView
         android:id="@+id/label"
         android:layout_width="wrap_content"

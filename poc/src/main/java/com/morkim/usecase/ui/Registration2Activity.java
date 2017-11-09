@@ -28,6 +28,8 @@ public class Registration2Activity extends AppCompatActivity {
         mobile = (EditText) findViewById(R.id.ti_mobile);
 
         findViewById(R.id.btn_submit).setOnClickListener(v ->
+                // Execute the registration use with the data we received from the previous screens
+                // in the registration flow + the data we are entering here
                 UseCase.fetch(RegisterUser.class)
                         .subscribe(registerUserListener)
                         .execute(new RegisterUserRequest.Builder()
@@ -41,6 +43,7 @@ public class Registration2Activity extends AppCompatActivity {
 
         @Override
         public void onComplete() {
+            // We finished registration, so finish this screen
             Registration2Activity.this.finish();
         }
     };

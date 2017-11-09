@@ -74,6 +74,27 @@ public class SubscriptionTest extends TecTonicTest {
 	}
 
 	@Test
+	public void subscribeSameListenerInstance_onlyOneSubscription() throws Exception {
+
+		SimpleUseCaseListener<TestResult> listener = new SimpleUseCaseListener<TestResult>() {
+			@Override
+			public void onUpdate(TestResult result) {
+				normalCount++;
+			}
+		};
+
+		UseCase.subscribe(TestUseCase.class, listener);
+		UseCase.subscribe(TestUseCase.class, listener);
+
+		TestUseCase useCase;
+
+		useCase = UseCase.fetch(TestUseCase.class);
+		useCase.execute();
+
+		assertEquals(1, normalCount);
+	}
+
+	@Test
 	public void unsubscribeThenExecute_NoCallbacksExecuted() throws Exception {
 
 		SimpleUseCaseListener<TestResult> listener = new SimpleUseCaseListener<TestResult>() {

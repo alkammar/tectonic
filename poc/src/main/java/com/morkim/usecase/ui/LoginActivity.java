@@ -35,6 +35,7 @@ public class LoginActivity extends AppCompatActivity {
 
                             @Override
                             public void onComplete() {
+                                // We are now logged in, so finish the Login screen
                                 LoginActivity.this.finish();
                             }
                         })
@@ -45,6 +46,8 @@ public class LoginActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
+        // Exiting from login means we need to exit the app, although we are on top of the main
+        // screen, the main should listen to this and finish as well
         UseCase.fetch(ExitApp.class)
                 .subscribe(new SimpleDisposableUseCaseListener<Result>() {
                     @Override

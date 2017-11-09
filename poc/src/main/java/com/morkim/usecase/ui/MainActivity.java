@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -24,6 +25,9 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
+    private Button refresh;
+    private Button abort;
+
     private TextView label;
     private ProgressBar progress;
 
@@ -36,8 +40,16 @@ public class MainActivity extends AppCompatActivity {
         //noinspection ConstantConditions
         getSupportActionBar().setTitle("Home");
 
+        refresh = (Button) findViewById(R.id.btn_refresh);
+        abort  = (Button) findViewById(R.id.btn_abort);
+
         label = (TextView) findViewById(R.id.label);
         progress = (ProgressBar) findViewById(R.id.prg_progress);
+
+        // While refreshing you need the use case to override its cached result, so here we use
+        // non-cached execution
+        refresh.setOnClickListener(v -> UseCase.fetch(MainUseCase.class).execute());
+        abort.setOnClickListener(v -> UseCase.cancel(MainUseCase.class));
 
         UseCase.subscribe(RegisterUser.class, registerUserListener);
         UseCase.subscribe(AuthenticateLogin.class, authenticateLoginListener);
@@ -66,31 +78,53 @@ public class MainActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
 
+        // Execute the main use case cached. If this is our first time to execute it then there will
+        // be no cache available in the use case and it will execute normally, otherwise a cached
+        // result will be returned
         UseCase.fetch(MainUseCase.class)
-                .subscribe(new SimpleUseCaseListener<MainUseCaseResult>() {
-
-                    @Override
-                    public void onStart() {
-                        progress.setVisibility(View.VISIBLE);
-                    }
-
-                    @Override
-                    public void onUpdate(MainUseCaseResult result) {
-                        label.setText(result.data);
-                    }
-
-                    @Override
-                    public void onComplete() {
-                        progress.setVisibility(View.GONE);
-                    }
-                })
+                .subscribe(mainUseCaseListener)
                 .executeCached();
     }
+
+    private SimpleUseCaseListener<MainUseCaseResult> mainUseCaseListener = new SimpleUseCaseListener<MainUseCaseResult>() {
+
+        @Override
+        public void onStart() {
+            // use case has started
+            refresh.setEnabled(false);
+            progress.setVisibility(View.VISIBLE);
+        }
+
+        @Override
+        public void onUpdate(MainUseCaseResult result) {
+            // received an update result from the use case
+            label.setText(result.data);
+        }
+
+        @Override
+        public void onComplete() {
+            // use case has completed
+            refresh.setEnabled(true);
+            progress.setVisibility(View.GONE);
+        }
+
+        @Override
+        public void onCancel() {
+            // use case was cancelled
+            label.setText("Cancelled!");
+            refresh.setEnabled(true);
+            progress.setVisibility(View.GONE);
+        }
+    };
 
     private SimpleUseCaseListener<Result> registerUserListener = new SimpleUseCaseListener<Result>() {
         @Override
         public boolean onInputRequired(List<Integer> codes) {
+            // We received an input required request from the registration use case and we need to
+            // navigate to the registration screen
             startActivity(new Intent(getBaseContext(), Registration1Activity.class));
+
+            // Return true to say we handled the input request
             return true;
         }
     };
@@ -99,8 +133,12 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public boolean onInputRequired(List<Integer> codes) {
+            // We received an input required request from the login use case and we need to navigate
+            // to the login screen
             if (codes.contains(AuthenticateLogin.PASSWORD))
                 startActivity(new Intent(getBaseContext(), LoginActivity.class));
+
+            // Return true to say we handled the input request
             return true;
         }
     };
@@ -114,6 +152,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onStop() {
         super.onStop();
 
+        // Unsubscribe all your non-disposable listeners
+        UseCase.unsubscribe(MainUseCase.class, mainUseCaseListener);
         UseCase.unsubscribe(RegisterUser.class, registerUserListener);
         UseCase.unsubscribe(AuthenticateLogin.class, authenticateLoginListener);
     }

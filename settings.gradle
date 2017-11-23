@@ -1,1 +1,1 @@
-include ':app', ':tectonic'
+include ':poc', ':tectonic'

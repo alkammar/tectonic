@@ -6,8 +6,12 @@ import com.morkim.tectonic.UseCase;
 
 public class PendingActionTestUseCase extends UseCase<PendingActionRequest, Result> {
 
+	private int onExecuteCount;
+
 	@Override
 	protected void onExecute(PendingActionRequest request) {
+
+		onExecuteCount++;
 
 		if (request == null) {
 			// Do nothing as if we are waiting for input
@@ -19,5 +23,9 @@ public class PendingActionTestUseCase extends UseCase<PendingActionRequest, Resu
 
 			finish();
 		}
+	}
+
+	public int getOnExecuteCount() {
+		return onExecuteCount;
 	}
 }

@@ -1,134 +1,162 @@
 package com.morkim.tectonic;
 
 
-import android.annotation.SuppressLint;
-import android.util.Log;
+import android.util.SparseArray;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import io.reactivex.Observable;
+import io.reactivex.ObservableEmitter;
+import io.reactivex.ObservableOnSubscribe;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.annotations.NonNull;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Consumer;
+import io.reactivex.schedulers.Schedulers;
+
 @SuppressWarnings({"WeakerAccess", "unused"})
 public abstract class UseCase<Rq extends Request, Rs extends Result> {
 
-    private static final OnStartListener EMPTY_ON_START_LISTENER = new OnStartListener() {
-        @Override
-        public void onStart() {
+    private enum State {
+        NOT_CREATED,
+        CREATED,
+        IN_PROGRESS,
+        DEAD,
+    }
 
-        }
-    };
-    private static final OnUpdateListener EMPTY_ON_UPDATE_LISTENER = new OnUpdateListener() {
-        @Override
-        public void onUpdate(Result result) {
-
-        }
-    };
-    private static final OnCompleteListener EMPTY_ON_COMPLETE_LISTENER = new OnCompleteListener() {
-        @Override
-        public void onComplete() {
-
-        }
-    };
-    private static final OnAbortListener EMPTY_ON_ABORT_LISTENER = new OnAbortListener() {
-        @Override
-        public void onCancel() {
-
-        }
-    };
-    private static final OnInputRequiredListener EMPTY_ON_INPUT_REQUIRED_LISTENER = new OnInputRequiredListener() {
-        @Override
-        public void onInputRequired(int code) {
-
-        }
-    };
+    private enum Type {
+        START,
+        UPDATE,
+        COMPLETE,
+        INPUT,
+    }
 
     private Rq request;
 
-    private class Prerequisite {
+    private ObservableEmitter<Event> observer;
+    private State state = State.NOT_CREATED;
+    private Disposable subscription;
 
-        Class<? extends UseCase> useCase;
-        OnCompleteListener onCompleteListener;
-        OnAbortListener onAbortListener;
-        boolean condition;
-
-        Prerequisite(Class<? extends UseCase> useCase,
-                     boolean condition,
-                     OnCompleteListener onCompleteListener,
-                     OnAbortListener onAbortListener) {
-
-            this.useCase = useCase;
-            this.condition = condition;
-            this.onCompleteListener = onCompleteListener;
-            this.onAbortListener = onAbortListener;
-        }
-    }
-
-    private static Map<Class<? extends UseCase>, UseCase> inProgress = new HashMap<>();
+    private static Map<Class<? extends UseCase>, UseCase> running = new HashMap<>();
 
     private final List<Prerequisite> prerequisites;
     private int prerequisiteIndex;
 
-    private OnStartListener onStartListener;
-    private OnUpdateListener<Rs> onUpdateListener;
-    private OnCompleteListener onCompleteListener;
-    private OnAbortListener onAbortListener;
-    private OnInputRequiredListener onInputRequiredListener;
+    private static Map<Class<? extends UseCase>, List<UseCaseListener<? extends Result>>> subscriptions = new HashMap<>();
+    private static Map<Class<? extends UseCase>, List<UseCaseListener<? extends Result>>> consumedStarts = new HashMap<>();
 
-    private static Map<Class<? extends UseCase>, List<OnStartListener>> onStartSubscriptions = new HashMap<>();
-    private static Map<Class<? extends UseCase>, List<OnUpdateListener>> onUpdateSubscriptions = new HashMap<>();
-    private static Map<Class<? extends UseCase>, List<OnCompleteListener>> onCompleteSubscriptions = new HashMap<>();
-    private static Map<Class<? extends UseCase>, List<OnAbortListener>> onAbortSubscriptions = new HashMap<>();
-    private static Map<Class<? extends UseCase>, List<OnInputRequiredListener>> onInputRequiredSubscriptions = new HashMap<>();
+    private static Map<Class<? extends UseCase>, SparseArray<Result>> cachedResults = new HashMap<>();
 
-    private static Map<Class<? extends UseCase>, Map<Integer, Result>> cachedResults = new HashMap<>();
+    /**
+     * This will fetch the use case if it is already running, otherwise this will create
+     * a new instance of the use case
+     *
+     * @param useCaseClass The use case class that needs to be fetched
+     * @param <U>          Use case type class
+     * @return The fetched use case
+     */
+    public synchronized static <U extends UseCase> U fetch(Class<U> useCaseClass) {
 
-
-    public UseCase() {
-
-        onStartListener = EMPTY_ON_START_LISTENER;
         //noinspection unchecked
-        onUpdateListener = EMPTY_ON_UPDATE_LISTENER;
-        onCompleteListener = EMPTY_ON_COMPLETE_LISTENER;
-        onAbortListener = EMPTY_ON_ABORT_LISTENER;
-        onInputRequiredListener = EMPTY_ON_INPUT_REQUIRED_LISTENER;
+        U useCase = (U) running.get(useCaseClass);
+        if (useCase == null) {
+            try {
+                useCase = useCaseClass.newInstance();
+                useCase.onAddPrerequisites();
+                running.put(useCaseClass, useCase);
+                useCase.create();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
 
-        if (onStartSubscriptions.get(this.getClass()) == null)
-            onStartSubscriptions.put(this.getClass(), new ArrayList<OnStartListener>());
-        if (onUpdateSubscriptions.get(this.getClass()) == null)
-            onUpdateSubscriptions.put(this.getClass(), new ArrayList<OnUpdateListener>());
-        if (onCompleteSubscriptions.get(this.getClass()) == null)
-            onCompleteSubscriptions.put(this.getClass(), new ArrayList<OnCompleteListener>());
-        if (onAbortSubscriptions.get(this.getClass()) == null)
-            onAbortSubscriptions.put(this.getClass(), new ArrayList<OnAbortListener>());
-        if (onInputRequiredSubscriptions.get(this.getClass()) == null)
-            onInputRequiredSubscriptions.put(this.getClass(), new ArrayList<OnInputRequiredListener>());
+        return useCase;
+    }
+
+    void create() {
+        state = State.CREATED;
+    }
+
+    protected UseCase() {
+
+        if (subscriptions.get(this.getClass()) == null)
+            subscriptions.put(this.getClass(), new ArrayList<UseCaseListener<? extends Result>>());
+
+        if (consumedStarts.get(this.getClass()) == null)
+            consumedStarts.put(this.getClass(), new ArrayList<UseCaseListener<? extends Result>>());
 
         prerequisites = new ArrayList<>();
-        onAddPrerequisites();
     }
 
     public void execute() {
         execute(null);
     }
 
-    public void execute(Rq request) {
+    private class Event {
+
+        Type type;
+        Rs result;
+        Integer[] codes;
+
+        Event(Type type) {
+            this(type, (Rs) null);
+        }
+
+        Event(Type type, Rs result) {
+            this.type = type;
+            this.result = result;
+        }
+
+        Event(Type type, Integer[] codes) {
+            this.type = type;
+            this.codes = codes;
+        }
+    }
+
+    /**
+     * Executes this use case instance if it is only executable
+     *
+     * @param request The use case request
+     */
+    public void execute(final Rq request) {
+
+        if (!isExecutable()) return;
 
         this.request = request;
 
-        if (onStartListener != null) onStartListener.onStart();
+        subscription = Observable.create(new ObservableOnSubscribe<Event>() {
+            @Override
+            public void subscribe(@NonNull ObservableEmitter<Event> e) throws Exception {
 
-        if (inProgress.get(this.getClass()) == null) {
-            for (OnStartListener listener : onStartSubscriptions.get(this.getClass()))
-                listener.onStart();
+                UseCase.this.observer = e;
+                executeOnObservable();
 
-            inProgress.put(this.getClass(), this);
+            }
+        }).observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(Schedulers.io())
+                .subscribe(onNext);
+    }
 
-            if (prerequisites.isEmpty()) {
-                onExecute(this.request);
-            } else {
+    private boolean isExecutable() {
+        return state == State.CREATED || state == State.IN_PROGRESS;
+    }
+
+    private void executeOnObservable() {
+
+        observer.onNext(new Event(Type.START));
+
+        if (state != State.IN_PROGRESS) {
+            state = State.IN_PROGRESS;
+
+            if (!prerequisites.isEmpty()) {
                 prerequisiteIndex = 0;
                 executePrerequisite();
+            } else {
+                onExecute(UseCase.this.request);
             }
         }
     }
@@ -139,54 +167,50 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
 
     protected abstract void onExecute(Rq request);
 
-    protected UseCase<Rq, Rs> addPrerequisite(Class<? extends UseCase> useCase, OnCompleteListener listener) {
-        addPrerequisite(useCase, true, listener);
-
-        return this;
+    protected void addPrerequisite(Class<? extends UseCase> useCase) {
+        addPrerequisite(Precondition.TRUE_PRECONDITION, useCase, null);
     }
 
-    protected UseCase<Rq, Rs> addPrerequisite(Class<? extends UseCase> useCase, OnAbortListener listener) {
-        addPrerequisite(useCase, true, EMPTY_ON_COMPLETE_LISTENER, listener);
-
-        return this;
+    protected void addPrerequisite(Class<? extends UseCase> useCase, UseCaseListener listener) {
+        addPrerequisite(Precondition.TRUE_PRECONDITION, useCase, listener);
     }
 
-    protected UseCase<Rq, Rs> addPrerequisite(Class<? extends UseCase> useCase, boolean condition, OnCompleteListener listener) {
-        prerequisites.add(new Prerequisite(useCase, condition, listener, EMPTY_ON_ABORT_LISTENER));
-
-        return this;
+    protected void addPrerequisite(Precondition precondition, Class<? extends UseCase> useCase) {
+        addPrerequisite(precondition, useCase, null);
     }
 
-    protected UseCase<Rq, Rs> addPrerequisite(Class<? extends UseCase> useCase, boolean condition, OnCompleteListener onCompleteListener, OnAbortListener onAbortListener) {
-        prerequisites.add(new Prerequisite(useCase, condition, onCompleteListener, onAbortListener));
-
-        return this;
+    protected void addPrerequisite(Precondition precondition, Class<? extends UseCase> useCase, UseCaseListener listener) {
+        prerequisites.add(new Prerequisite(useCase, precondition, listener));
     }
 
     private void executePrerequisite() {
 
-        Prerequisite prerequisite = prerequisites.get(prerequisiteIndex);
+        final Prerequisite prerequisite = prerequisites.get(prerequisiteIndex);
 
-        if (prerequisite.condition) {
-            try {
-                subscribe(prerequisite.useCase, new OnCompleteListener() {
-                    @Override
-                    public void onComplete() {
-                        executeNextPrerequisite();
-                    }
-                });
+        if (prerequisite.precondition.onEvaluate()) {
 
-                UseCase prerequisiteUseCase = prerequisite.useCase.newInstance();
-                prerequisiteUseCase
-                        .subscribe(prerequisite.onCompleteListener)
-                        .subscribe(prerequisite.onAbortListener)
-                        .execute();
+            final UseCase prerequisiteUseCase = UseCase.fetch(prerequisite.useCase);
 
-            } catch (InstantiationException e) {
-                Log.e("Use Case Prerequisite", "Unable to Instantiate class " + prerequisite.useCase);
-            } catch (IllegalAccessException e) {
-                Log.e("Use Case Prerequisite", "Unable to Access class " + prerequisite.useCase);
-            }
+            if (prerequisite.listener != null)
+                //noinspection unchecked
+                prerequisiteUseCase.subscribe(prerequisite.listener);
+
+            //noinspection unchecked
+            subscribe(prerequisite.useCase,
+                    new SimpleDisposableUseCaseListener<Result>() {
+                        @Override
+                        public void onComplete() {
+                            subscription = Observable.create(new ObservableOnSubscribe<Event>() {
+                                @Override
+                                public void subscribe(@NonNull ObservableEmitter<Event> e) throws Exception {
+                                    executeNextPrerequisite();
+                                }
+                            }).observeOn(AndroidSchedulers.mainThread())
+                                    .subscribeOn(Schedulers.io())
+                                    .subscribe();
+                        }
+                    });
+            prerequisiteUseCase.execute();
         } else {
             executeNextPrerequisite();
         }
@@ -202,147 +226,164 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
         }
     }
 
+    /**
+     * Executes the use case in cached mode, where if a cached result exists it is returned with
+     * executing the use case otherwise if a result does not exist the use case will be executed
+     */
     public void executeCached() {
         executeCached(null);
     }
 
-    @SuppressLint("UseSparseArrays")
-    public void executeCached(Rq request) {
+    public void executeCached(final Rq request) {
 
-        if (willCache()) {
+        if (supportsCaching()) {
+            subscription = Observable.create(new ObservableOnSubscribe<Event>() {
+                @Override
+                public void subscribe(@NonNull ObservableEmitter<Event> e) throws Exception {
 
-            if (cachedResults.get(this.getClass()) == null)
-                cachedResults.put(this.getClass(), new HashMap<Integer, Result>());
-            //noinspection unchecked
-            Rs result = (Rs) cachedResults.get(this.getClass()).get(request == null ? Request.NO_ID : request.id());
-            if (result != null)
-                updateSubscribers(result);
-            else
-                execute(request);
+                    UseCase.this.observer = e;
+
+                    if (cachedResults.get(UseCase.this.getClass()) == null)
+                        cachedResults.put(UseCase.this.getClass(), new SparseArray<Result>());
+                    //noinspection unchecked
+                    final Rs result = (Rs) cachedResults.get(UseCase.this.getClass())
+                            .get(request == null ? Request.NO_ID : request.id());
+                    if (isCachedExecutable(result)) {
+                        e.onNext(new Event(Type.START));
+                        e.onNext(new Event(Type.UPDATE, result));
+                        e.onNext(new Event(Type.COMPLETE));
+                    } else
+                        execute(request);
+                }
+            }).observeOn(AndroidSchedulers.mainThread())
+                    .subscribeOn(Schedulers.io())
+                    .subscribe(onNext);
         } else
             execute(request);
     }
 
-    protected boolean willCache() {
+    private boolean isCachedExecutable(Rs result) {
+        return (state == State.DEAD || state == State.CREATED) &&
+                result != null;
+    }
+
+    private Consumer<Event> onNext = new Consumer<Event>() {
+        @Override
+        public void accept(@NonNull Event event) throws Exception {
+
+            switch (event.type) {
+                case START:
+                    for (UseCaseListener listener : subscriptions.get(UseCase.this.getClass())) {
+                        List<UseCaseListener<? extends Result>> consumedListener = consumedStarts.get(UseCase.this.getClass());
+                        if (!consumedListener.contains(listener))
+                            listener.onStart();
+
+                        if (!consumedListener.contains(listener))
+                            //noinspection unchecked
+                            consumedListener.add(listener);
+                    }
+                    break;
+                case UPDATE:
+                    for (UseCaseListener listener : subscriptions.get(UseCase.this.getClass()))
+                        //noinspection unchecked
+                        listener.onUpdate(event.result);
+
+                    SparseArray<Result> resultsMap;
+                    if (cachedResults.get(UseCase.this.getClass()) == null) {
+                        resultsMap = new SparseArray<>();
+                        cachedResults.put(UseCase.this.getClass(), resultsMap);
+                    } else
+                        resultsMap = cachedResults.get(UseCase.this.getClass());
+
+                    resultsMap.put(request == null ? Request.NO_ID : request.id(), event.result);
+                    break;
+                case COMPLETE:
+                    List<UseCaseListener<? extends Result>> useCaseSubscriptions = subscriptions.get(UseCase.this.getClass());
+                    for (int i = 0; i < useCaseSubscriptions.size(); i++) {
+                        UseCaseListener listener = useCaseSubscriptions.get(i);
+                        listener.onComplete();
+
+                        if (listener instanceof DisposableUseCaseListener) {
+                            useCaseSubscriptions.remove(listener);
+                            i--;
+                        }
+                        consumedStarts.get(UseCase.this.getClass()).remove(listener);
+                    }
+                    break;
+                case INPUT:
+                    List<UseCaseListener<? extends Result>> useCaseListeners = subscriptions.get(UseCase.this.getClass());
+                    for (int i = useCaseListeners.size() - 1; i >= 0; i--) {
+                        if (useCaseListeners.get(i).onInputRequired(Arrays.asList(event.codes)))
+                            break;
+                    }
+                    break;
+            }
+        }
+    };
+
+    protected boolean supportsCaching() {
         return false;
     }
 
-    public UseCase<Rq, Rs> subscribe(OnStartListener useCaseListener) {
-        this.onStartListener = useCaseListener;
+    /**
+     * Subscribes a {@link UseCaseListener} to this use case. The subscribed listener will stay
+     * subscribed to the use case even after the use case has completed.
+     * The subscriber will have to be un-subscribed in order not receive further updates.
+     *
+     * @param useCaseListener Subscriber listener
+     * @return The subscribed use case
+     */
+    public UseCase<Rq, Rs> subscribe(UseCaseListener<Rs> useCaseListener) {
+        subscribe(this.getClass(), useCaseListener);
 
         return this;
     }
 
-    public UseCase<Rq, Rs> subscribe(OnUpdateListener<Rs> onUpdateListener) {
-        this.onUpdateListener = onUpdateListener;
-
-        return this;
-    }
-
-    public UseCase<Rq, Rs> subscribe(OnCompleteListener onCompleteListener) {
-        this.onCompleteListener = onCompleteListener;
-
-        return this;
-    }
-
-    public UseCase<Rq, Rs> subscribe(OnAbortListener onAbortListener) {
-        this.onAbortListener = onAbortListener;
-
-        return this;
-    }
-
-    public UseCase<Rq, Rs> subscribe(OnInputRequiredListener onInputRequiredListener) {
-        this.onInputRequiredListener = onInputRequiredListener;
-
-        return this;
-    }
-
-    @SuppressLint("UseSparseArrays")
+    /**
+     * Broadcasts a use case update to all subscribers
+     *
+     * @param result Update result
+     */
     protected void updateSubscribers(Rs result) {
-
-        onUpdateListener.onUpdate(result);
-        for (OnUpdateListener listener : onUpdateSubscriptions.get(this.getClass()))
-            //noinspection unchecked
-            listener.onUpdate(result);
-
-        Map<Integer, Result> resultsMap;
-        if (cachedResults.get(this.getClass()) == null) {
-            resultsMap = new HashMap<>();
-            cachedResults.put(this.getClass(), resultsMap);
-        } else
-            resultsMap = cachedResults.get(this.getClass());
-
-        resultsMap.put(request == null ? Request.NO_ID : request.id(), result);
+        if (state != State.DEAD)
+            observer.onNext(new Event(Type.UPDATE, result));
     }
 
-    public void unsubscribe() {
-        this.onStartListener = EMPTY_ON_START_LISTENER;
-        //noinspection unchecked
-        this.onUpdateListener = EMPTY_ON_UPDATE_LISTENER;
-        this.onCompleteListener = EMPTY_ON_COMPLETE_LISTENER;
-        this.onAbortListener = EMPTY_ON_ABORT_LISTENER;
-        this.onInputRequiredListener = EMPTY_ON_INPUT_REQUIRED_LISTENER;
+    /**
+     * Un-subscribes a use listener from this use case instance
+     *
+     * @param useCaseListener Un-subscriber listener
+     */
+    public void unsubscribe(UseCaseListener<Rs> useCaseListener) {
+        unsubscribe(this.getClass(), useCaseListener);
     }
 
+    /**
+     * Clears cached results for this use case
+     *
+     * @param useCaseClass The use case to its clear cache
+     */
     public static void clearCache(Class<? extends UseCase> useCaseClass) {
         cachedResults.remove(useCaseClass);
     }
 
-    public static void subscribe(Class<? extends UseCase> useCaseClass, OnStartListener listener) {
+    public static void subscribe(Class<? extends UseCase> useCaseClass, UseCaseListener<? extends Result> listener) {
 
-        if (onStartSubscriptions == null) onStartSubscriptions = new HashMap<>();
+        if (subscriptions == null) subscriptions = new HashMap<>();
 
-        // TODO synchronize with remove
-        if (onStartSubscriptions.get(useCaseClass) == null)
-            onStartSubscriptions.put(useCaseClass, new ArrayList<OnStartListener>());
-        onStartSubscriptions.get(useCaseClass).add(listener);
-    }
-
-    public static void subscribe(Class<? extends UseCase> useCaseClass, OnUpdateListener listener) {
-
-        if (onUpdateSubscriptions == null) onUpdateSubscriptions = new HashMap<>();
-
-        // TODO synchronize with remove
-        if (onUpdateSubscriptions.get(useCaseClass) == null)
-            onUpdateSubscriptions.put(useCaseClass, new ArrayList<OnUpdateListener>());
-        onUpdateSubscriptions.get(useCaseClass).add(listener);
-    }
-
-    public static void subscribe(Class<? extends UseCase> useCaseClass, OnCompleteListener listener) {
-
-        if (onCompleteSubscriptions == null) onCompleteSubscriptions = new HashMap<>();
-
-        // TODO synchronize with remove
-        if (onCompleteSubscriptions.get(useCaseClass) == null)
-            onCompleteSubscriptions.put(useCaseClass, new ArrayList<OnCompleteListener>());
-        onCompleteSubscriptions.get(useCaseClass).add(listener);
-    }
-
-    public static void unsubscribe(Class<? extends UseCase> useCaseClass, OnStartListener listener) {
-
-        List<OnStartListener> useCaseListeners = onStartSubscriptions.get(useCaseClass);
-        if (useCaseListeners != null) {
-            if (listener != null)
-                useCaseListeners.remove(listener);
-            else
-                useCaseListeners.clear();
+        List<UseCaseListener<? extends Result>> useCaseListeners = subscriptions.get(useCaseClass);
+        if (useCaseListeners == null) {
+            useCaseListeners = new ArrayList<>();
+            subscriptions.put(useCaseClass, useCaseListeners);
         }
+
+        useCaseListeners.remove(listener);
+        useCaseListeners.add(listener);
     }
 
-    public static void unsubscribe(Class<? extends UseCase> useCaseClass, OnUpdateListener listener) {
+    public static void unsubscribe(Class<? extends UseCase> useCaseClass, UseCaseListener<? extends Result> listener) {
 
-        List<OnUpdateListener> useCaseListeners = onUpdateSubscriptions.get(useCaseClass);
-        if (useCaseListeners != null) {
-            if (listener != null)
-                useCaseListeners.remove(listener);
-            else
-                useCaseListeners.clear();
-        }
-    }
-
-    public static void unsubscribe(Class<? extends UseCase> useCaseClass, OnCompleteListener listener) {
-
-        List<OnCompleteListener> useCaseListeners = onCompleteSubscriptions.get(useCaseClass);
+        List<UseCaseListener<? extends Result>> useCaseListeners = subscriptions.get(useCaseClass);
         if (useCaseListeners != null) {
             if (listener != null)
                 useCaseListeners.remove(listener);
@@ -352,77 +393,64 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
     }
 
     public static void unsubscribe(Class<? extends UseCase> useCaseClass) {
-        unsubscribe(useCaseClass, (OnStartListener) null);
-        unsubscribe(useCaseClass, (OnUpdateListener) null);
+        unsubscribe(useCaseClass, null);
     }
 
     public static void unsubscribeAll() {
-        onStartSubscriptions.clear();
+        subscriptions.clear();
     }
 
     public static void clearAllInProgress() {
-        inProgress.clear();
+        for (UseCase useCase : running.values())
+            useCase.state = State.DEAD;
+        running.clear();
     }
 
+    /**
+     * Marks the use case as completed, changing its state to DEAD and broadcasting
+     * the {@link com.morkim.tectonic.UseCaseListener#onComplete} callback to subscribers.
+     */
     protected void finish() {
 
-        // TODO synchronize
-        inProgress.remove(this.getClass());
-
-        onCompleteListener.onComplete();
-        for (OnCompleteListener listener : onCompleteSubscriptions.get(this.getClass()))
-            listener.onComplete();
-
-        onPostExecute();
+        if (state != State.DEAD) {
+            state = State.DEAD;
+            running.remove(UseCase.this.getClass());
+            observer.onNext(new Event(Type.COMPLETE));
+            onPostExecute();
+        }
     }
 
-    public static void abort(Class<? extends UseCase> useCaseClass) {
+    public static void cancel(Class<? extends UseCase> useCaseClass) {
 
-        UseCase useCase = inProgress.get(useCaseClass);
+        UseCase useCase = running.get(useCaseClass);
         if (useCase != null)
-            useCase.abort();
+            useCase.cancel();
     }
 
-    protected void abort() {
+    protected void cancel() {
 
-        onAbortListener.onCancel();
-        for (OnAbortListener listener : onAbortSubscriptions.get(this.getClass()))
+        if (subscription != null) subscription.dispose();
+
+        for (UseCaseListener listener : subscriptions.get(this.getClass())) {
+            consumedStarts.get(UseCase.this.getClass()).remove(listener);
             listener.onCancel();
+        }
 
-        inProgress.remove(this.getClass());
+        state = State.DEAD;
+        running.remove(this.getClass());
     }
 
-    protected void requestInput(int code) {
-        inProgress.remove(this.getClass());
-        onInputRequiredListener.onInputRequired(code);
+    protected void requestInput(Integer... codes) {
+
+        state = State.CREATED;
+        observer.onNext(new Event(Type.INPUT, codes));
+    }
+
+    protected RequiredInputs startInputValidation() {
+        return new RequiredInputs(this);
     }
 
     protected void onPostExecute() {
 
-    }
-
-    interface OnStartListener {
-
-        void onStart();
-    }
-
-    interface OnUpdateListener<Rs extends Result> {
-
-        void onUpdate(Rs result);
-    }
-
-    public interface OnCompleteListener {
-
-        void onComplete();
-    }
-
-    public interface OnAbortListener {
-
-        void onCancel();
-    }
-
-    interface OnInputRequiredListener {
-
-        void onInputRequired(int code);
     }
 }

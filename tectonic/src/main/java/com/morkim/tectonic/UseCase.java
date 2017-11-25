@@ -1,6 +1,7 @@
 package com.morkim.tectonic;
 
 
+import android.os.Looper;
 import android.util.SparseArray;
 
 import java.util.ArrayList;
@@ -27,7 +28,30 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
      */
     public static final int CASHED = 0x01000000;
 
+    /**
+     * Executes the use case synchronously, so the execution is performed on the calling thread
+     */
+    public static final int EXECUTE_ON_MAIN = 0x10000000;
+
+    public static final OnCheckAndroidLooper STUB_LOOPER_CHECKER = new OnCheckAndroidLooper() {
+
+        @Override
+        public boolean isMain() {
+            return true;
+        }
+    };
+
     private static final int NO_FLAGS = 0x00000000;
+
+    private static final OnCheckAndroidLooper DEFAULT_LOOPER_CHECKER = new OnCheckAndroidLooper() {
+
+        @Override
+        public boolean isMain() {
+            return Looper.getMainLooper().getThread() == Thread.currentThread();
+        }
+    };
+
+    private static OnCheckAndroidLooper onCheckLooper = DEFAULT_LOOPER_CHECKER;
 
     private enum State {
         NOT_CREATED,
@@ -128,13 +152,17 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
      */
     public void execute(final Rq request, int flags) {
 
-        if ((flags & CASHED) == CASHED)
-            executeCached(request);
+        if (isExecuteCached(flags))
+            executeCached(request, flags);
         else if (isExecutable())
-            executeAsync(request);
+            executeAsync(request, flags);
     }
 
-    private void executeCached(final Rq request) {
+    private boolean isExecuteCached(int flags) {
+        return (flags & CASHED) == CASHED;
+    }
+
+    private void executeCached(final Rq request, final int flags) {
 
         if (supportsCaching()) {
 
@@ -155,18 +183,22 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
                         e.onNext(new Event(Type.COMPLETE));
                     } else {
                         UseCase.this.observer = e;
-                        execute(request);
+                        execute(request, flags & EXECUTE_ON_MAIN);
                     }
 
                 }
             }).observeOn(AndroidSchedulers.mainThread())
-                    .subscribeOn(Schedulers.io())
+                    .subscribeOn(isExecuteOnMain(flags) ? AndroidSchedulers.mainThread() : Schedulers.io())
                     .subscribe(onNext);
         } else
             execute(request);
     }
 
-    private void executeAsync(Rq request) {
+    private boolean isExecuteOnMain(int flags) {
+        return (flags & EXECUTE_ON_MAIN) == EXECUTE_ON_MAIN;
+    }
+
+    private void executeAsync(Rq request, int flags) {
         this.request = request;
 
         subscription = Observable.create(new ObservableOnSubscribe<Event>() {
@@ -178,7 +210,7 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
 
             }
         }).observeOn(AndroidSchedulers.mainThread())
-                .subscribeOn(Schedulers.io())
+                .subscribeOn(isExecuteOnMain(flags) ? AndroidSchedulers.mainThread() : Schedulers.io())
                 .subscribe(onNext);
     }
 
@@ -481,5 +513,9 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
             this.type = type;
             this.codes = codes;
         }
+    }
+
+    public static void setOnCheckLooper(OnCheckAndroidLooper onCheckLooper) {
+        UseCase.onCheckLooper = onCheckLooper;
     }
 }

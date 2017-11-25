@@ -45,6 +45,8 @@ public class CacheTest extends TecTonicTest {
 				return Schedulers.trampoline();
 			}
 		});
+
+		UseCase.setOnCheckLooper(UseCase.STUB_LOOPER_CHECKER);
 	}
 
 	@Before

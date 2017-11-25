@@ -93,7 +93,7 @@ public class CacheTest extends TecTonicTest {
 
 		useCase = new TestUseCase();
 		useCase.subscribe(createCachedResultListener());
-		useCase.executeCached();
+		useCase.execute(UseCase.CASHED);
 
 		assertNotEquals(originalResult, cachedResult);
 		assertEquals(0, onStartCachedCalled);
@@ -111,7 +111,7 @@ public class CacheTest extends TecTonicTest {
 
 		useCase = UseCase.fetch(CachableTestUseCase.class);
 		useCase.subscribe(createCachedResultListener());
-		useCase.executeCached();
+		useCase.execute(UseCase.CASHED);
 
 		assertEquals(originalResult, cachedResult);
 		assertEquals(1, onStartCachedCalled);
@@ -133,7 +133,7 @@ public class CacheTest extends TecTonicTest {
 
 		useCase = UseCase.fetch(CachableTestUseCase.class);
 		useCase.subscribe(createCachedResultListener());
-		useCase.executeCached();
+		useCase.execute(UseCase.CASHED);
 
 		assertNotEquals(originalResult, cachedResult);
 		assertEquals(1, onStartCachedCalled);

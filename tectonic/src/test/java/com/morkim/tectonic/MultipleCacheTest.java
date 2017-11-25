@@ -91,9 +91,10 @@ public class MultipleCacheTest {
 
 		useCase = UseCase.fetch(TestUseCase.class);
 		useCase.subscribe(createCachedResultListener());
-		useCase.executeCached(new CashableRequest.Builder()
+		useCase.execute(new CashableRequest.Builder()
 				.param1(65)
-				.build());
+				.build(),
+				UseCase.CASHED);
 
 		assertNotEquals(originalResult, cachedResult);
 	}
@@ -113,9 +114,10 @@ public class MultipleCacheTest {
 
 		useCase = UseCase.fetch(CachableTestUseCase.class);
 		useCase.subscribe(createCachedResultListener());
-		useCase.executeCached(new CashableRequest.Builder()
+		useCase.execute(new CashableRequest.Builder()
 				.param1(77)
-				.build());
+				.build(),
+				UseCase.CASHED);
 
 		assertNotEquals(originalResult, cachedResult);
 	}
@@ -133,9 +135,10 @@ public class MultipleCacheTest {
 
 		useCase = UseCase.fetch(CachableTestUseCase.class);
 		useCase.subscribe(createCachedResultListener());
-		useCase.executeCached(new CashableRequest.Builder()
+		useCase.execute(new CashableRequest.Builder()
 				.param1(65)
-				.build());
+				.build(),
+				UseCase.CASHED);
 
 		assertEquals(originalResult, cachedResult);
 	}
@@ -155,9 +158,10 @@ public class MultipleCacheTest {
 
 		useCase = UseCase.fetch(CachableTestUseCase.class);
 		useCase.subscribe(createCachedResultListener());
-		useCase.executeCached(new CashableRequest.Builder()
+		useCase.execute(new CashableRequest.Builder()
 				.param1(66)
-				.build());
+				.build(),
+				UseCase.CASHED);
 
 		assertNotEquals(originalResult, cachedResult);
 		assertNotNull(cachedResult);

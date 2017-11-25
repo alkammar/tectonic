@@ -21,6 +21,14 @@ import io.reactivex.schedulers.Schedulers;
 @SuppressWarnings({"WeakerAccess", "unused"})
 public abstract class UseCase<Rq extends Request, Rs extends Result> {
 
+    /**
+     * Executes the use case in cached mode, where if a cached result exists it is returned with
+     * executing the use case otherwise if a result does not exist the use case will be executed
+     */
+    public static final int CASHED = 0x01000000;
+
+    private static final int NO_FLAGS = 0x00000000;
+
     private enum State {
         NOT_CREATED,
         CREATED,
@@ -92,29 +100,15 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
         prerequisites = new ArrayList<>();
     }
 
-    public void execute() {
-        execute(null);
+    public void execute(int flags) {
+        execute(null, flags);
     }
 
-    private class Event {
-
-        Type type;
-        Rs result;
-        Integer[] codes;
-
-        Event(Type type) {
-            this(type, (Rs) null);
-        }
-
-        Event(Type type, Rs result) {
-            this.type = type;
-            this.result = result;
-        }
-
-        Event(Type type, Integer[] codes) {
-            this.type = type;
-            this.codes = codes;
-        }
+    /**
+     * Executes this use case instance if it is only executable
+     */
+    public void execute() {
+        execute(null, 0);
     }
 
     /**
@@ -123,9 +117,56 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
      * @param request The use case request
      */
     public void execute(final Rq request) {
+        execute(request, 0);
+    }
 
-        if (!isExecutable()) return;
+    /**
+     * Executes this use case instance if it is only executable
+     *
+     * @param request The use case request
+     * @param flags   Execution flags
+     */
+    public void execute(final Rq request, int flags) {
 
+        if ((flags & CASHED) == CASHED)
+            executeCached(request);
+        else if (isExecutable())
+            executeAsync(request);
+    }
+
+    private void executeCached(final Rq request) {
+
+        if (supportsCaching()) {
+
+            if (cachedResults.get(UseCase.this.getClass()) == null)
+                cachedResults.put(UseCase.this.getClass(), new SparseArray<Result>());
+
+            //noinspection unchecked
+            final Rs result = (Rs) cachedResults.get(UseCase.this.getClass())
+                    .get(request == null ? Request.NO_ID : request.id());
+
+            subscription = Observable.create(new ObservableOnSubscribe<Event>() {
+                @Override
+                public void subscribe(@NonNull ObservableEmitter<Event> e) throws Exception {
+
+                    if (isCachedExecutable(result)) {
+                        e.onNext(new Event(Type.START));
+                        e.onNext(new Event(Type.UPDATE, result));
+                        e.onNext(new Event(Type.COMPLETE));
+                    } else {
+                        UseCase.this.observer = e;
+                        execute(request);
+                    }
+
+                }
+            }).observeOn(AndroidSchedulers.mainThread())
+                    .subscribeOn(Schedulers.io())
+                    .subscribe(onNext);
+        } else
+            execute(request);
+    }
+
+    private void executeAsync(Rq request) {
         this.request = request;
 
         subscription = Observable.create(new ObservableOnSubscribe<Event>() {
@@ -226,42 +267,6 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
         }
     }
 
-    /**
-     * Executes the use case in cached mode, where if a cached result exists it is returned with
-     * executing the use case otherwise if a result does not exist the use case will be executed
-     */
-    public void executeCached() {
-        executeCached(null);
-    }
-
-    public void executeCached(final Rq request) {
-
-        if (supportsCaching()) {
-            subscription = Observable.create(new ObservableOnSubscribe<Event>() {
-                @Override
-                public void subscribe(@NonNull ObservableEmitter<Event> e) throws Exception {
-
-                    UseCase.this.observer = e;
-
-                    if (cachedResults.get(UseCase.this.getClass()) == null)
-                        cachedResults.put(UseCase.this.getClass(), new SparseArray<Result>());
-                    //noinspection unchecked
-                    final Rs result = (Rs) cachedResults.get(UseCase.this.getClass())
-                            .get(request == null ? Request.NO_ID : request.id());
-                    if (isCachedExecutable(result)) {
-                        e.onNext(new Event(Type.START));
-                        e.onNext(new Event(Type.UPDATE, result));
-                        e.onNext(new Event(Type.COMPLETE));
-                    } else
-                        execute(request);
-                }
-            }).observeOn(AndroidSchedulers.mainThread())
-                    .subscribeOn(Schedulers.io())
-                    .subscribe(onNext);
-        } else
-            execute(request);
-    }
-
     private boolean isCachedExecutable(Rs result) {
         return (state == State.DEAD || state == State.CREATED) &&
                 result != null;
@@ -270,56 +275,59 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
     private Consumer<Event> onNext = new Consumer<Event>() {
         @Override
         public void accept(@NonNull Event event) throws Exception {
-
-            switch (event.type) {
-                case START:
-                    for (UseCaseListener listener : subscriptions.get(UseCase.this.getClass())) {
-                        List<UseCaseListener<? extends Result>> consumedListener = consumedStarts.get(UseCase.this.getClass());
-                        if (!consumedListener.contains(listener))
-                            listener.onStart();
-
-                        if (!consumedListener.contains(listener))
-                            //noinspection unchecked
-                            consumedListener.add(listener);
-                    }
-                    break;
-                case UPDATE:
-                    for (UseCaseListener listener : subscriptions.get(UseCase.this.getClass()))
-                        //noinspection unchecked
-                        listener.onUpdate(event.result);
-
-                    SparseArray<Result> resultsMap;
-                    if (cachedResults.get(UseCase.this.getClass()) == null) {
-                        resultsMap = new SparseArray<>();
-                        cachedResults.put(UseCase.this.getClass(), resultsMap);
-                    } else
-                        resultsMap = cachedResults.get(UseCase.this.getClass());
-
-                    resultsMap.put(request == null ? Request.NO_ID : request.id(), event.result);
-                    break;
-                case COMPLETE:
-                    List<UseCaseListener<? extends Result>> useCaseSubscriptions = subscriptions.get(UseCase.this.getClass());
-                    for (int i = 0; i < useCaseSubscriptions.size(); i++) {
-                        UseCaseListener listener = useCaseSubscriptions.get(i);
-                        listener.onComplete();
-
-                        if (listener instanceof DisposableUseCaseListener) {
-                            useCaseSubscriptions.remove(listener);
-                            i--;
-                        }
-                        consumedStarts.get(UseCase.this.getClass()).remove(listener);
-                    }
-                    break;
-                case INPUT:
-                    List<UseCaseListener<? extends Result>> useCaseListeners = subscriptions.get(UseCase.this.getClass());
-                    for (int i = useCaseListeners.size() - 1; i >= 0; i--) {
-                        if (useCaseListeners.get(i).onInputRequired(Arrays.asList(event.codes)))
-                            break;
-                    }
-                    break;
-            }
+            notifySubscribers(event);
         }
     };
+
+    private void notifySubscribers(@NonNull Event event) {
+        switch (event.type) {
+            case START:
+                for (UseCaseListener listener : subscriptions.get(UseCase.this.getClass())) {
+                    List<UseCaseListener<? extends Result>> consumedListener = consumedStarts.get(UseCase.this.getClass());
+                    if (!consumedListener.contains(listener))
+                        listener.onStart();
+
+                    if (!consumedListener.contains(listener))
+                        //noinspection unchecked
+                        consumedListener.add(listener);
+                }
+                break;
+            case UPDATE:
+                for (UseCaseListener listener : subscriptions.get(UseCase.this.getClass()))
+                    //noinspection unchecked
+                    listener.onUpdate(event.result);
+
+                SparseArray<Result> resultsMap;
+                if (cachedResults.get(UseCase.this.getClass()) == null) {
+                    resultsMap = new SparseArray<>();
+                    cachedResults.put(UseCase.this.getClass(), resultsMap);
+                } else
+                    resultsMap = cachedResults.get(UseCase.this.getClass());
+
+                resultsMap.put(request == null ? Request.NO_ID : request.id(), event.result);
+                break;
+            case COMPLETE:
+                List<UseCaseListener<? extends Result>> useCaseSubscriptions = subscriptions.get(UseCase.this.getClass());
+                for (int i = 0; i < useCaseSubscriptions.size(); i++) {
+                    UseCaseListener listener = useCaseSubscriptions.get(i);
+                    listener.onComplete();
+
+                    if (listener instanceof DisposableUseCaseListener) {
+                        useCaseSubscriptions.remove(listener);
+                        i--;
+                    }
+                    consumedStarts.get(UseCase.this.getClass()).remove(listener);
+                }
+                break;
+            case INPUT:
+                List<UseCaseListener<? extends Result>> useCaseListeners = subscriptions.get(UseCase.this.getClass());
+                for (int i = useCaseListeners.size() - 1; i >= 0; i--) {
+                    if (useCaseListeners.get(i).onInputRequired(Arrays.asList(event.codes)))
+                        break;
+                }
+                break;
+        }
+    }
 
     protected boolean supportsCaching() {
         return false;
@@ -452,5 +460,26 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
 
     protected void onPostExecute() {
 
+    }
+
+    private class Event {
+
+        Type type;
+        Rs result;
+        Integer[] codes;
+
+        Event(Type type) {
+            this(type, (Rs) null);
+        }
+
+        Event(Type type, Rs result) {
+            this.type = type;
+            this.result = result;
+        }
+
+        Event(Type type, Integer[] codes) {
+            this.type = type;
+            this.codes = codes;
+        }
     }
 }

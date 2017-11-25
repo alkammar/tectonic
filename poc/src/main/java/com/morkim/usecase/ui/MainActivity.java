@@ -41,7 +41,7 @@ public class MainActivity extends AppCompatActivity {
         getSupportActionBar().setTitle("Home");
 
         refresh = (Button) findViewById(R.id.btn_refresh);
-        abort  = (Button) findViewById(R.id.btn_abort);
+        abort = (Button) findViewById(R.id.btn_abort);
 
         label = (TextView) findViewById(R.id.label);
         progress = (ProgressBar) findViewById(R.id.prg_progress);
@@ -83,7 +83,7 @@ public class MainActivity extends AppCompatActivity {
         // result will be returned
         UseCase.fetch(MainUseCase.class)
                 .subscribe(mainUseCaseListener)
-                .executeCached();
+                .execute(UseCase.CASHED);
     }
 
     private SimpleUseCaseListener<MainUseCaseResult> mainUseCaseListener = new SimpleUseCaseListener<MainUseCaseResult>() {

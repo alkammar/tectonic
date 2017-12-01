@@ -31,7 +31,7 @@ public class AuthenticateLogin extends UseCase<AuthenticateLoginRequest, Result>
                     public void onComplete() {
                         // if we completed registration then no need to login, you can see that the
                         // skip flag is now updated before the execution of the login use case, so
-                        // we can check it state in the onExecute method
+                        // we can check its state in the onExecute method
                         skip = true;
                     }
                 });

@@ -26,10 +26,12 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity {
 
     private Button refresh;
+    @SuppressWarnings("FieldCanBeLocal")
     private Button abort;
 
     private TextView label;
     private ProgressBar progress;
+    private SimpleUseCaseListener<Result> logoutListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,17 +63,19 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        findViewById(R.id.btn_logout).setOnClickListener(v ->
-                UseCase.fetch(LogoutUser.class)
-                        .subscribe(new SimpleUseCaseListener<Result>() {
-                            @Override
-                            public void onComplete() {
-                                label.setText("");
-                                UseCase.clearCache(MainUseCase.class);
-                                startActivity(new Intent(getBaseContext(), LoginActivity.class));
-                            }
-                        })
-                        .execute());
+        findViewById(R.id.btn_logout).setOnClickListener(v -> {
+            logoutListener = new SimpleUseCaseListener<Result>() {
+                @Override
+                public void onComplete() {
+                    label.setText("");
+                    UseCase.clearCache(MainUseCase.class);
+                    startActivity(new Intent(getBaseContext(), LoginActivity.class));
+                }
+            };
+            UseCase.fetch(LogoutUser.class)
+                    .subscribe(logoutListener)
+                    .execute();
+        });
     }
 
     @Override
@@ -156,5 +160,6 @@ public class MainActivity extends AppCompatActivity {
         UseCase.unsubscribe(MainUseCase.class, mainUseCaseListener);
         UseCase.unsubscribe(RegisterUser.class, registerUserListener);
         UseCase.unsubscribe(AuthenticateLogin.class, authenticateLoginListener);
+        UseCase.unsubscribe(LogoutUser.class, logoutListener);
     }
 }

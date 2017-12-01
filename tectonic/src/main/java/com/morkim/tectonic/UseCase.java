@@ -5,7 +5,6 @@ import android.os.Looper;
 import android.util.SparseArray;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,8 +15,10 @@ import io.reactivex.ObservableOnSubscribe;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.annotations.NonNull;
 import io.reactivex.disposables.Disposable;
-import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
+import io.reactivex.subjects.ReplaySubject;
+import io.reactivex.subjects.Subject;
+
 
 @SuppressWarnings({"WeakerAccess", "unused"})
 public abstract class UseCase<Rq extends Request, Rs extends Result> {
@@ -51,7 +52,7 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
         }
     };
 
-    private static OnCheckAndroidLooper onCheckLooper = DEFAULT_LOOPER_CHECKER;
+    static OnCheckAndroidLooper onCheckLooper = DEFAULT_LOOPER_CHECKER;
 
     private enum State {
         NOT_CREATED,
@@ -69,7 +70,6 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
 
     private Rq request;
 
-    private ObservableEmitter<Event> observer;
     private State state = State.NOT_CREATED;
     private Disposable subscription;
 
@@ -78,8 +78,9 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
     private final List<Prerequisite> prerequisites;
     private int prerequisiteIndex;
 
-    private static Map<Class<? extends UseCase>, List<UseCaseListener<? extends Result>>> subscriptions = new HashMap<>();
-    private static Map<Class<? extends UseCase>, List<UseCaseListener<? extends Result>>> consumedStarts = new HashMap<>();
+    private static Map<Class<? extends UseCase>, Subscriptions> subscriptionMap = new HashMap<>();
+
+    private Subject<UseCaseListener<? extends Result>> subscribers = ReplaySubject.create();
 
     private static Map<Class<? extends UseCase>, SparseArray<Result>> cachedResults = new HashMap<>();
 
@@ -115,11 +116,8 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
 
     protected UseCase() {
 
-        if (subscriptions.get(this.getClass()) == null)
-            subscriptions.put(this.getClass(), new ArrayList<UseCaseListener<? extends Result>>());
-
-        if (consumedStarts.get(this.getClass()) == null)
-            consumedStarts.put(this.getClass(), new ArrayList<UseCaseListener<? extends Result>>());
+        if (subscriptionMap.get(this.getClass()) == null)
+            subscriptionMap.put(this.getClass(), new Subscriptions());
 
         prerequisites = new ArrayList<>();
     }
@@ -178,18 +176,17 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
                 public void subscribe(@NonNull ObservableEmitter<Event> e) throws Exception {
 
                     if (isCachedExecutable(result)) {
-                        e.onNext(new Event(Type.START));
-                        e.onNext(new Event(Type.UPDATE, result));
-                        e.onNext(new Event(Type.COMPLETE));
+                        notifySubscribers(new Event(Type.START));
+                        notifySubscribers(new Event(Type.UPDATE, result));
+                        notifySubscribers(new Event(Type.COMPLETE));
                     } else {
-                        UseCase.this.observer = e;
                         execute(request, flags & EXECUTE_ON_MAIN);
                     }
 
                 }
             }).observeOn(AndroidSchedulers.mainThread())
                     .subscribeOn(isExecuteOnMain(flags) ? AndroidSchedulers.mainThread() : Schedulers.io())
-                    .subscribe(onNext);
+                    .subscribe();
         } else
             execute(request);
     }
@@ -204,23 +201,21 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
         subscription = Observable.create(new ObservableOnSubscribe<Event>() {
             @Override
             public void subscribe(@NonNull ObservableEmitter<Event> e) throws Exception {
-
-                UseCase.this.observer = e;
-                executeOnObservable();
+                executeObservable();
 
             }
         }).observeOn(AndroidSchedulers.mainThread())
                 .subscribeOn(isExecuteOnMain(flags) ? AndroidSchedulers.mainThread() : Schedulers.io())
-                .subscribe(onNext);
+                .subscribe();
     }
 
     private boolean isExecutable() {
         return state == State.CREATED || state == State.IN_PROGRESS;
     }
 
-    private void executeOnObservable() {
+    private void executeObservable() {
 
-        observer.onNext(new Event(Type.START));
+        notifySubscribers(new Event(Type.START));
 
         if (state != State.IN_PROGRESS) {
             state = State.IN_PROGRESS;
@@ -304,61 +299,33 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
                 result != null;
     }
 
-    private Consumer<Event> onNext = new Consumer<Event>() {
-        @Override
-        public void accept(@NonNull Event event) throws Exception {
-            notifySubscribers(event);
-        }
-    };
-
-    private void notifySubscribers(@NonNull Event event) {
+    private void notifySubscribers(@NonNull final Event event) {
         switch (event.type) {
             case START:
-                for (UseCaseListener listener : subscriptions.get(UseCase.this.getClass())) {
-                    List<UseCaseListener<? extends Result>> consumedListener = consumedStarts.get(UseCase.this.getClass());
-                    if (!consumedListener.contains(listener))
-                        listener.onStart();
-
-                    if (!consumedListener.contains(listener))
-                        //noinspection unchecked
-                        consumedListener.add(listener);
-                }
+                subscriptionMap.get(this.getClass()).notifyStart();
                 break;
             case UPDATE:
-                for (UseCaseListener listener : subscriptions.get(UseCase.this.getClass()))
-                    //noinspection unchecked
-                    listener.onUpdate(event.result);
-
-                SparseArray<Result> resultsMap;
-                if (cachedResults.get(UseCase.this.getClass()) == null) {
-                    resultsMap = new SparseArray<>();
-                    cachedResults.put(UseCase.this.getClass(), resultsMap);
-                } else
-                    resultsMap = cachedResults.get(UseCase.this.getClass());
-
-                resultsMap.put(request == null ? Request.NO_ID : request.id(), event.result);
+                updateCache(event.result);
+                subscriptionMap.get(this.getClass()).notifyUpdate(event.result);
                 break;
             case COMPLETE:
-                List<UseCaseListener<? extends Result>> useCaseSubscriptions = subscriptions.get(UseCase.this.getClass());
-                for (int i = 0; i < useCaseSubscriptions.size(); i++) {
-                    UseCaseListener listener = useCaseSubscriptions.get(i);
-                    listener.onComplete();
-
-                    if (listener instanceof DisposableUseCaseListener) {
-                        useCaseSubscriptions.remove(listener);
-                        i--;
-                    }
-                    consumedStarts.get(UseCase.this.getClass()).remove(listener);
-                }
+                subscriptionMap.get(this.getClass()).notifyComplete();
                 break;
             case INPUT:
-                List<UseCaseListener<? extends Result>> useCaseListeners = subscriptions.get(UseCase.this.getClass());
-                for (int i = useCaseListeners.size() - 1; i >= 0; i--) {
-                    if (useCaseListeners.get(i).onInputRequired(Arrays.asList(event.codes)))
-                        break;
-                }
+                subscriptionMap.get(this.getClass()).notifyInputRequired(event.codes);
                 break;
         }
+    }
+
+    private void updateCache(Result result) {
+        SparseArray<Result> resultsMap;
+        if (cachedResults.get(UseCase.this.getClass()) == null) {
+            resultsMap = new SparseArray<>();
+            cachedResults.put(UseCase.this.getClass(), resultsMap);
+        } else
+            resultsMap = cachedResults.get(UseCase.this.getClass());
+
+        resultsMap.put(request == null ? Request.NO_ID : request.id(), result);
     }
 
     protected boolean supportsCaching() {
@@ -386,7 +353,7 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
      */
     protected void updateSubscribers(Rs result) {
         if (state != State.DEAD)
-            observer.onNext(new Event(Type.UPDATE, result));
+            notifySubscribers(new Event(Type.UPDATE, result));
     }
 
     /**
@@ -409,26 +376,26 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
 
     public static void subscribe(Class<? extends UseCase> useCaseClass, UseCaseListener<? extends Result> listener) {
 
-        if (subscriptions == null) subscriptions = new HashMap<>();
+        if (subscriptionMap == null) subscriptionMap = new HashMap<>();
 
-        List<UseCaseListener<? extends Result>> useCaseListeners = subscriptions.get(useCaseClass);
+        Subscriptions useCaseListeners = subscriptionMap.get(useCaseClass);
         if (useCaseListeners == null) {
-            useCaseListeners = new ArrayList<>();
-            subscriptions.put(useCaseClass, useCaseListeners);
+            useCaseListeners = new Subscriptions();
+            subscriptionMap.put(useCaseClass, useCaseListeners);
         }
 
         useCaseListeners.remove(listener);
-        useCaseListeners.add(listener);
+        useCaseListeners.add(new Subscription<>(listener));
     }
 
     public static void unsubscribe(Class<? extends UseCase> useCaseClass, UseCaseListener<? extends Result> listener) {
 
-        List<UseCaseListener<? extends Result>> useCaseListeners = subscriptions.get(useCaseClass);
-        if (useCaseListeners != null) {
+        Subscriptions subscriptions = subscriptionMap.get(useCaseClass);
+        if (subscriptions != null) {
             if (listener != null)
-                useCaseListeners.remove(listener);
+                subscriptions.remove(listener);
             else
-                useCaseListeners.clear();
+                subscriptions.clear();
         }
     }
 
@@ -437,7 +404,7 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
     }
 
     public static void unsubscribeAll() {
-        subscriptions.clear();
+        subscriptionMap.clear();
     }
 
     public static void clearAllInProgress() {
@@ -455,7 +422,7 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
         if (state != State.DEAD) {
             state = State.DEAD;
             running.remove(UseCase.this.getClass());
-            observer.onNext(new Event(Type.COMPLETE));
+            notifySubscribers(new Event(Type.COMPLETE));
             onPostExecute();
         }
     }
@@ -471,10 +438,7 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
 
         if (subscription != null) subscription.dispose();
 
-        for (UseCaseListener listener : subscriptions.get(this.getClass())) {
-            consumedStarts.get(UseCase.this.getClass()).remove(listener);
-            listener.onCancel();
-        }
+        subscriptionMap.get(this.getClass()).notifyCancel();
 
         state = State.DEAD;
         running.remove(this.getClass());
@@ -483,7 +447,7 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
     protected void requestInput(Integer... codes) {
 
         state = State.CREATED;
-        observer.onNext(new Event(Type.INPUT, codes));
+        notifySubscribers(new Event(Type.INPUT, codes));
     }
 
     protected RequiredInputs startInputValidation() {
@@ -494,13 +458,13 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
 
     }
 
-    private class Event {
+    class Event {
 
         Type type;
         Rs result;
         Integer[] codes;
 
-        Event(Type type) {
+        public Event(Type type) {
             this(type, (Rs) null);
         }
 

@@ -54,13 +54,6 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
 
     static OnCheckAndroidLooper onCheckLooper = DEFAULT_LOOPER_CHECKER;
 
-    private enum State {
-        NOT_CREATED,
-//        CREATED,
-        IN_PROGRESS,
-        DEAD,
-    }
-
     private enum Type {
         START,
         UPDATE,
@@ -255,25 +248,17 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
 
             final UseCase prerequisiteUseCase = UseCase.fetch(prerequisite.useCase);
 
-            if (prerequisite.listener != null)
-                //noinspection unchecked
-                prerequisiteUseCase.subscribe(prerequisite.listener);
-
             //noinspection unchecked
             subscribe(prerequisite.useCase,
-                    new SimpleDisposableUseCaseListener<Result>() {
+                    new PrerequisiteListener(prerequisite.listener) {
                         @Override
                         public void onComplete() {
-                            subscription = Observable.create(new ObservableOnSubscribe<Event>() {
-                                @Override
-                                public void subscribe(@NonNull ObservableEmitter<Event> e) throws Exception {
-                                    executeNextPrerequisite();
-                                }
-                            }).observeOn(AndroidSchedulers.mainThread())
-                                    .subscribeOn(Schedulers.io())
-                                    .subscribe();
+                            super.onComplete();
+
+                            executeNextPrerequisite();
                         }
-                    });
+                    }
+            );
             prerequisiteUseCase.execute();
         } else {
             executeNextPrerequisite();
@@ -374,14 +359,14 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
 
         if (subscriptionMap == null) subscriptionMap = new HashMap<>();
 
-        Subscriptions useCaseListeners = subscriptionMap.get(useCaseClass);
-        if (useCaseListeners == null) {
-            useCaseListeners = new Subscriptions();
-            subscriptionMap.put(useCaseClass, useCaseListeners);
+        Subscriptions subscriptions = subscriptionMap.get(useCaseClass);
+        if (subscriptions == null) {
+            subscriptions = new Subscriptions();
+            subscriptionMap.put(useCaseClass, subscriptions);
         }
 
-        useCaseListeners.remove(listener);
-        useCaseListeners.add(new Subscription<>(listener));
+        subscriptions.remove(listener);
+        subscriptions.add(new Subscription<>(listener));
     }
 
     public static void unsubscribe(Class<? extends UseCase> useCaseClass, UseCaseListener<? extends Result> listener) {

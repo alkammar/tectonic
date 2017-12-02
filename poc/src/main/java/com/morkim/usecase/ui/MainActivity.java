@@ -48,9 +48,10 @@ public class MainActivity extends AppCompatActivity {
         label = (TextView) findViewById(R.id.label);
         progress = (ProgressBar) findViewById(R.id.prg_progress);
 
-        // While refreshing you need the use case to override its cached result, so here we use
+        // While refreshing you need the use case to overwrite its cached result, so here we use
         // non-cached execution
         refresh.setOnClickListener(v -> UseCase.fetch(MainUseCase.class).execute());
+
         abort.setOnClickListener(v -> UseCase.cancel(MainUseCase.class));
 
         UseCase.subscribe(RegisterUser.class, registerUserListener);
@@ -68,6 +69,7 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onComplete() {
                     label.setText("");
+                    UseCase.cancel(MainUseCase.class);
                     UseCase.clearCache(MainUseCase.class);
                     startActivity(new Intent(getBaseContext(), LoginActivity.class));
                 }

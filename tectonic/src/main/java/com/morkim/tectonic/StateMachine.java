@@ -4,8 +4,9 @@ class StateMachine {
 
     private State state = new NotCreated();
 
-    private State inProgressState = new InProgress();
     private State createdState = new Created();
+    private State inProgressState = new InProgress();
+    private State pendingInput = new PendingInput();
     private State deadState = new Dead();
 
     void create() {
@@ -32,12 +33,16 @@ class StateMachine {
         this.state = state;
     }
 
+    State getCreatedState() {
+        return createdState;
+    }
+
     State getInProgressState() {
         return inProgressState;
     }
 
-    State getCreatedState() {
-        return createdState;
+    State getPendingInput() {
+        return pendingInput;
     }
 
     State getDeadState() {
@@ -196,7 +201,7 @@ class InProgress implements State {
 
     @Override
     public void askForInput(StateMachine stateMachine) {
-        stateMachine.setState(stateMachine.getCreatedState());
+        stateMachine.setState(stateMachine.getPendingInput());
     }
 
     @Override
@@ -212,6 +217,54 @@ class InProgress implements State {
     @Override
     public boolean isInProgress() {
         return true;
+    }
+
+    @Override
+    public boolean isCachedExecutable() {
+        return false;
+    }
+
+    @Override
+    public boolean isDead() {
+        return false;
+    }
+}
+
+class PendingInput implements State {
+
+    @Override
+    public void create(StateMachine stateMachine) {
+
+    }
+
+    @Override
+    public void start(StateMachine stateMachine) {
+        stateMachine.setState(stateMachine.getInProgressState());
+    }
+
+    @Override
+    public void finish(StateMachine stateMachine) {
+        stateMachine.setState(stateMachine.getDeadState());
+    }
+
+    @Override
+    public void askForInput(StateMachine stateMachine) {
+
+    }
+
+    @Override
+    public void kill(StateMachine stateMachine) {
+        stateMachine.setState(stateMachine.getDeadState());
+    }
+
+    @Override
+    public boolean isExecutable() {
+        return true;
+    }
+
+    @Override
+    public boolean isInProgress() {
+        return false;
     }
 
     @Override

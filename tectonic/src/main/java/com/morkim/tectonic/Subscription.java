@@ -3,6 +3,7 @@ package com.morkim.tectonic;
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
 import io.reactivex.ObservableOnSubscribe;
+import io.reactivex.Scheduler;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.annotations.NonNull;
 import io.reactivex.disposables.Disposable;
@@ -16,22 +17,18 @@ class Subscription<R extends Result> {
     private Observable<Subscription<R>> observable;
     private boolean isMain = true;
 
-    Subscription(UseCaseListener<R> listener) {
-        attach(listener);
-    }
-
-    private void attach(final UseCaseListener<R> listener) {
+    Subscription(Scheduler scheduler, UseCaseListener<R> listener) {
 
         this.listener = listener;
 
-        isMain = UseCase.onCheckLooper.isMain();
+        isMain = UseCase.looperConfigs.isMain();
 
         observable = Observable.create(new ObservableOnSubscribe<Subscription<R>>() {
             @Override
             public void subscribe(@NonNull ObservableEmitter<Subscription<R>> e) throws Exception {
                 e.onNext(Subscription.this);
             }
-        }).subscribeOn(Schedulers.io());
+        }).subscribeOn(scheduler);
     }
 
     void dispatch(Consumer<Subscription> onNext) {

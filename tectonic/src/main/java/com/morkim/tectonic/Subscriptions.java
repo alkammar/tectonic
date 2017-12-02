@@ -6,9 +6,12 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executors;
 
+import io.reactivex.Scheduler;
 import io.reactivex.annotations.NonNull;
 import io.reactivex.functions.Consumer;
+import io.reactivex.schedulers.Schedulers;
 
 class Subscriptions {
 
@@ -16,9 +19,14 @@ class Subscriptions {
     private List<Subscription> subscriptionList = new ArrayList<>();
     private List<Subscription> consumedStartList = new ArrayList<>();
 
-    void add(Subscription subscription) {
+    private Scheduler scheduler = UseCase.looperConfigs.isSingleThread() ?
+            Schedulers.trampoline() :
+            Schedulers.from(Executors.newSingleThreadExecutor());
+
+    void add(UseCaseListener<? extends Result> listener) {
+        Subscription subscription = new Subscription<>(scheduler, listener);
         subscriptionList.add(subscription);
-        subscriptionMap.put(subscription.getListener(), subscription);
+        subscriptionMap.put(listener, subscription);
     }
 
     void remove(UseCaseListener listener) {

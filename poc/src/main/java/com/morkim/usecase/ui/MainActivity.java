@@ -3,6 +3,7 @@ package com.morkim.usecase.ui;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
@@ -99,12 +100,14 @@ public class MainActivity extends AppCompatActivity {
             // use case has started
             refresh.setEnabled(false);
             progress.setVisibility(View.VISIBLE);
+            Log.i("MainActivity", "onStart");
         }
 
         @Override
         public void onUpdate(MainUseCaseResult result) {
             // received an update result from the use case
             label.setText(result.data);
+            Log.i("MainActivity", "onUpdate: " + result.data);
         }
 
         @Override
@@ -112,6 +115,7 @@ public class MainActivity extends AppCompatActivity {
             // use case has completed
             refresh.setEnabled(true);
             progress.setVisibility(View.GONE);
+            Log.i("MainActivity", "onComplete");
         }
 
         @Override
@@ -120,6 +124,7 @@ public class MainActivity extends AppCompatActivity {
             label.setText(R.string.cancelled);
             refresh.setEnabled(true);
             progress.setVisibility(View.GONE);
+            Log.i("MainActivity", "onCancel");
         }
     };
 

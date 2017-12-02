@@ -43,7 +43,7 @@ public class ResultsTest extends TecTonicTest {
 			}
 		});
 
-		UseCase.setOnCheckLooper(UseCase.STUB_LOOPER_CHECKER);
+		UseCase.setLooperConfigs(UseCase.STUB_LOOPER_CHECKER);
 	}
 
 	@Before

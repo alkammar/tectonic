@@ -34,25 +34,35 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
      */
     public static final int EXECUTE_ON_MAIN = 0x10000000;
 
-    public static final OnCheckAndroidLooper STUB_LOOPER_CHECKER = new OnCheckAndroidLooper() {
+    public static final LooperConfigs STUB_LOOPER_CHECKER = new LooperConfigs() {
 
         @Override
         public boolean isMain() {
+            return true;
+        }
+
+        @Override
+        public boolean isSingleThread() {
             return true;
         }
     };
 
     private static final int NO_FLAGS = 0x00000000;
 
-    private static final OnCheckAndroidLooper DEFAULT_LOOPER_CHECKER = new OnCheckAndroidLooper() {
+    private static final LooperConfigs DEFAULT_LOOPER_CHECKER = new LooperConfigs() {
 
         @Override
         public boolean isMain() {
             return Looper.getMainLooper().getThread() == Thread.currentThread();
         }
+
+        @Override
+        public boolean isSingleThread() {
+            return false;
+        }
     };
 
-    static OnCheckAndroidLooper onCheckLooper = DEFAULT_LOOPER_CHECKER;
+    static LooperConfigs looperConfigs = DEFAULT_LOOPER_CHECKER;
 
     private enum Type {
         START,
@@ -366,7 +376,7 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
         }
 
         subscriptions.remove(listener);
-        subscriptions.add(new Subscription<>(listener));
+        subscriptions.add(listener);
     }
 
     public static void unsubscribe(Class<? extends UseCase> useCaseClass, UseCaseListener<? extends Result> listener) {
@@ -460,7 +470,7 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
         }
     }
 
-    public static void setOnCheckLooper(OnCheckAndroidLooper onCheckLooper) {
-        UseCase.onCheckLooper = onCheckLooper;
+    public static void setLooperConfigs(LooperConfigs looperConfigs) {
+        UseCase.looperConfigs = looperConfigs;
     }
 }

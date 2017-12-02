@@ -35,19 +35,15 @@ class Subscriptions {
         subscriptionMap.clear();
     }
 
-    List<Subscription> getSubscriptions() {
-        return subscriptionList;
-    }
-
     void notifyStart() {
 
         for (final Subscription subscription : subscriptionMap.values())
-            subscription.dispatch(new Consumer<Object>() {
+            subscription.dispatch(new Consumer<Subscription>() {
                 @Override
-                public void accept(@NonNull Object o) throws Exception {
-                    if (!consumedStartList.contains(subscription)) {
-                        subscription.getListener().onStart();
-                        consumedStartList.add(subscription);
+                public void accept(@NonNull Subscription s) throws Exception {
+                    if (!consumedStartList.contains(s)) {
+                        s.getListener().onStart();
+                        consumedStartList.add(s);
                     }
                 }
             });
@@ -56,11 +52,11 @@ class Subscriptions {
     <Rs extends Result> void notifyUpdate(final Rs result) {
 
         for (final Subscription subscription : subscriptionMap.values())
-            subscription.dispatch(new Consumer<Object>() {
+            subscription.dispatch(new Consumer<Subscription>() {
                 @Override
-                public void accept(@NonNull Object o) throws Exception {
+                public void accept(@NonNull Subscription s) throws Exception {
                     //noinspection unchecked
-                    subscription.getListener().onUpdate(result);
+                    s.getListener().onUpdate(result);
                 }
             });
     }
@@ -71,12 +67,12 @@ class Subscriptions {
         subscriptions.addAll(subscriptionMap.values());
 
         for (final Subscription subscription : subscriptions)
-            subscription.dispatch(new Consumer<Object>() {
+            subscription.dispatch(new Consumer<Subscription>() {
                 @Override
-                public void accept(@NonNull Object o) throws Exception {
+                public void accept(@NonNull Subscription s) throws Exception {
 
-                    consumedStartList.remove(subscription);
-                    subscription.getListener().onComplete();
+                    consumedStartList.remove(s);
+                    s.getListener().onComplete();
 //                Log.i("Thread", subscription + ": " + Thread.currentThread().getName());
 
                     if (subscription.getListener() instanceof DisposableUseCaseListener) {
@@ -90,14 +86,13 @@ class Subscriptions {
     void notifyCancel() {
 
         for (final Subscription subscription : subscriptionMap.values()) {
-            subscription.dispatch(new Consumer<Object>() {
+            subscription.dispatch(new Consumer<Subscription>() {
                 @Override
-                public void accept(@NonNull Object o) throws Exception {
-                    consumedStartList.remove(subscription);
-                    subscription.getListener().onCancel();
+                public void accept(@NonNull Subscription s) throws Exception {
+                    consumedStartList.remove(s);
+                    s.getListener().onCancel();
                 }
             });
-
         }
     }
 

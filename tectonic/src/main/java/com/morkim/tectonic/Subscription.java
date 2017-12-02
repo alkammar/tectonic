@@ -13,7 +13,7 @@ class Subscription<R extends Result> {
     
     private UseCaseListener<R> listener;
     private Disposable disposable;
-    private Observable<Object> observable;
+    private Observable<Subscription<R>> observable;
     private boolean isMain = true;
 
     Subscription(UseCaseListener<R> listener) {
@@ -26,15 +26,15 @@ class Subscription<R extends Result> {
 
         isMain = UseCase.onCheckLooper.isMain();
 
-        observable = Observable.create(new ObservableOnSubscribe<Object>() {
+        observable = Observable.create(new ObservableOnSubscribe<Subscription<R>>() {
             @Override
-            public void subscribe(@NonNull ObservableEmitter<Object> e) throws Exception {
-                e.onNext(new Object());
+            public void subscribe(@NonNull ObservableEmitter<Subscription<R>> e) throws Exception {
+                e.onNext(Subscription.this);
             }
         }).subscribeOn(Schedulers.io());
     }
 
-    void dispatch(Consumer<Object> onNext) {
+    void dispatch(Consumer<Subscription> onNext) {
         synchronized (this) {
             disposable = observable
                     .observeOn(isMain ? AndroidSchedulers.mainThread() : Schedulers.io())

@@ -56,7 +56,7 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
 
     private enum State {
         NOT_CREATED,
-        CREATED,
+//        CREATED,
         IN_PROGRESS,
         DEAD,
     }
@@ -70,7 +70,7 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
 
     private Rq request;
 
-    private State state = State.NOT_CREATED;
+    private StateMachine stateMachine = new StateMachine();
     private Disposable subscription;
 
     private static Map<Class<? extends UseCase>, UseCase> running = new HashMap<>();
@@ -111,7 +111,7 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
     }
 
     void create() {
-        state = State.CREATED;
+        stateMachine.create();
     }
 
     protected UseCase() {
@@ -152,7 +152,7 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
 
         if (isExecuteCached(flags))
             executeCached(request, flags);
-        else if (isExecutable())
+        else if (stateMachine.isExecutable())
             executeAsync(request, flags);
     }
 
@@ -209,16 +209,12 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
                 .subscribe();
     }
 
-    private boolean isExecutable() {
-        return state == State.CREATED || state == State.IN_PROGRESS;
-    }
-
     private void executeObservable() {
 
         notifySubscribers(new Event(Type.START));
 
-        if (state != State.IN_PROGRESS) {
-            state = State.IN_PROGRESS;
+        if (!stateMachine.isInProgress()) {
+            stateMachine.start();
 
             if (!prerequisites.isEmpty()) {
                 prerequisiteIndex = 0;
@@ -295,7 +291,7 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
     }
 
     private boolean isCachedExecutable(Rs result) {
-        return (state == State.DEAD || state == State.CREATED) &&
+        return stateMachine.isCachedExecutable() &&
                 result != null;
     }
 
@@ -352,7 +348,7 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
      * @param result Update result
      */
     protected void updateSubscribers(Rs result) {
-        if (state != State.DEAD)
+        if (!stateMachine.isDead())
             notifySubscribers(new Event(Type.UPDATE, result));
     }
 
@@ -409,7 +405,7 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
 
     public static void clearAllInProgress() {
         for (UseCase useCase : running.values())
-            useCase.state = State.DEAD;
+            useCase.stateMachine.kill();
         running.clear();
     }
 
@@ -419,8 +415,8 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
      */
     protected void finish() {
 
-        if (state != State.DEAD) {
-            state = State.DEAD;
+        if (!stateMachine.isDead()) {
+            stateMachine.finish();
             running.remove(UseCase.this.getClass());
             notifySubscribers(new Event(Type.COMPLETE));
             onPostExecute();
@@ -440,13 +436,13 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
 
         subscriptionMap.get(this.getClass()).notifyCancel();
 
-        state = State.DEAD;
+        stateMachine.kill();
         running.remove(this.getClass());
     }
 
     protected void requestInput(Integer... codes) {
 
-        state = State.CREATED;
+        stateMachine.askForInput();
         notifySubscribers(new Event(Type.INPUT, codes));
     }
 

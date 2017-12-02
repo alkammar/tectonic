@@ -115,7 +115,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onCancel() {
             // use case was cancelled
-            label.setText("Cancelled!");
+            label.setText(R.string.cancelled);
             refresh.setEnabled(true);
             progress.setVisibility(View.GONE);
         }

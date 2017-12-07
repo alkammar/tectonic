@@ -34,6 +34,11 @@ class PrerequisiteListener implements DisposableUseCaseListener {
     }
 
     @Override
+    public boolean onError(Throwable throwable) {
+        return listener.onError(throwable);
+    }
+
+    @Override
     public boolean onInputRequired(List codes) {
         return listener.onInputRequired(codes);
     }

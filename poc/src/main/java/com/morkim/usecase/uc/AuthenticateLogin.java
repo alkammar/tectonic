@@ -38,15 +38,22 @@ public class AuthenticateLogin extends UseCase<AuthenticateLoginRequest, Result>
     }
 
     @Override
-    protected void onExecute(AuthenticateLoginRequest request) {
+    protected void onExecute(AuthenticateLoginRequest request) throws Exception {
 
-        if (!skip && (request == null || request.password.isEmpty()))
+        if (skip)
+            completeLogin();
+        else if (request == null || request.password.isEmpty())
             requestInput(PASSWORD);
-        else {
-            // Login is done, finish the use case so other blocking use cases can continue their
-            // execution
-            profile.setLoggedIn(true);
-            finish();
-        }
+        else if (!request.password.equals("asdf"))
+            throw new InvalidLogin();
+        else
+            completeLogin();
+    }
+
+    private void completeLogin() {
+        // Login is done, finish the use case so other blocking use cases can continue their
+        // execution
+        profile.setLoggedIn(true);
+        finish();
     }
 }

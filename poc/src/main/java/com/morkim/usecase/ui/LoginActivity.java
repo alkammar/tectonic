@@ -12,6 +12,7 @@ import com.morkim.usecase.R;
 import com.morkim.usecase.uc.AuthenticateLogin;
 import com.morkim.usecase.uc.AuthenticateLoginRequest;
 import com.morkim.usecase.uc.ExitApp;
+import com.morkim.usecase.uc.InvalidLogin;
 
 
 public class LoginActivity extends AppCompatActivity {
@@ -37,6 +38,15 @@ public class LoginActivity extends AppCompatActivity {
                             public void onComplete() {
                                 // We are now logged in, so finish the Login screen
                                 LoginActivity.this.finish();
+                            }
+
+                            @Override
+                            public boolean onError(Throwable throwable) {
+
+                                if (throwable instanceof InvalidLogin)
+                                    password.setError("Wrong password!");
+
+                                return true;
                             }
                         })
                         .execute(new AuthenticateLoginRequest.Builder()

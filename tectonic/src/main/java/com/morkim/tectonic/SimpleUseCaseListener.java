@@ -29,4 +29,9 @@ public class SimpleUseCaseListener<Rs extends Result> implements UseCaseListener
 	public boolean onInputRequired(List<Integer> codes) {
         return true;
     }
+
+	@Override
+	public boolean onError(Throwable throwable) {
+		return false;
+	}
 }

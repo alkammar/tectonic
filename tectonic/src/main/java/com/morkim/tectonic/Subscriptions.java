@@ -40,6 +40,7 @@ class Subscriptions {
     }
 
     void clear() {
+        subscriptionList.clear();
         subscriptionMap.clear();
     }
 
@@ -108,6 +109,14 @@ class Subscriptions {
 
         for (int i = subscriptionList.size() - 1; i >= 0; i--) {
             if (subscriptionList.get(i).getListener().onInputRequired(Arrays.asList(codes)))
+                break;
+        }
+    }
+
+    void notifyError(Throwable throwable) {
+
+        for (int i = subscriptionList.size() - 1; i >= 0; i--) {
+            if (subscriptionList.get(i).getListener().onError(throwable))
                 break;
         }
     }

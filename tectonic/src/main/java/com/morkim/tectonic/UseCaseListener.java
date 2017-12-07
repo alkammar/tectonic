@@ -42,4 +42,6 @@ public interface UseCaseListener<Rs extends Result> {
 	 * @return true if the listener is handling the required input.
 	 */
 	boolean onInputRequired(List<Integer> codes);
+
+    boolean onError(Throwable throwable);
 }

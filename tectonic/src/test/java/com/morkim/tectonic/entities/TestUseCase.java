@@ -7,7 +7,7 @@ import com.morkim.tectonic.UseCase;
 public class TestUseCase extends UseCase<Request, TestResult> {
 
 	@Override
-	protected void onExecute(Request request) {
+	protected void onExecute(Request request) throws Exception {
 
 		TestResult result = new TestResult();
 

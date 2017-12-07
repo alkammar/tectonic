@@ -15,6 +15,7 @@ import io.reactivex.ObservableOnSubscribe;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.annotations.NonNull;
 import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
 import io.reactivex.subjects.ReplaySubject;
 import io.reactivex.subjects.Subject;
@@ -69,6 +70,7 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
         UPDATE,
         COMPLETE,
         INPUT,
+        ERROR,
     }
 
     private Rq request;
@@ -204,35 +206,45 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
         subscription = Observable.create(new ObservableOnSubscribe<Event>() {
             @Override
             public void subscribe(@NonNull ObservableEmitter<Event> e) throws Exception {
-                executeObservable();
+
+                notifySubscribers(new Event(Type.START));
+
+                if (!stateMachine.isInProgress()) {
+                    stateMachine.start();
+
+                    if (!prerequisites.isEmpty()) {
+                        prerequisiteIndex = 0;
+                        executePrerequisite();
+                    } else {
+                        onExecute(UseCase.this.request);
+                    }
+                }
 
             }
         }).observeOn(AndroidSchedulers.mainThread())
                 .subscribeOn(isExecuteOnMain(flags) ? AndroidSchedulers.mainThread() : Schedulers.io())
-                .subscribe();
-    }
+                .subscribe(
+                        new Consumer<Event>() {
+                            @Override
+                            public void accept(@NonNull Event event) throws Exception {
 
-    private void executeObservable() {
-
-        notifySubscribers(new Event(Type.START));
-
-        if (!stateMachine.isInProgress()) {
-            stateMachine.start();
-
-            if (!prerequisites.isEmpty()) {
-                prerequisiteIndex = 0;
-                executePrerequisite();
-            } else {
-                onExecute(UseCase.this.request);
-            }
-        }
+                            }
+                        },
+                        new Consumer<Throwable>() {
+                            @Override
+                            public void accept(@NonNull Throwable throwable) throws Exception {
+                                stateMachine.kill();
+                                running.remove(UseCase.this.getClass());
+                                notifySubscribers(new Event(Type.ERROR, throwable));
+                            }
+                        });
     }
 
     protected void onAddPrerequisites() {
 
     }
 
-    protected abstract void onExecute(Rq request);
+    protected abstract void onExecute(Rq request) throws Exception;
 
     protected void addPrerequisite(Class<? extends UseCase> useCase) {
         addPrerequisite(Precondition.TRUE_PRECONDITION, useCase, null);
@@ -250,7 +262,7 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
         prerequisites.add(new Prerequisite(useCase, precondition, listener));
     }
 
-    private void executePrerequisite() {
+    private void executePrerequisite() throws Exception {
 
         final Prerequisite prerequisite = prerequisites.get(prerequisiteIndex);
 
@@ -258,14 +270,23 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
 
             final UseCase prerequisiteUseCase = UseCase.fetch(prerequisite.useCase);
 
+            if (prerequisite.listener != null)
+                //noinspection unchecked
+                prerequisiteUseCase.subscribe(prerequisite.listener);
+
             //noinspection unchecked
             subscribe(prerequisite.useCase,
-                    new PrerequisiteListener(prerequisite.listener) {
+                    new SimpleDisposableUseCaseListener<Result>() {
                         @Override
                         public void onComplete() {
-                            super.onComplete();
 
-                            executeNextPrerequisite();
+                            try {
+                                executeNextPrerequisite();
+                            } catch (Exception e) {
+                                stateMachine.kill();
+                                running.remove(UseCase.this.getClass());
+                                notifySubscribers(new Event(Type.ERROR, e));
+                            }
                         }
                     }
             );
@@ -275,7 +296,7 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
         }
     }
 
-    private void executeNextPrerequisite() {
+    private void executeNextPrerequisite() throws Exception {
 
         prerequisiteIndex++;
         if (prerequisiteIndex < prerequisites.size()) {
@@ -304,6 +325,9 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
                 break;
             case INPUT:
                 subscriptionMap.get(this.getClass()).notifyInputRequired(event.codes);
+                break;
+            case ERROR:
+                subscriptionMap.get(this.getClass()).notifyError(event.error);
                 break;
         }
     }
@@ -395,6 +419,8 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
     }
 
     public static void unsubscribeAll() {
+        for (Class<? extends UseCase> useCaseClass : subscriptionMap.keySet())
+            UseCase.unsubscribe(useCaseClass, null);
         subscriptionMap.clear();
     }
 
@@ -454,6 +480,7 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
         Type type;
         Rs result;
         Integer[] codes;
+        Throwable error;
 
         public Event(Type type) {
             this(type, (Rs) null);
@@ -467,6 +494,11 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
         Event(Type type, Integer[] codes) {
             this.type = type;
             this.codes = codes;
+        }
+
+        public Event(Type type, Throwable throwable) {
+            this.type = type;
+            this.error = throwable;
         }
     }
 

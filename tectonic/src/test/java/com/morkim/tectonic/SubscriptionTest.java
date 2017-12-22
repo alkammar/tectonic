@@ -2,6 +2,7 @@ package com.morkim.tectonic;
 
 import android.support.annotation.NonNull;
 
+import com.morkim.tectonic.entities.ErrorTestUseCase;
 import com.morkim.tectonic.entities.PrerequisiteTestUseCase;
 import com.morkim.tectonic.entities.TestResult;
 import com.morkim.tectonic.entities.TestUseCase;
@@ -24,183 +25,239 @@ import static org.junit.Assert.assertTrue;
 
 public class SubscriptionTest extends TecTonicTest {
 
-	private boolean isSubscriptionExecuted;
+    private boolean isSubscriptionExecuted;
 
-	private int normalCount;
-	private int disposableCount;
+    private int normalCount;
+    private int disposableCount;
 
-	@BeforeClass
-	public static void setupClass() {
+    @BeforeClass
+    public static void setupClass() {
 
-		RxAndroidPlugins.setInitMainThreadSchedulerHandler(new Function<Callable<Scheduler>, Scheduler>() {
-			@Override
-			public Scheduler apply(@NonNull Callable<Scheduler> schedulerCallable) throws Exception {
-				return Schedulers.trampoline();
-			}
-		});
+        RxAndroidPlugins.setInitMainThreadSchedulerHandler(new Function<Callable<Scheduler>, Scheduler>() {
+            @Override
+            public Scheduler apply(@NonNull Callable<Scheduler> schedulerCallable) throws Exception {
+                return Schedulers.trampoline();
+            }
+        });
 
-		RxJavaPlugins.setIoSchedulerHandler(new Function<Scheduler, Scheduler>() {
-			@Override
-			public Scheduler apply(@io.reactivex.annotations.NonNull Scheduler scheduler) throws Exception {
-				return Schedulers.trampoline();
-			}
-		});
-	}
+        RxJavaPlugins.setIoSchedulerHandler(new Function<Scheduler, Scheduler>() {
+            @Override
+            public Scheduler apply(@io.reactivex.annotations.NonNull Scheduler scheduler) throws Exception {
+                return Schedulers.trampoline();
+            }
+        });
 
-	@Before
-	public void setup() {
+        UseCase.setLooperConfigs(UseCase.STUB_LOOPER_CHECKER);
+    }
 
-		isSubscriptionExecuted = false;
+    @Before
+    public void setup() {
 
-		UseCase.unsubscribeAll();
-	}
+        isSubscriptionExecuted = false;
 
-	@Test
-	public void subscribeThenExecute_SubscribedCallbacksExecuted() throws Exception {
+        UseCase.unsubscribeAll();
+    }
 
-		UseCase.subscribe(TestUseCase.class, new SimpleUseCaseListener<TestResult>() {
-			@Override
-			public void onUpdate(TestResult result) {
-				isSubscriptionExecuted = true;
-			}
-		});
+    @Test
+    public void subscribeThenExecute_SubscribedCallbacksExecuted() throws Exception {
 
-		TestUseCase useCase;
+        UseCase.subscribe(TestUseCase.class, new SimpleUseCaseListener<TestResult>() {
+            @Override
+            public void onUpdate(TestResult result) {
+                isSubscriptionExecuted = true;
+            }
+        });
 
-		useCase = UseCase.fetch(TestUseCase.class);
-		useCase.execute();
+        TestUseCase useCase;
 
-		assertTrue(isSubscriptionExecuted);
-	}
+        useCase = UseCase.fetch(TestUseCase.class);
+        useCase.execute();
 
-	@Test
-	public void subscribeSameListenerInstance_onlyOneSubscription() throws Exception {
+        assertTrue(isSubscriptionExecuted);
+    }
 
-		SimpleUseCaseListener<TestResult> listener = new SimpleUseCaseListener<TestResult>() {
-			@Override
-			public void onUpdate(TestResult result) {
-				normalCount++;
-			}
-		};
+    @Test
+    public void subscribeSameListenerInstance_onlyOneSubscription() throws Exception {
 
-		UseCase.subscribe(TestUseCase.class, listener);
-		UseCase.subscribe(TestUseCase.class, listener);
+        SimpleUseCaseListener<TestResult> listener = new SimpleUseCaseListener<TestResult>() {
+            @Override
+            public void onUpdate(TestResult result) {
+                normalCount++;
+            }
+        };
 
-		TestUseCase useCase;
+        UseCase.subscribe(TestUseCase.class, listener);
+        UseCase.subscribe(TestUseCase.class, listener);
 
-		useCase = UseCase.fetch(TestUseCase.class);
-		useCase.execute();
+        TestUseCase useCase;
 
-		assertEquals(1, normalCount);
-	}
+        useCase = UseCase.fetch(TestUseCase.class);
+        useCase.execute();
 
-	@Test
-	public void unsubscribeThenExecute_NoCallbacksExecuted() throws Exception {
+        assertEquals(1, normalCount);
+    }
 
-		SimpleUseCaseListener<TestResult> listener = new SimpleUseCaseListener<TestResult>() {
-			@Override
-			public void onUpdate(TestResult result) {
-				isSubscriptionExecuted = true;
-			}
-		};
+    @Test
+    public void unsubscribeThenExecute_NoCallbacksExecuted() throws Exception {
 
-		UseCase.subscribe(TestUseCase.class, listener);
+        SimpleUseCaseListener<TestResult> listener = new SimpleUseCaseListener<TestResult>() {
+            @Override
+            public void onUpdate(TestResult result) {
+                isSubscriptionExecuted = true;
+            }
+        };
 
-		UseCase.unsubscribe(TestUseCase.class, listener);
+        UseCase.subscribe(TestUseCase.class, listener);
 
-		TestUseCase useCase;
+        UseCase.unsubscribe(TestUseCase.class, listener);
 
-		useCase = UseCase.fetch(TestUseCase.class);
-		useCase.execute();
+        TestUseCase useCase;
 
-		assertFalse(isSubscriptionExecuted);
-	}
+        useCase = UseCase.fetch(TestUseCase.class);
+        useCase.execute();
 
-	@Test
-	public void unsubscribeAllForUseCaseThenExecute_NoCallbacksExecuted() throws Exception {
+        assertFalse(isSubscriptionExecuted);
+    }
 
-		SimpleUseCaseListener<TestResult> listener = new SimpleUseCaseListener<TestResult>() {
-			@Override
-			public void onUpdate(TestResult result) {
-				isSubscriptionExecuted = true;
-			}
-		};
+    @Test
+    public void unsubscribeAllForUseCaseThenExecute_NoCallbacksExecuted() throws Exception {
 
-		UseCase.subscribe(TestUseCase.class, listener);
+        SimpleUseCaseListener<TestResult> listener = new SimpleUseCaseListener<TestResult>() {
+            @Override
+            public void onUpdate(TestResult result) {
+                isSubscriptionExecuted = true;
+            }
+        };
 
-		UseCase.unsubscribe(TestUseCase.class);
+        UseCase.subscribe(TestUseCase.class, listener);
 
-		TestUseCase useCase;
+        UseCase.unsubscribe(TestUseCase.class);
 
-		useCase = UseCase.fetch(TestUseCase.class);
-		useCase.execute();
+        TestUseCase useCase;
 
-		assertFalse(isSubscriptionExecuted);
-	}
+        useCase = UseCase.fetch(TestUseCase.class);
+        useCase.execute();
 
-	@Test
-	public void unsubscribeOtherUseCaseThenExecute_SubscribedCallbacksExecuted() throws Exception {
+        assertFalse(isSubscriptionExecuted);
+    }
 
-		SimpleUseCaseListener<TestResult> listener = new SimpleUseCaseListener<TestResult>() {
-			@Override
-			public void onUpdate(TestResult result) {
-				isSubscriptionExecuted = true;
-			}
-		};
+    @Test
+    public void unsubscribeOtherUseCaseThenExecute_SubscribedCallbacksExecuted() throws Exception {
 
-		UseCase.subscribe(TestUseCase.class, listener);
+        SimpleUseCaseListener<TestResult> listener = new SimpleUseCaseListener<TestResult>() {
+            @Override
+            public void onUpdate(TestResult result) {
+                isSubscriptionExecuted = true;
+            }
+        };
 
-		UseCase.unsubscribe(PrerequisiteTestUseCase.class, listener);
+        UseCase.subscribe(TestUseCase.class, listener);
 
-		TestUseCase useCase;
+        UseCase.unsubscribe(PrerequisiteTestUseCase.class, listener);
 
-		useCase = UseCase.fetch(TestUseCase.class);
-		useCase.execute();
+        TestUseCase useCase;
 
-		assertTrue(isSubscriptionExecuted);
-	}
+        useCase = UseCase.fetch(TestUseCase.class);
+        useCase.execute();
 
-	@Test
-	public void subscribeDisposable() throws Exception {
+        assertTrue(isSubscriptionExecuted);
+    }
 
-		UseCase.fetch(TestUseCase.class)
-				.subscribe(new SimpleUseCaseListener<TestResult>() {
-					@Override
-					public void onComplete() {
-						normalCount++;
-					}
-				})
-				.subscribe(new SimpleDisposableUseCaseListener<TestResult>() {
-					@Override
-					public void onComplete() {
-						disposableCount++;
-					}
-				})
-				.subscribe(new SimpleDisposableUseCaseListener<TestResult>() {
-					@Override
-					public void onComplete() {
-						disposableCount++;
-					}
-				})
-				.subscribe(new SimpleUseCaseListener<TestResult>() {
-					@Override
-					public void onComplete() {
-						normalCount++;
-					}
-				})
-				.subscribe(new SimpleDisposableUseCaseListener<TestResult>() {
-					@Override
-					public void onComplete() {
-						disposableCount++;
-					}
-				})
-				.execute();
+    @Test
+    public void subscribeDisposableAndComplete_DisposablesAReDisposed() throws Exception {
 
-		UseCase.fetch(TestUseCase.class)
-				.execute();
+        UseCase.fetch(TestUseCase.class)
+                .subscribe(new SimpleUseCaseListener<TestResult>() {
+                    @Override
+                    public void onComplete() {
+                        normalCount++;
+                    }
+                })
+                .subscribe(new SimpleDisposableUseCaseListener<TestResult>() {
+                    @Override
+                    public void onComplete() {
+                        disposableCount++;
+                    }
+                })
+                .subscribe(new SimpleDisposableUseCaseListener<TestResult>() {
+                    @Override
+                    public void onComplete() {
+                        disposableCount++;
+                    }
+                })
+                .subscribe(new SimpleUseCaseListener<TestResult>() {
+                    @Override
+                    public void onComplete() {
+                        normalCount++;
+                    }
+                })
+                .subscribe(new SimpleDisposableUseCaseListener<TestResult>() {
+                    @Override
+                    public void onComplete() {
+                        disposableCount++;
+                    }
+                })
+                .execute();
 
-		assertEquals(4, normalCount);
-		assertEquals(3, disposableCount);
-	}
+        UseCase.fetch(TestUseCase.class)
+                .execute();
+
+        assertEquals(4, normalCount);
+        assertEquals(3, disposableCount);
+    }
+
+    @Test
+    public void subscribeDisposableAndError_DisposablesAReDisposed() throws Exception {
+
+        UseCase.fetch(ErrorTestUseCase.class)
+                .subscribe(new SimpleDisposableUseCaseListener<TestResult>() {
+                    @Override
+                    public boolean onError(Throwable throwable) {
+                        disposableCount++;
+                        return false;
+                    }
+                })
+                .subscribe(new SimpleUseCaseListener<TestResult>() {
+                    @Override
+                    public boolean onError(Throwable throwable) {
+                        normalCount++;
+                        return true;
+                    }
+                }).subscribe(new SimpleDisposableUseCaseListener<TestResult>() {
+                    @Override
+                    public boolean onError(Throwable throwable) {
+                        disposableCount++;
+                        return false;
+                    }
+                })
+                .subscribe(new SimpleUseCaseListener<TestResult>() {
+                    @Override
+                    public boolean onError(Throwable throwable) {
+                        normalCount++;
+                        return false;
+                    }
+                })
+                .subscribe(new SimpleDisposableUseCaseListener<TestResult>() {
+                    @Override
+                    public boolean onError(Throwable throwable) {
+                        disposableCount++;
+                        return false;
+                    }
+                })
+                .subscribe(new SimpleUseCaseListener<TestResult>() {
+                    @Override
+                    public boolean onError(Throwable throwable) {
+                        normalCount++;
+                        return false;
+                    }
+                })
+                .execute();
+
+        UseCase.fetch(ErrorTestUseCase.class)
+                .execute();
+
+        assertEquals(6, normalCount);
+        assertEquals(2, disposableCount);
+    }
 
 }

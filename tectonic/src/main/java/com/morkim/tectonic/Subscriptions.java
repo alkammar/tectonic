@@ -84,10 +84,7 @@ class Subscriptions {
                     s.getListener().onComplete();
 //                Log.i("Thread", subscription + ": " + Thread.currentThread().getName());
 
-                    if (subscription.getListener() instanceof DisposableUseCaseListener) {
-                        subscription.detach();
-                        remove(subscription);
-                    }
+                    removeIfDisposable(subscription);
                 }
             });
     }
@@ -100,6 +97,8 @@ class Subscriptions {
                 public void accept(@NonNull Subscription s) throws Exception {
                     consumedStartList.remove(s);
                     s.getListener().onCancel();
+
+                    removeIfDisposable(subscription);
                 }
             });
         }
@@ -115,9 +114,23 @@ class Subscriptions {
 
     void notifyError(Throwable throwable) {
 
+        boolean errorHandled = false;
         for (int i = subscriptionList.size() - 1; i >= 0; i--) {
-            if (subscriptionList.get(i).getListener().onError(throwable))
-                break;
+
+            Subscription subscription = subscriptionList.get(i);
+
+            if (!errorHandled && subscription.getListener().onError(throwable)) {
+                errorHandled = true;
+            }
+
+            removeIfDisposable(subscription);
+        }
+    }
+
+    private void removeIfDisposable(Subscription subscription) {
+        if (subscription.getListener() instanceof DisposableUseCaseListener) {
+            subscription.detach();
+            remove(subscription);
         }
     }
 }

@@ -14,7 +14,7 @@ public class CallbackTestUseCase extends UseCase<PendingActionRequest, TestResul
 
         TestResult result = new TestResult();
 
-        updateSubscribers(result);
+        notifySubscribers(result);
 
         finish();
     }

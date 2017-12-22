@@ -23,7 +23,7 @@ public class RequestInputTestUseCase extends PendingActionTestUseCase {
 
                 TestResult result = new TestResult();
 
-                updateSubscribers(result);
+                notifySubscribers(result);
 
                 finish();
             }

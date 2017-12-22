@@ -187,7 +187,7 @@ public class CallbacksTest extends TecTonicTest {
 
 				TestResult result = new TestResult();
 
-				updateSubscribers(result);
+				notifySubscribers(result);
 			}
 		};
 		useCase.subscribe(createCallbackCounterListener());

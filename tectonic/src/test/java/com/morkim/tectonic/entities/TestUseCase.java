@@ -11,7 +11,7 @@ public class TestUseCase extends UseCase<Request, TestResult> {
 
 		TestResult result = new TestResult();
 
-		updateSubscribers(result);
+		notifySubscribers(result);
 
 		finish();
 	}

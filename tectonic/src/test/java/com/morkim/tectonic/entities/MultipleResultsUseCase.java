@@ -10,9 +10,9 @@ public class MultipleResultsUseCase extends TestUseCase {
         TestResult result;
 
         result = new TestResult();
-        updateSubscribers(result);
+        notifySubscribers(result);
 
         result = new TestResult();
-        updateSubscribers(result);
+        notifySubscribers(result);
     }
 }

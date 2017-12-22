@@ -35,12 +35,12 @@ public class MainUseCase extends UseCase<Request, MainUseCaseResult> {
 
             MainUseCaseResult result = new MainUseCaseResult();
             result.data = "" + (i + 1) * STEP;
-            updateSubscribers(result);
+            notifySubscribers(result);
         }
 
         MainUseCaseResult result = new MainUseCaseResult();
         result.data = "Some data sent by the main use case";
-        updateSubscribers(result);
+        notifySubscribers(result);
 
         finish();
     }

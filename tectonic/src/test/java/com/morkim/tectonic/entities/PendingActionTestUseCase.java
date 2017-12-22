@@ -19,7 +19,7 @@ public class PendingActionTestUseCase extends UseCase<PendingActionRequest, Resu
 
 			TestResult result = new TestResult();
 
-			updateSubscribers(result);
+			notifySubscribers(result);
 
 			finish();
 		}

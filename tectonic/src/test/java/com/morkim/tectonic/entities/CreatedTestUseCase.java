@@ -9,6 +9,6 @@ public class CreatedTestUseCase extends TestUseCase {
 
         TestResult result = new TestResult();
 
-        updateSubscribers(result);
+        notifySubscribers(result);
     }
 }

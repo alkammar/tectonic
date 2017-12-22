@@ -32,27 +32,29 @@ public class LoginActivity extends AppCompatActivity {
 
         findViewById(R.id.btn_submit).setOnClickListener(v ->
                 UseCase.fetch(AuthenticateLogin.class)
-                        .subscribe(new SimpleUseCaseListener<Result>() {
-
-                            @Override
-                            public void onComplete() {
-                                // We are now logged in, so finish the Login screen
-                                LoginActivity.this.finish();
-                            }
-
-                            @Override
-                            public boolean onError(Throwable throwable) {
-
-                                if (throwable instanceof InvalidLogin)
-                                    password.setError("Wrong password!");
-
-                                return true;
-                            }
-                        })
+                        .subscribe(authenticateLoginListener)
                         .execute(new AuthenticateLoginRequest.Builder()
                                 .password(password.getText().toString())
                                 .build()));
     }
+
+    private SimpleUseCaseListener<Result> authenticateLoginListener = new SimpleUseCaseListener<Result>() {
+
+        @Override
+        public void onComplete() {
+            // We are now logged in, so finish the Login screen
+            LoginActivity.this.finish();
+        }
+
+        @Override
+        public boolean onError(Throwable throwable) {
+
+            if (throwable instanceof InvalidLogin)
+                password.setError("Wrong password!");
+
+            return true;
+        }
+    };
 
     @Override
     public void onBackPressed() {
@@ -66,5 +68,12 @@ public class LoginActivity extends AppCompatActivity {
                     }
                 })
                 .execute();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+
+        UseCase.unsubscribe(AuthenticateLogin.class, authenticateLoginListener);
     }
 }

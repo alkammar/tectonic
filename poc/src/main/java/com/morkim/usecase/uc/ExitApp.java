@@ -9,7 +9,7 @@ public class ExitApp extends UseCase<RegisterUserRequest, Result> {
     @Override
     protected void onExecute(RegisterUserRequest request) {
 
-        updateSubscribers(new Result() {});
+        notifySubscribers(new Result() {});
         finish();
     }
 

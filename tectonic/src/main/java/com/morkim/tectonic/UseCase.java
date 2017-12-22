@@ -181,9 +181,9 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
                 public void subscribe(@NonNull ObservableEmitter<Event> e) throws Exception {
 
                     if (isCachedExecutable(result)) {
-                        notifySubscribers(new Event(Type.START));
-                        notifySubscribers(new Event(Type.UPDATE, result));
-                        notifySubscribers(new Event(Type.COMPLETE));
+                        UseCase.this.notify(new Event(Type.START));
+                        UseCase.this.notify(new Event(Type.UPDATE, result));
+                        UseCase.this.notify(new Event(Type.COMPLETE));
                     } else {
                         execute(request, flags & EXECUTE_ON_MAIN);
                     }
@@ -207,7 +207,7 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
             @Override
             public void subscribe(@NonNull ObservableEmitter<Event> e) throws Exception {
 
-                notifySubscribers(new Event(Type.START));
+                UseCase.this.notify(new Event(Type.START));
 
                 if (!stateMachine.isInProgress()) {
                     stateMachine.start();
@@ -235,7 +235,7 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
                             public void accept(@NonNull Throwable throwable) throws Exception {
                                 stateMachine.kill();
                                 running.remove(UseCase.this.getClass());
-                                notifySubscribers(new Event(Type.ERROR, throwable));
+                                UseCase.this.notify(new Event(Type.ERROR, throwable));
                             }
                         });
     }
@@ -285,7 +285,7 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
                             } catch (Exception e) {
                                 stateMachine.kill();
                                 running.remove(UseCase.this.getClass());
-                                notifySubscribers(new Event(Type.ERROR, e));
+                                UseCase.this.notify(new Event(Type.ERROR, e));
                             }
                         }
                     }
@@ -311,7 +311,7 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
                 result != null;
     }
 
-    private void notifySubscribers(@NonNull final Event event) {
+    private void notify(@NonNull final Event event) {
         switch (event.type) {
             case START:
                 subscriptionMap.get(this.getClass()).notifyStart();
@@ -362,13 +362,24 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
     }
 
     /**
-     * Broadcasts a use case update to all subscribers
+     * Notifies of a use case update to all subscribers
      *
      * @param result Update result
      */
-    protected void updateSubscribers(Rs result) {
+    protected void notifySubscribers(Rs result) {
         if (!stateMachine.isDead())
-            notifySubscribers(new Event(Type.UPDATE, result));
+            notify(new Event(Type.UPDATE, result));
+    }
+
+    /**
+     * Broadcasts a use case error to all subscribers. This to be mainly used in async calls from
+     * with in a use case
+     *
+     * @param throwable Update error
+     */
+    protected void notifySubscribers(Throwable throwable) {
+        if (!stateMachine.isDead())
+            notify(new Event(Type.ERROR, throwable));
     }
 
     /**
@@ -439,7 +450,7 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
         if (!stateMachine.isDead()) {
             stateMachine.finish();
             running.remove(UseCase.this.getClass());
-            notifySubscribers(new Event(Type.COMPLETE));
+            notify(new Event(Type.COMPLETE));
             onPostExecute();
         }
     }
@@ -464,7 +475,7 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
     protected void requestInput(Integer... codes) {
 
         stateMachine.askForInput();
-        notifySubscribers(new Event(Type.INPUT, codes));
+        notify(new Event(Type.INPUT, codes));
     }
 
     protected RequiredInputs startInputValidation() {

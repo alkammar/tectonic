@@ -98,7 +98,7 @@ class Subscriptions {
                     consumedStartList.remove(s);
                     s.getListener().onCancel();
 
-                    removeIfDisposable(subscription);
+//                    removeIfDisposable(subscription);
                 }
             });
         }
@@ -132,5 +132,23 @@ class Subscriptions {
             subscription.detach();
             remove(subscription);
         }
+    }
+
+    void notifyUndone() {
+
+        final Collection<Subscription> subscriptions = new ArrayList<>();
+        subscriptions.addAll(subscriptionMap.values());
+
+        for (final Subscription subscription : subscriptions)
+            subscription.dispatch(new Consumer<Subscription>() {
+                @Override
+                public void accept(@NonNull Subscription s) throws Exception {
+
+                    consumedStartList.remove(s);
+                    s.getListener().onUndone();
+
+                    removeIfDisposable(subscription);
+                }
+            });
     }
 }

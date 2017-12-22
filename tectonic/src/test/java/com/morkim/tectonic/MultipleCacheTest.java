@@ -43,6 +43,8 @@ public class MultipleCacheTest {
 				return Schedulers.trampoline();
 			}
 		});
+
+		UseCase.setLooperConfigs(UseCase.STUB_LOOPER_CHECKER);
 	}
 
 	@Before

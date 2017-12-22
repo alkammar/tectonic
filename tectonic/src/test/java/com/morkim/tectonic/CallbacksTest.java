@@ -44,10 +44,14 @@ public class CallbacksTest extends TecTonicTest {
 				return Schedulers.trampoline();
 			}
 		});
+
+		UseCase.setLooperConfigs(UseCase.STUB_LOOPER_CHECKER);
 	}
 
 	@Before
 	public void setup() {
+
+		UseCase.unsubscribeAll();
 
 		isOnStartCalledCount = 0;
 		isOnUpdateCalledCount = 0;

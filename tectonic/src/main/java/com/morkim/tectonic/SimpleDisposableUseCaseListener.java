@@ -34,4 +34,9 @@ public class SimpleDisposableUseCaseListener<Rs extends Result> implements Dispo
 	public boolean onError(Throwable throwable) {
 		return false;
 	}
+
+	@Override
+	public void onUndone() {
+
+	}
 }

@@ -34,4 +34,9 @@ public class SimpleUseCaseListener<Rs extends Result> implements UseCaseListener
 	public boolean onError(Throwable throwable) {
 		return false;
 	}
+
+	@Override
+	public void onUndone() {
+
+	}
 }

@@ -35,6 +35,9 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
      */
     public static final int EXECUTE_ON_MAIN = 0x10000000;
 
+
+    public static final int UNDO = 0x00100000;
+
     public static final LooperConfigs STUB_LOOPER_CHECKER = new LooperConfigs() {
 
         @Override
@@ -71,9 +74,11 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
         COMPLETE,
         INPUT,
         ERROR,
+        UNDO,
     }
 
     private Rq request;
+    private int flags;
 
     private StateMachine stateMachine = new StateMachine();
     private Disposable subscription;
@@ -127,8 +132,8 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
         prerequisites = new ArrayList<>();
     }
 
-    public void execute(int flags) {
-        execute(null, flags);
+    public void undo() {
+        execute(UNDO);
     }
 
     /**
@@ -136,6 +141,10 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
      */
     public void execute() {
         execute(null, 0);
+    }
+
+    public void execute(int flags) {
+        execute(null, flags);
     }
 
     /**
@@ -153,7 +162,7 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
      * @param request The use case request
      * @param flags   Execution flags
      */
-    public void execute(final Rq request, int flags) {
+    public void execute(Rq request, int flags) {
 
         if (isExecuteCached(flags))
             executeCached(request, flags);
@@ -201,7 +210,9 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
     }
 
     private void executeAsync(Rq request, int flags) {
+
         this.request = request;
+        this.flags = flags;
 
         subscription = Observable.create(new ObservableOnSubscribe<Event>() {
             @Override
@@ -216,7 +227,23 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
                         prerequisiteIndex = 0;
                         executePrerequisite();
                     } else {
-                        onExecute(UseCase.this.request);
+                        if ((UseCase.this.flags & UNDO) == UNDO) {
+                            //noinspection unchecked
+                            final Rs result = (Rs) cachedResults.get(UseCase.this.getClass())
+                                    .get(UseCase.this.request == null ? Request.NO_ID : UseCase.this.request.id());
+
+                            if (result != null) {
+                                onUndo(UseCase.this.request, result);
+                            }
+
+                            if (!stateMachine.isDead()) {
+                                stateMachine.kill();
+                                running.remove(UseCase.this.getClass());
+                                UseCase.this.flags = NO_FLAGS;
+                            }
+
+                        } else
+                            onExecute(UseCase.this.request);
                     }
                 }
 
@@ -233,8 +260,11 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
                         new Consumer<Throwable>() {
                             @Override
                             public void accept(@NonNull Throwable throwable) throws Exception {
+
                                 stateMachine.kill();
                                 running.remove(UseCase.this.getClass());
+                                UseCase.this.flags = NO_FLAGS;
+
                                 UseCase.this.notify(new Event(Type.ERROR, throwable));
                             }
                         });
@@ -245,6 +275,10 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
     }
 
     protected abstract void onExecute(Rq request) throws Exception;
+
+    protected void onUndo(Rq request, Rs oldResult) throws Exception {
+
+    }
 
     protected void addPrerequisite(Class<? extends UseCase> useCase) {
         addPrerequisite(Precondition.TRUE_PRECONDITION, useCase, null);
@@ -283,8 +317,11 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
                             try {
                                 executeNextPrerequisite();
                             } catch (Exception e) {
+
                                 stateMachine.kill();
                                 running.remove(UseCase.this.getClass());
+                                flags = NO_FLAGS;
+
                                 UseCase.this.notify(new Event(Type.ERROR, e));
                             }
                         }
@@ -328,6 +365,9 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
                 break;
             case ERROR:
                 subscriptionMap.get(this.getClass()).notifyError(event.error);
+                break;
+            case UNDO:
+                subscriptionMap.get(this.getClass()).notifyUndone();
                 break;
         }
     }
@@ -436,8 +476,10 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
     }
 
     public static void clearAllInProgress() {
-        for (UseCase useCase : running.values())
+        for (UseCase useCase : running.values()) {
             useCase.stateMachine.kill();
+            useCase.flags = NO_FLAGS;
+        }
         running.clear();
     }
 
@@ -450,7 +492,13 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
         if (!stateMachine.isDead()) {
             stateMachine.finish();
             running.remove(UseCase.this.getClass());
-            notify(new Event(Type.COMPLETE));
+            if ((flags & UNDO) == UNDO)
+                notify(new Event(Type.UNDO));
+            else
+                notify(new Event(Type.COMPLETE));
+
+            flags = NO_FLAGS;
+
             onPostExecute();
         }
     }
@@ -470,6 +518,7 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
 
         stateMachine.kill();
         running.remove(this.getClass());
+        flags = NO_FLAGS;
     }
 
     protected void requestInput(Integer... codes) {

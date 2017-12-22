@@ -41,6 +41,8 @@ public class PrerequisiteTest extends TecTonicTest {
 				return Schedulers.trampoline();
 			}
 		});
+
+		UseCase.setLooperConfigs(UseCase.STUB_LOOPER_CHECKER);
 	}
 
 	@Before

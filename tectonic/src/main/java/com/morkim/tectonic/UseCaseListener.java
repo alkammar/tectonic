@@ -44,4 +44,6 @@ public interface UseCaseListener<Rs extends Result> {
 	boolean onInputRequired(List<Integer> codes);
 
     boolean onError(Throwable throwable);
+
+	void onUndone();
 }

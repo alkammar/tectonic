@@ -90,7 +90,7 @@ public class MainActivity extends AppCompatActivity {
         // result will be returned
         UseCase.fetch(MainUseCase.class)
                 .subscribe(mainUseCaseListener)
-                .execute(UseCase.CASHED);
+                .execute(UseCase.CACHED);
     }
 
     private SimpleUseCaseListener<MainUseCaseResult> mainUseCaseListener = new SimpleUseCaseListener<MainUseCaseResult>() {

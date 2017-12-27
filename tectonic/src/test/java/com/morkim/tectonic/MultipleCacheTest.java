@@ -59,7 +59,7 @@ public class MultipleCacheTest {
 	@Test
 	public void executeWithoutCaching_returnNewData() throws Exception {
 
-		TestUseCase useCase;
+		CachableTestUseCase useCase;
 
 		useCase = UseCase.fetch(CachableTestUseCase.class);
 		useCase.subscribe(createOriginalResultListener());
@@ -96,7 +96,7 @@ public class MultipleCacheTest {
 		useCase.execute(new CashableRequest.Builder()
 				.param1(65)
 				.build(),
-				UseCase.CASHED);
+				UseCase.CACHED);
 
 		assertNotEquals(originalResult, cachedResult);
 	}
@@ -104,7 +104,7 @@ public class MultipleCacheTest {
 	@Test
 	public void executeDifferentRequests_returnNewData() throws Exception {
 
-		TestUseCase useCase;
+		CachableTestUseCase useCase;
 
 		useCase = UseCase.fetch(CachableTestUseCase.class);
 		useCase.subscribe(createOriginalResultListener());
@@ -119,7 +119,7 @@ public class MultipleCacheTest {
 		useCase.execute(new CashableRequest.Builder()
 				.param1(77)
 				.build(),
-				UseCase.CASHED);
+				UseCase.CACHED);
 
 		assertNotEquals(originalResult, cachedResult);
 	}
@@ -127,7 +127,7 @@ public class MultipleCacheTest {
 	@Test
 	public void executeSameRequest_returnCachedData() throws Exception {
 
-		TestUseCase useCase;
+		CachableTestUseCase useCase;
 
 		useCase = UseCase.fetch(CachableTestUseCase.class);
 		useCase.subscribe(createOriginalResultListener());
@@ -140,7 +140,7 @@ public class MultipleCacheTest {
 		useCase.execute(new CashableRequest.Builder()
 				.param1(65)
 				.build(),
-				UseCase.CASHED);
+				UseCase.CACHED);
 
 		assertEquals(originalResult, cachedResult);
 	}
@@ -148,7 +148,7 @@ public class MultipleCacheTest {
 	@Test
 	public void executeNewRequest_returnNewData() throws Exception {
 
-		TestUseCase useCase;
+		CachableTestUseCase useCase;
 
 		useCase = UseCase.fetch(CachableTestUseCase.class);
 		useCase.subscribe(createOriginalResultListener());
@@ -163,10 +163,34 @@ public class MultipleCacheTest {
 		useCase.execute(new CashableRequest.Builder()
 				.param1(66)
 				.build(),
-				UseCase.CASHED);
+				UseCase.CACHED);
 
 		assertNotEquals(originalResult, cachedResult);
 		assertNotNull(cachedResult);
+	}
+
+	@Test
+	public void executeSequential_returnNewData() throws Exception {
+
+		int [] params = new int [] {45, 56};
+		final Request [] requests = new Request[params.length];
+
+		for (int i = 0; i < params.length; i++) {
+			final int index = i;
+			UseCase.fetch(CachableTestUseCase.class)
+					.subscribe(new SimpleDisposableUseCaseListener<TestResult>() {
+						@Override
+						public void onUpdate(TestResult result) {
+							requests[index] = result.request;
+						}
+					})
+					.execute(new CashableRequest.Builder()
+							.param1(params[i])
+							.build());
+
+		}
+
+		assertNotEquals(requests[0], requests[1]);
 	}
 
 	@NonNull

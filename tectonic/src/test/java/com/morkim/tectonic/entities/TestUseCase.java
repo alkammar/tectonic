@@ -15,4 +15,9 @@ public class TestUseCase extends UseCase<Request, TestResult> {
 
 		finish();
 	}
+
+	@Override
+	protected boolean supportsCaching() {
+		return false;
+	}
 }

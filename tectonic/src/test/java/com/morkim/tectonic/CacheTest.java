@@ -63,7 +63,7 @@ public class CacheTest extends TecTonicTest {
 	@Test
 	public void executeWithoutCaching_returnNewData() throws Exception {
 
-		TestUseCase useCase;
+		CachableTestUseCase useCase;
 
 		useCase = UseCase.fetch(CachableTestUseCase.class);
 		SimpleUseCaseListener<TestResult> originalResultListener = createOriginalResultListener();
@@ -95,7 +95,7 @@ public class CacheTest extends TecTonicTest {
 
 		useCase = new TestUseCase();
 		useCase.subscribe(createCachedResultListener());
-		useCase.execute(UseCase.CASHED);
+		useCase.execute(UseCase.CACHED);
 
 		assertNotEquals(originalResult, cachedResult);
 		assertEquals(0, onStartCachedCalled);
@@ -105,7 +105,7 @@ public class CacheTest extends TecTonicTest {
 	@Test
 	public void executeSecondTime_returnCachedData() throws Exception {
 
-		TestUseCase useCase;
+		CachableTestUseCase useCase;
 
 		useCase = UseCase.fetch(CachableTestUseCase.class);
 		useCase.subscribe(createOriginalResultListener());
@@ -113,7 +113,7 @@ public class CacheTest extends TecTonicTest {
 
 		useCase = UseCase.fetch(CachableTestUseCase.class);
 		useCase.subscribe(createCachedResultListener());
-		useCase.execute(UseCase.CASHED);
+		useCase.execute(UseCase.CACHED);
 
 		assertEquals(originalResult, cachedResult);
 		assertEquals(1, onStartCachedCalled);
@@ -123,7 +123,7 @@ public class CacheTest extends TecTonicTest {
 	@Test
 	public void executeAfterClear_returnNewData() throws Exception {
 
-		TestUseCase useCase;
+		CachableTestUseCase useCase;
 
 		useCase = UseCase.fetch(CachableTestUseCase.class);
 		SimpleUseCaseListener<TestResult> originalResultListener = createOriginalResultListener();
@@ -135,7 +135,7 @@ public class CacheTest extends TecTonicTest {
 
 		useCase = UseCase.fetch(CachableTestUseCase.class);
 		useCase.subscribe(createCachedResultListener());
-		useCase.execute(UseCase.CASHED);
+		useCase.execute(UseCase.CACHED);
 
 		assertNotEquals(originalResult, cachedResult);
 		assertEquals(1, onStartCachedCalled);

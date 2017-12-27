@@ -28,7 +28,7 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
      * Executes the use case in cached mode, where if a cached result exists it is returned with
      * executing the use case otherwise if a result does not exist the use case will be executed
      */
-    public static final int CASHED = 0x01000000;
+    public static final int CACHED = 0x01000000;
 
     /**
      * Executes the use case synchronously, so the execution is performed on the calling thread
@@ -171,7 +171,7 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
     }
 
     private boolean isExecuteCached(int flags) {
-        return (flags & CASHED) == CASHED;
+        return (flags & CACHED) == CACHED;
     }
 
     private void executeCached(final Rq request, final int flags) {
@@ -384,7 +384,7 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
     }
 
     protected boolean supportsCaching() {
-        return false;
+        return true;
     }
 
     /**

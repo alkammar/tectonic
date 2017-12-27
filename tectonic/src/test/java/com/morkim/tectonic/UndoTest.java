@@ -19,7 +19,6 @@ import io.reactivex.plugins.RxJavaPlugins;
 import io.reactivex.schedulers.Schedulers;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
 
 public class UndoTest extends TecTonicTest {
 
@@ -106,52 +105,12 @@ public class UndoTest extends TecTonicTest {
 						onUndoneCalled++;
 					}
 				})
-				.execute(UseCase.CASHED);
+				.execute(UseCase.CACHED);
 
 		UseCase.fetch(CachableTestUseCase.class)
 				.undo();
 
 		assertEquals(1, onUndoneCalled);
-	}
-
-	@Test
-	public void executeSecondTime_returnCachedData() throws Exception {
-
-		TestUseCase useCase;
-
-		useCase = UseCase.fetch(CachableTestUseCase.class);
-		useCase.subscribe(createOriginalResultListener());
-		useCase.execute();
-
-		useCase = UseCase.fetch(CachableTestUseCase.class);
-		useCase.subscribe(createCachedResultListener());
-		useCase.execute(UseCase.CASHED);
-
-		assertEquals(originalResult, cachedResult);
-		assertEquals(1, onStartCachedCalled);
-		assertEquals(1, onCompleteCachedCalled);
-	}
-
-	@Test
-	public void executeAfterClear_returnNewData() throws Exception {
-
-		TestUseCase useCase;
-
-		useCase = UseCase.fetch(CachableTestUseCase.class);
-		SimpleUseCaseListener<TestResult> originalResultListener = createOriginalResultListener();
-		useCase.subscribe(originalResultListener);
-		useCase.execute();
-
-		UseCase.clearCache(CachableTestUseCase.class);
-		useCase.unsubscribe(originalResultListener);
-
-		useCase = UseCase.fetch(CachableTestUseCase.class);
-		useCase.subscribe(createCachedResultListener());
-		useCase.execute(UseCase.CASHED);
-
-		assertNotEquals(originalResult, cachedResult);
-		assertEquals(1, onStartCachedCalled);
-		assertEquals(1, onCompleteCachedCalled);
 	}
 
 	@NonNull

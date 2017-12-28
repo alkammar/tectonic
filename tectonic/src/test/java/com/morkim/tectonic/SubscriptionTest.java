@@ -207,7 +207,7 @@ public class SubscriptionTest extends TecTonicTest {
     }
 
     @Test
-    public void subscribeDisposableAndError_DisposablesAReDisposed() throws Exception {
+    public void subscribeDisposableAndError_DisposablesAreDisposed() throws Exception {
 
         UseCase.fetch(ErrorTestUseCase.class)
                 .subscribe(new SimpleDisposableUseCaseListener<TestResult>() {

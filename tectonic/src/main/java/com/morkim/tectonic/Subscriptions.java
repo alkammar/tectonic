@@ -22,6 +22,7 @@ class Subscriptions {
     private Scheduler scheduler = UseCase.looperConfigs.isSingleThread() ?
             Schedulers.trampoline() :
             Schedulers.from(Executors.newSingleThreadExecutor());
+    private boolean errorHandled;
 
     void add(UseCaseListener<? extends Result> listener) {
         Subscription subscription = new Subscription<>(scheduler, listener);
@@ -112,19 +113,37 @@ class Subscriptions {
         }
     }
 
-    void notifyError(Throwable throwable) {
+    void notifyError(final Throwable throwable) {
 
-        boolean errorHandled = false;
-        for (int i = subscriptionList.size() - 1; i >= 0; i--) {
+        errorHandled = false;
 
-            Subscription subscription = subscriptionList.get(i);
-
-            if (!errorHandled && subscription.getListener().onError(throwable)) {
-                errorHandled = true;
-            }
-
-            removeIfDisposable(subscription);
+        if (subscriptionList.size() > 0) {
+            notifyError(throwable, subscriptionList.size() - 1);
         }
+    }
+
+    private void notifyError(final Throwable throwable, int index) {
+
+        subscriptionList.get(index)
+                .dispatch(new Consumer<Subscription>() {
+                    @Override
+                    public void accept(@NonNull Subscription s) throws Exception {
+
+                        if (!errorHandled && s.getListener().onError(throwable)) {
+                            errorHandled = true;
+                        }
+
+                        if (s.equals(subscriptionList.get(0))) {
+                            if (!errorHandled)
+                                throw new Error(throwable);
+                        } else if (subscriptionList.indexOf(s) - 1 >= 0) {
+                            notifyError(throwable, subscriptionList.indexOf(s) - 1);
+                        } else
+                            errorHandled = false;
+
+                        removeIfDisposable(s);
+                    }
+                });
     }
 
     private void removeIfDisposable(Subscription subscription) {

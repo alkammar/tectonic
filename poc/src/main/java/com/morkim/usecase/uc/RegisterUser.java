@@ -21,7 +21,7 @@ public class RegisterUser extends UseCase<RegisterUserRequest, Result> {
     protected void onExecute(RegisterUserRequest request) {
 
         if (request == null) {
-            requestInput(EMAIL, PASSWORD, MOBILE);
+            requestAction(EMAIL, PASSWORD, MOBILE);
         } else {
 
             // Validate the registration inputs (from business model perspective)

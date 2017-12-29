@@ -11,7 +11,7 @@ public class RequestInputTestUseCase extends PendingActionTestUseCase {
     protected void onExecute(PendingActionRequest request) {
 
         if (request == null) {
-            requestInput(0);
+            requestAction(0);
         } else {
 
             if (startInputValidation()

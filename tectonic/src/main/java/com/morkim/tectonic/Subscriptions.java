@@ -105,10 +105,10 @@ class Subscriptions {
         }
     }
 
-    void notifyInputRequired(Integer[] codes) {
+    void notifyActionRequired(Integer[] codes) {
 
         for (int i = subscriptionList.size() - 1; i >= 0; i--) {
-            if (subscriptionList.get(i).getListener().onInputRequired(Arrays.asList(codes)))
+            if (subscriptionList.get(i).getListener().onActionRequired(Arrays.asList(codes)))
                 break;
         }
     }

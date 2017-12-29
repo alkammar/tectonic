@@ -43,7 +43,7 @@ public class AuthenticateLogin extends UseCase<AuthenticateLoginRequest, Result>
         if (skip)
             completeLogin();
         else if (request == null || request.password.isEmpty())
-            requestInput(PASSWORD);
+            requestAction(PASSWORD);
         else if (!request.password.equals("asdf"))
             throw new InvalidLogin();
         else

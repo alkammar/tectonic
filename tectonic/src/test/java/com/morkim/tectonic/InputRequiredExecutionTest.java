@@ -61,21 +61,21 @@ public class InputRequiredExecutionTest extends TecTonicTest {
 		useCase = UseCase.fetch(RequestInputTestUseCase.class);
 		useCase.subscribe(new SimpleUseCaseListener<Result>() {
 			@Override
-			public boolean onInputRequired(List<Integer> codes) {
+			public boolean onActionRequired(List<Integer> codes) {
 				firstSubscriberNotified++;
 				return true;
 			}
 		});
 		useCase.subscribe(new SimpleUseCaseListener<Result>() {
 			@Override
-			public boolean onInputRequired(List<Integer> codes) {
+			public boolean onActionRequired(List<Integer> codes) {
 				secondSubscriberNotified++;
 				return true;
 			}
 		});
 		useCase.subscribe(new SimpleUseCaseListener<Result>() {
 			@Override
-			public boolean onInputRequired(List<Integer> codes) {
+			public boolean onActionRequired(List<Integer> codes) {
 				thirdSubscriberNotified++;
 				return true;
 			}
@@ -114,7 +114,7 @@ public class InputRequiredExecutionTest extends TecTonicTest {
 		useCase = UseCase.fetch(RequestInputTestUseCase.class);
 		useCase.subscribe(new SimpleUseCaseListener<Result>() {
 			@Override
-			public boolean onInputRequired(List<Integer> codes) {
+			public boolean onActionRequired(List<Integer> codes) {
 				return true;
 			}
 		});

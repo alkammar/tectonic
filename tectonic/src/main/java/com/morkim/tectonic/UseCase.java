@@ -72,7 +72,7 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
         START,
         UPDATE,
         COMPLETE,
-        INPUT,
+        ACTION,
         ERROR,
         UNDO,
     }
@@ -360,8 +360,8 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
             case COMPLETE:
                 subscriptionMap.get(this.getClass()).notifyComplete();
                 break;
-            case INPUT:
-                subscriptionMap.get(this.getClass()).notifyInputRequired(event.codes);
+            case ACTION:
+                subscriptionMap.get(this.getClass()).notifyActionRequired(event.codes);
                 break;
             case ERROR:
                 subscriptionMap.get(this.getClass()).notifyError(event.error);
@@ -521,10 +521,10 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
         flags = NO_FLAGS;
     }
 
-    protected void requestInput(Integer... codes) {
+    protected void requestAction(Integer... codes) {
 
         stateMachine.askForInput();
-        notify(new Event(Type.INPUT, codes));
+        notify(new Event(Type.ACTION, codes));
     }
 
     protected RequiredInputs startInputValidation() {

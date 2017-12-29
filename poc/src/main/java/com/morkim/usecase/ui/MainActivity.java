@@ -130,7 +130,7 @@ public class MainActivity extends AppCompatActivity {
 
     private SimpleUseCaseListener<Result> registerUserListener = new SimpleUseCaseListener<Result>() {
         @Override
-        public boolean onInputRequired(List<Integer> codes) {
+        public boolean onActionRequired(List<Integer> codes) {
             // We received an input required request from the registration use case and we need to
             // navigate to the registration screen
             startActivity(new Intent(getBaseContext(), Registration1Activity.class));
@@ -143,7 +143,7 @@ public class MainActivity extends AppCompatActivity {
     private SimpleUseCaseListener<Result> authenticateLoginListener = new SimpleUseCaseListener<Result>() {
 
         @Override
-        public boolean onInputRequired(List<Integer> codes) {
+        public boolean onActionRequired(List<Integer> codes) {
             // We received an input required request from the login use case and we need to navigate
             // to the login screen
             if (codes.contains(AuthenticateLogin.PASSWORD))

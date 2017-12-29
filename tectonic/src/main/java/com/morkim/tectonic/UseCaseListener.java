@@ -33,15 +33,15 @@ public interface UseCaseListener<Rs extends Result> {
 	void onCancel();
 
 	/**
-	 * Called when the use case requires an input to proceed with its execution. The code is passed
-	 * to indicate which input is required. The last subscribed listener will be the first to be called.
-	 * If a listener returns true, this means input is handled at that listener and other listeners
+	 * Called when the use case requires an action to proceed with its execution. The code is passed
+	 * to indicate which action is required. The last subscribed listener will be the first to be called.
+	 * If a listener returns true, this means the action is handled at that listener and other listeners
 	 * will not receive this callback.
 	 *
-	 * @param codes The codes for the required inputs.
-	 * @return true if the listener is handling the required input.
+	 * @param codes The codes for the required actions.
+	 * @return true if the listener is handling the required action.
 	 */
-	boolean onInputRequired(List<Integer> codes);
+	boolean onActionRequired(List<Integer> codes);
 
     boolean onError(Throwable throwable);
 

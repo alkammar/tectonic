@@ -428,8 +428,14 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
      * @param throwable Update error
      */
     protected void notifySubscribers(Throwable throwable) {
-        if (!stateMachine.isDead())
+        if (!stateMachine.isDead()) {
+
+            stateMachine.kill();
+            running.remove(UseCase.this.getClass());
+            UseCase.this.flags = NO_FLAGS;
+
             notify(new Event(Type.ERROR, throwable));
+        }
     }
 
     /**

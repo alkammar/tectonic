@@ -90,7 +90,7 @@ public class ErrorTest extends TecTonicTest {
 		useCase.execute();
 
 		assertNotEquals(0, useCase.getPrerequisiteTimeStamp());
-		assertEquals(0, mainTimeStamp);
+		assertNotEquals(0, mainTimeStamp);
 	}
 
 	@Test

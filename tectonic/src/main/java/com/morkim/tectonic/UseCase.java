@@ -313,7 +313,17 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
                     new SimpleDisposableUseCaseListener<Result>() {
                         @Override
                         public void onComplete() {
+                            tryNext();
+                        }
 
+                        @Override
+                        public boolean onError(Throwable throwable) {
+                            tryNext();
+
+                            return false;
+                        }
+
+                        private void tryNext() {
                             try {
                                 executeNextPrerequisite();
                             } catch (Exception e) {

@@ -133,9 +133,8 @@ class Subscriptions {
                             errorHandled = true;
                         }
 
-                        if (s.equals(subscriptionList.get(0))) {
-                            if (!errorHandled)
-                                throw new Error(throwable);
+                        if (s.equals(subscriptionList.get(0)) && !errorHandled) {
+                            throw new Error(throwable);
                         } else if (subscriptionList.indexOf(s) - 1 >= 0) {
                             notifyError(throwable, subscriptionList.indexOf(s) - 1);
                         } else

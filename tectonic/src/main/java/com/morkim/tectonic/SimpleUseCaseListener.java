@@ -27,7 +27,7 @@ public class SimpleUseCaseListener<Rs extends Result> implements UseCaseListener
 
 	@Override
 	public boolean onActionRequired(List<Integer> codes) {
-        return true;
+        return false;
     }
 
 	@Override

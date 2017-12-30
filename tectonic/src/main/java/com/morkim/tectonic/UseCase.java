@@ -181,9 +181,7 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
             if (cachedResults.get(UseCase.this.getClass()) == null)
                 cachedResults.put(UseCase.this.getClass(), new SparseArray<Result>());
 
-            //noinspection unchecked
-            final Rs result = (Rs) cachedResults.get(UseCase.this.getClass())
-                    .get(request == null ? Request.NO_ID : request.id());
+            final Rs result = findCachedResult(request);
 
             subscription = Observable.create(new ObservableOnSubscribe<Event>() {
                 @Override
@@ -203,6 +201,12 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
                     .subscribe();
         } else
             execute(request);
+    }
+
+    private Rs findCachedResult(Rq request) {
+        //noinspection unchecked
+        return (Rs) cachedResults.get(UseCase.this.getClass())
+                .get(request == null ? Request.NO_ID : request.id());
     }
 
     private boolean isExecuteOnMain(int flags) {
@@ -228,9 +232,8 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
                         executePrerequisite();
                     } else {
                         if ((UseCase.this.flags & UNDO) == UNDO) {
-                            //noinspection unchecked
-                            final Rs result = (Rs) cachedResults.get(UseCase.this.getClass())
-                                    .get(UseCase.this.request == null ? Request.NO_ID : UseCase.this.request.id());
+
+                            final Rs result = findCachedResult(UseCase.this.request);
 
                             if (result != null) {
                                 onUndo(UseCase.this.request, result);
@@ -377,7 +380,8 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
                 subscriptionMap.get(this.getClass()).notifyError(event.error);
                 break;
             case UNDO:
-                subscriptionMap.get(this.getClass()).notifyUndone();
+                subscriptionMap.get(this.getClass()).notifyUndone(event.result);
+                clearCache(this.getClass());
                 break;
         }
     }
@@ -509,7 +513,7 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
             stateMachine.finish();
             running.remove(UseCase.this.getClass());
             if ((flags & UNDO) == UNDO)
-                notify(new Event(Type.UNDO));
+                notify(new Event(Type.UNDO, findCachedResult(null)));
             else
                 notify(new Event(Type.COMPLETE));
 

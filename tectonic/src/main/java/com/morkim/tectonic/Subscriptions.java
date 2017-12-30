@@ -152,7 +152,7 @@ class Subscriptions {
         }
     }
 
-    void notifyUndone() {
+    <Rs extends Result> void notifyUndone(final Rs result) {
 
         final Collection<Subscription> subscriptions = new ArrayList<>();
         subscriptions.addAll(subscriptionMap.values());
@@ -163,7 +163,8 @@ class Subscriptions {
                 public void accept(@NonNull Subscription s) throws Exception {
 
                     consumedStartList.remove(s);
-                    s.getListener().onUndone();
+                    //noinspection unchecked
+                    s.getListener().onUndone(result);
 
                     removeIfDisposable(subscription);
                 }

@@ -45,5 +45,5 @@ public interface UseCaseListener<Rs extends Result> {
 
     boolean onError(Throwable throwable);
 
-	void onUndone();
+	void onUndone(Rs oldResult);
 }

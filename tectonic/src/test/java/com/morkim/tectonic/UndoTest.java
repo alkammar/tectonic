@@ -22,12 +22,9 @@ import static org.junit.Assert.assertEquals;
 
 public class UndoTest extends TecTonicTest {
 
-	private Result originalResult;
-	private Result cachedResult;
-
-	private int onStartCachedCalled;
-	private int onCompleteCachedCalled;
 	private int onUndoneCalled;
+	private Result oldResult;
+	private Result originalResult;
 
 	@BeforeClass
 	public static void setupClass() {
@@ -55,11 +52,9 @@ public class UndoTest extends TecTonicTest {
 		UseCase.unsubscribeAll();
 		UseCase.clearCache(CachableTestUseCase.class);
 
-		originalResult = null;
-		cachedResult = null;
-		onStartCachedCalled = 0;
-		onCompleteCachedCalled = 0;
 		onUndoneCalled = 0;
+		originalResult = null;
+		oldResult = null;
 	}
 
 	@Test
@@ -68,7 +63,7 @@ public class UndoTest extends TecTonicTest {
 		UseCase.fetch(CachableTestUseCase.class)
 				.subscribe(new SimpleUseCaseListener<TestResult>() {
 					@Override
-					public void onUndone() {
+					public void onUndone(TestResult oldResult) {
 						onUndoneCalled++;
 					}
 				})
@@ -83,7 +78,7 @@ public class UndoTest extends TecTonicTest {
 		UseCase.fetch(TestUseCase.class)
 				.subscribe(new SimpleUseCaseListener<TestResult>() {
 					@Override
-					public void onUndone() {
+					public void onUndone(TestResult oldResult) {
 						onUndoneCalled++;
 					}
 				})
@@ -96,12 +91,19 @@ public class UndoTest extends TecTonicTest {
 	}
 
 	@Test
-	public void undoExecutedCached_undoneCalled() throws Exception {
+	public void undoExecutedCached_onUndoCalled() throws Exception {
 
 		UseCase.fetch(CachableTestUseCase.class)
 				.subscribe(new SimpleUseCaseListener<TestResult>() {
+
 					@Override
-					public void onUndone() {
+					public void onUpdate(TestResult result) {
+						UndoTest.this.originalResult = result;
+					}
+
+					@Override
+					public void onUndone(TestResult oldResult) {
+						UndoTest.this.oldResult = oldResult;
 						onUndoneCalled++;
 					}
 				})
@@ -111,36 +113,28 @@ public class UndoTest extends TecTonicTest {
 				.undo();
 
 		assertEquals(1, onUndoneCalled);
+		assertEquals(originalResult, oldResult);
 	}
 
-	@NonNull
-	private SimpleUseCaseListener<TestResult> createOriginalResultListener() {
-		return new SimpleUseCaseListener<TestResult>() {
-			@Override
-			public void onUpdate(TestResult result) {
-				originalResult = result;
-			}
-		};
-	}
+	@Test
+	public void undoAlreadyUndone_onUndoNotCalledSecondTime() throws Exception {
 
-	@NonNull
-	private SimpleUseCaseListener<TestResult> createCachedResultListener() {
-		return new SimpleUseCaseListener<TestResult>() {
+		UseCase.fetch(CachableTestUseCase.class)
+				.subscribe(new SimpleUseCaseListener<TestResult>() {
 
-			@Override
-			public void onStart() {
-				onStartCachedCalled++;
-			}
+					@Override
+					public void onUndone(TestResult oldResult) {
+						onUndoneCalled++;
+					}
+				})
+				.execute(UseCase.CACHED);
 
-			@Override
-			public void onUpdate(TestResult result) {
-				cachedResult = result;
-			}
+		UseCase.fetch(CachableTestUseCase.class)
+				.undo();
 
-			@Override
-			public void onComplete() {
-				onCompleteCachedCalled++;
-			}
-		};
+		UseCase.fetch(CachableTestUseCase.class)
+				.undo();
+
+		assertEquals(1, onUndoneCalled);
 	}
 }

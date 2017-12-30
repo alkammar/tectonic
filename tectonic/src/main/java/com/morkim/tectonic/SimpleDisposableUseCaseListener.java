@@ -36,7 +36,7 @@ public class SimpleDisposableUseCaseListener<Rs extends Result> implements Dispo
 	}
 
 	@Override
-	public void onUndone() {
+	public void onUndone(Rs oldResult) {
 
 	}
 }

@@ -36,7 +36,7 @@ public class SimpleUseCaseListener<Rs extends Result> implements UseCaseListener
 	}
 
 	@Override
-	public void onUndone() {
+	public void onUndone(Rs oldResult) {
 
 	}
 }

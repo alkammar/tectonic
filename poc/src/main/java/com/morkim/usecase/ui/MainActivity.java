@@ -13,7 +13,9 @@ import com.morkim.tectonic.Result;
 import com.morkim.tectonic.SimpleDisposableUseCaseListener;
 import com.morkim.tectonic.SimpleUseCaseListener;
 import com.morkim.tectonic.UseCase;
+import com.morkim.tectonic.UseCaseListener;
 import com.morkim.usecase.R;
+import com.morkim.usecase.actor.User;
 import com.morkim.usecase.uc.AuthenticateLogin;
 import com.morkim.usecase.uc.ExitApp;
 import com.morkim.usecase.uc.LogoutUser;
@@ -24,7 +26,7 @@ import com.morkim.usecase.uc.RegisterUser;
 import java.util.List;
 
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements User {
 
     private Button refresh;
     @SuppressWarnings("FieldCanBeLocal")
@@ -55,7 +57,7 @@ public class MainActivity extends AppCompatActivity {
 
         abort.setOnClickListener(v -> UseCase.cancel(MainUseCase.class));
 
-        UseCase.subscribe(RegisterUser.class, registerUserListener);
+        UseCase.subscribe(RegisterUser.class, RegisterUser.USER, registerUserListener);
         UseCase.subscribe(AuthenticateLogin.class, authenticateLoginListener);
 
         UseCase.subscribe(ExitApp.class, new SimpleDisposableUseCaseListener<Result>() {
@@ -128,29 +130,23 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
-    private SimpleUseCaseListener<Result> registerUserListener = new SimpleUseCaseListener<Result>() {
+    private UseCaseListener<Result> registerUserListener = new SimpleUseCaseListener<Result>() {
         @Override
-        public boolean onActionRequired(List<Integer> codes) {
+        public void onActionRequired(List<Integer> codes) {
             // We received an input required request from the registration use case and we need to
             // navigate to the registration screen
             startActivity(new Intent(getBaseContext(), Registration1Activity.class));
-
-            // Return true to say we handled the input request
-            return true;
         }
     };
 
-    private SimpleUseCaseListener<Result> authenticateLoginListener = new SimpleUseCaseListener<Result>() {
+    private UseCaseListener<Result> authenticateLoginListener = new SimpleUseCaseListener<Result>() {
 
         @Override
-        public boolean onActionRequired(List<Integer> codes) {
+        public void onActionRequired(List<Integer> codes) {
             // We received an input required request from the login use case and we need to navigate
             // to the login screen
             if (codes.contains(AuthenticateLogin.PASSWORD))
                 startActivity(new Intent(getBaseContext(), LoginActivity.class));
-
-            // Return true to say we handled the input request
-            return true;
         }
     };
 

@@ -26,8 +26,8 @@ public class SimpleDisposableUseCaseListener<Rs extends Result> implements Dispo
 	}
 
 	@Override
-	public boolean onActionRequired(List<Integer> codes) {
-        return false;
+	public void onActionRequired(List<Integer> codes) {
+
     }
 
 	@Override

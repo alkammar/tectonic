@@ -38,10 +38,11 @@ public interface UseCaseListener<Rs extends Result> {
 	 * If a listener returns true, this means the action is handled at that listener and other listeners
 	 * will not receive this callback.
 	 *
+	 *
 	 * @param codes The codes for the required actions.
 	 * @return true if the listener is handling the required action.
 	 */
-	boolean onActionRequired(List<Integer> codes);
+	void onActionRequired(List<Integer> codes);
 
     boolean onError(Throwable throwable);
 

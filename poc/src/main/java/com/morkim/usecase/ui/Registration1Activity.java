@@ -37,7 +37,7 @@ public class Registration1Activity extends AppCompatActivity {
                         .subscribe(new SimpleUseCaseListener<Result>() {
 
                             @Override
-                            public boolean onActionRequired(List<Integer> codes) {
+                            public void onActionRequired(List<Integer> codes) {
 
                                 if (ourInputsComplete(codes)) {
                                     if (codes.contains(RegisterUser.MOBILE)) {
@@ -52,7 +52,6 @@ public class Registration1Activity extends AppCompatActivity {
                                 } else {
                                     // Maybe here we can show some error for the error texts
                                 }
-                                return super.onActionRequired(codes);
                             }
 
                             private boolean ourInputsComplete(List<Integer> codes) {

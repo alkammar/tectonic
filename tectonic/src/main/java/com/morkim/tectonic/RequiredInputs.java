@@ -34,7 +34,7 @@ public class RequiredInputs {
      */
     public boolean validate() {
         boolean valid = inputs.size() == 0;
-        if (!valid) useCase.requestAction(inputs.toArray(new Integer[0]));
+        if (!valid) useCase.requestAction(UseCase.NO_ACTOR, inputs.toArray(new Integer[0]));
         return valid;
     }
 }

@@ -14,6 +14,8 @@ public class RegisterUser extends UseCase<RegisterUserRequest, Result> {
     public static final int PASSWORD = 2;
     public static final int MOBILE = 3;
 
+    public static final int USER = 1;
+
     @Inject
     Profile profile = AppInjector.getAppComponent().getProfile();
 
@@ -21,7 +23,7 @@ public class RegisterUser extends UseCase<RegisterUserRequest, Result> {
     protected void onExecute(RegisterUserRequest request) {
 
         if (request == null) {
-            requestAction(EMAIL, PASSWORD, MOBILE);
+            requestAction(USER, EMAIL, PASSWORD, MOBILE);
         } else {
 
             // Validate the registration inputs (from business model perspective)
@@ -39,5 +41,4 @@ public class RegisterUser extends UseCase<RegisterUserRequest, Result> {
             }
         }
     }
-
 }

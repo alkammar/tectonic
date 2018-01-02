@@ -18,16 +18,19 @@ class Subscriptions {
     private Map<UseCaseListener, Subscription> subscriptionMap = new LinkedHashMap<>();
     private List<Subscription> subscriptionList = new ArrayList<>();
     private List<Subscription> consumedStartList = new ArrayList<>();
+    private Map<Integer, Subscription> actorMap = new LinkedHashMap<>();
 
     private Scheduler scheduler = UseCase.looperConfigs.isSingleThread() ?
             Schedulers.trampoline() :
             Schedulers.from(Executors.newSingleThreadExecutor());
     private boolean errorHandled;
 
-    void add(UseCaseListener<? extends Result> listener) {
+    void add(int actor, UseCaseListener<? extends Result> listener) {
         Subscription subscription = new Subscription<>(scheduler, listener);
         subscriptionList.add(subscription);
         subscriptionMap.put(listener, subscription);
+
+        actorMap.put(actor, subscription);
     }
 
     void remove(UseCaseListener listener) {
@@ -105,12 +108,9 @@ class Subscriptions {
         }
     }
 
-    void notifyActionRequired(Integer[] codes) {
-
-        for (int i = subscriptionList.size() - 1; i >= 0; i--) {
-            if (subscriptionList.get(i).getListener().onActionRequired(Arrays.asList(codes)))
-                break;
-        }
+    void notifyActionRequired(int actor, Integer[] codes) {
+        if (actorMap.containsKey(actor))
+            actorMap.get(actor).getListener().onActionRequired(Arrays.asList(codes));
     }
 
     void notifyError(final Throwable throwable) {

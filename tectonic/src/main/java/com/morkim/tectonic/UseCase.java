@@ -35,7 +35,6 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
      */
     public static final int EXECUTE_ON_MAIN = 0x10000000;
 
-
     public static final int UNDO = 0x00100000;
 
     public static final LooperConfigs STUB_LOOPER_CHECKER = new LooperConfigs() {
@@ -50,6 +49,8 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
             return true;
         }
     };
+
+    static final int NO_ACTOR = 0;
 
     private static final int NO_FLAGS = 0x00000000;
 
@@ -374,7 +375,7 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
                 subscriptionMap.get(this.getClass()).notifyComplete();
                 break;
             case ACTION:
-                subscriptionMap.get(this.getClass()).notifyActionRequired(event.codes);
+                subscriptionMap.get(this.getClass()).notifyActionRequired(event.actor, event.codes);
                 break;
             case ERROR:
                 subscriptionMap.get(this.getClass()).notifyError(event.error);
@@ -411,6 +412,23 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
      */
     public UseCase<Rq, Rs> subscribe(UseCaseListener<Rs> useCaseListener) {
         subscribe(this.getClass(), useCaseListener);
+
+        return this;
+    }
+
+    /**
+     * Subscribes a {@link UseCaseListener} to this use case. All subscribers will get all callbacks
+     * except {@link UseCaseListener#onActionRequired(List)}, this callback will only be received by
+     * the appropriate actor.
+     * The subscribed listener will stay subscribed to the use case even after the use case has completed.
+     * The subscriber will have to be un-subscribed in order not receive further updates.
+     *
+     * @param actor Actor to receive a required action request
+     * @param useCaseListener Subscriber listener
+     * @return The subscribed use case
+     */
+    public UseCase<Rq, Rs> subscribe(int actor, UseCaseListener<Rs> useCaseListener) {
+        subscribe(this.getClass(), actor, useCaseListener);
 
         return this;
     }
@@ -460,7 +478,30 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
         cachedResults.remove(useCaseClass);
     }
 
+    /**
+     * Subscribes a {@link UseCaseListener} to this use case. The subscribed listener will stay
+     * subscribed to the use case even after the use case has completed.
+     * The subscriber will have to be un-subscribed in order not receive further updates.
+     *
+     * @param useCaseClass The use case to subscribe to
+     * @param listener Subscriber listener
+     */
     public static void subscribe(Class<? extends UseCase> useCaseClass, UseCaseListener<? extends Result> listener) {
+        subscribe(useCaseClass, NO_ACTOR, listener);
+    }
+
+    /**
+     * Subscribes a {@link UseCaseListener} to this use case. All subscribers will get all callbacks
+     * except {@link UseCaseListener#onActionRequired(List)}, this callback will only be received by
+     * the appropriate actor.
+     * The subscribed listener will stay subscribed to the use case even after the use case has completed.
+     * The subscriber will have to be un-subscribed in order not receive further updates.
+     *
+     * @param useCaseClass The use case to subscribe to
+     * @param actor Actor to receive a required action request
+     * @param listener Subscriber listener
+     */
+    public static void subscribe(Class<? extends UseCase> useCaseClass, int actor, UseCaseListener<? extends Result> listener) {
 
         if (subscriptionMap == null) subscriptionMap = new HashMap<>();
 
@@ -471,7 +512,7 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
         }
 
         subscriptions.remove(listener);
-        subscriptions.add(listener);
+        subscriptions.add(actor, listener);
     }
 
     public static void unsubscribe(Class<? extends UseCase> useCaseClass, UseCaseListener<? extends Result> listener) {
@@ -541,10 +582,10 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
         flags = NO_FLAGS;
     }
 
-    protected void requestAction(Integer... codes) {
+    protected void requestAction(int actor, Integer... codes) {
 
         stateMachine.askForInput();
-        notify(new Event(Type.ACTION, codes));
+        notify(new Event(Type.ACTION, actor, codes));
     }
 
     protected RequiredInputs startInputValidation() {
@@ -559,6 +600,7 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
 
         Type type;
         Rs result;
+        int actor;
         Integer[] codes;
         Throwable error;
 
@@ -571,8 +613,9 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
             this.result = result;
         }
 
-        Event(Type type, Integer[] codes) {
+        Event(Type type, int actor, Integer[] codes) {
             this.type = type;
+            this.actor = actor;
             this.codes = codes;
         }
 

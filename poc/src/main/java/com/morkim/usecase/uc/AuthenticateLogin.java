@@ -11,6 +11,8 @@ import javax.inject.Inject;
 
 public class AuthenticateLogin extends UseCase<AuthenticateLoginRequest, Result> {
 
+    public static final int USER = 1;
+
     public static final int PASSWORD = 1;
 
     @Inject
@@ -43,7 +45,7 @@ public class AuthenticateLogin extends UseCase<AuthenticateLoginRequest, Result>
         if (skip)
             completeLogin();
         else if (request == null || request.password.isEmpty())
-            requestAction(PASSWORD);
+            requestAction(USER, PASSWORD);
         else if (!request.password.equals("asdf"))
             throw new InvalidLogin();
         else
@@ -56,4 +58,5 @@ public class AuthenticateLogin extends UseCase<AuthenticateLoginRequest, Result>
         profile.setLoggedIn(true);
         finish();
     }
+
 }

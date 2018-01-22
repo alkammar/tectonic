@@ -1,8 +1,8 @@
 package com.morkim.tectonic;
 
 
+import android.annotation.SuppressLint;
 import android.os.Looper;
-import android.util.SparseArray;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -93,7 +93,7 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
 
     private Subject<UseCaseListener<? extends Result>> subscribers = ReplaySubject.create();
 
-    private static Map<Class<? extends UseCase>, SparseArray<Result>> cachedResults = new HashMap<>();
+    private static Map<Class<? extends UseCase>, Map<Integer, Result>> cachedResults = new HashMap<>();
 
     /**
      * This will fetch the use case if it is already running, otherwise this will create
@@ -175,12 +175,13 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
         return (flags & CACHED) == CACHED;
     }
 
+    @SuppressLint("UseSparseArrays")
     private void executeCached(final Rq request, final int flags) {
 
         if (supportsCaching()) {
 
             if (cachedResults.get(UseCase.this.getClass()) == null)
-                cachedResults.put(UseCase.this.getClass(), new SparseArray<Result>());
+                cachedResults.put(UseCase.this.getClass(), new HashMap<Integer, Result>());
 
             final Rs result = findCachedResult(request);
 
@@ -387,10 +388,11 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
         }
     }
 
+    @SuppressLint("UseSparseArrays")
     private void updateCache(Result result) {
-        SparseArray<Result> resultsMap;
+        Map<Integer, Result> resultsMap;
         if (cachedResults.get(UseCase.this.getClass()) == null) {
-            resultsMap = new SparseArray<>();
+            resultsMap = new HashMap<>();
             cachedResults.put(UseCase.this.getClass(), resultsMap);
         } else
             resultsMap = cachedResults.get(UseCase.this.getClass());

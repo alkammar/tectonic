@@ -211,11 +211,6 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
                 .get(request == null ? Request.NO_ID : request.id());
     }
 
-    private Rs popLastResult() {
-        //noinspection unchecked
-        return (Rs) cachedResults.get(UseCase.this.getClass()).pop();
-    }
-
     private boolean isExecuteOnMain(int flags) {
         return (flags & EXECUTE_ON_MAIN) == EXECUTE_ON_MAIN;
     }
@@ -389,7 +384,6 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
                 break;
             case UNDO:
                 subscriptionMap.get(this.getClass()).notifyUndone(event.result);
-                clearCache(this.getClass());
                 break;
         }
     }
@@ -562,7 +556,8 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
             stateMachine.finish();
             running.remove(UseCase.this.getClass());
             if ((flags & UNDO) == UNDO)
-                notify(new Event(Type.UNDO, popLastResult()));
+                //noinspection unchecked
+                notify(new Event(Type.UNDO, (Rs) cachedResults.get(UseCase.this.getClass()).pop()));
             else
                 notify(new Event(Type.COMPLETE));
 

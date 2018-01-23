@@ -63,7 +63,7 @@ public class MultipleCacheTest {
 
 		useCase = UseCase.fetch(CachableTestUseCase.class);
 		useCase.subscribe(createOriginalResultListener());
-		useCase.execute(new CashableRequest.Builder()
+		useCase.execute(new CachableRequest.Builder()
 				.param1(65)
 				.build());
 
@@ -71,7 +71,7 @@ public class MultipleCacheTest {
 
 		useCase = UseCase.fetch(CachableTestUseCase.class);
 		useCase.subscribe(createCachedResultListener());
-		useCase.execute(new CashableRequest.Builder()
+		useCase.execute(new CachableRequest.Builder()
 				.param1(65)
 				.build());
 
@@ -85,7 +85,7 @@ public class MultipleCacheTest {
 
 		useCase = UseCase.fetch(TestUseCase.class);
 		useCase.subscribe(createOriginalResultListener());
-		useCase.execute(new CashableRequest.Builder()
+		useCase.execute(new CachableRequest.Builder()
 				.param1(65)
 				.build());
 
@@ -93,7 +93,7 @@ public class MultipleCacheTest {
 
 		useCase = UseCase.fetch(TestUseCase.class);
 		useCase.subscribe(createCachedResultListener());
-		useCase.execute(new CashableRequest.Builder()
+		useCase.execute(new CachableRequest.Builder()
 				.param1(65)
 				.build(),
 				UseCase.CACHED);
@@ -108,7 +108,7 @@ public class MultipleCacheTest {
 
 		useCase = UseCase.fetch(CachableTestUseCase.class);
 		useCase.subscribe(createOriginalResultListener());
-		useCase.execute(new CashableRequest.Builder()
+		useCase.execute(new CachableRequest.Builder()
 				.param1(65)
 				.build());
 
@@ -116,7 +116,7 @@ public class MultipleCacheTest {
 
 		useCase = UseCase.fetch(CachableTestUseCase.class);
 		useCase.subscribe(createCachedResultListener());
-		useCase.execute(new CashableRequest.Builder()
+		useCase.execute(new CachableRequest.Builder()
 				.param1(77)
 				.build(),
 				UseCase.CACHED);
@@ -131,13 +131,13 @@ public class MultipleCacheTest {
 
 		useCase = UseCase.fetch(CachableTestUseCase.class);
 		useCase.subscribe(createOriginalResultListener());
-		useCase.execute(new CashableRequest.Builder()
+		useCase.execute(new CachableRequest.Builder()
 				.param1(65)
 				.build());
 
 		useCase = UseCase.fetch(CachableTestUseCase.class);
 		useCase.subscribe(createCachedResultListener());
-		useCase.execute(new CashableRequest.Builder()
+		useCase.execute(new CachableRequest.Builder()
 				.param1(65)
 				.build(),
 				UseCase.CACHED);
@@ -152,7 +152,7 @@ public class MultipleCacheTest {
 
 		useCase = UseCase.fetch(CachableTestUseCase.class);
 		useCase.subscribe(createOriginalResultListener());
-		useCase.execute(new CashableRequest.Builder()
+		useCase.execute(new CachableRequest.Builder()
 				.param1(65)
 				.build());
 
@@ -160,7 +160,7 @@ public class MultipleCacheTest {
 
 		useCase = UseCase.fetch(CachableTestUseCase.class);
 		useCase.subscribe(createCachedResultListener());
-		useCase.execute(new CashableRequest.Builder()
+		useCase.execute(new CachableRequest.Builder()
 				.param1(66)
 				.build(),
 				UseCase.CACHED);
@@ -184,7 +184,7 @@ public class MultipleCacheTest {
 							requests[index] = result.request;
 						}
 					})
-					.execute(new CashableRequest.Builder()
+					.execute(new CachableRequest.Builder()
 							.param1(params[i])
 							.build());
 
@@ -213,7 +213,7 @@ public class MultipleCacheTest {
 		};
 	}
 
-	private static class CashableRequest extends Request {
+	private static class CachableRequest extends Request {
 
 		private final int param1;
 
@@ -226,10 +226,10 @@ public class MultipleCacheTest {
 				return this;
 			}
 
-			public CashableRequest build() { return new CashableRequest(this); }
+			public CachableRequest build() { return new CachableRequest(this); }
 		}
 
-		protected CashableRequest(Builder builder) {
+		protected CachableRequest(Builder builder) {
 			super(builder);
 			param1 = builder.param1;
 		}

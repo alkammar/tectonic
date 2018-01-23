@@ -93,7 +93,7 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
 
     private Subject<UseCaseListener<? extends Result>> subscribers = ReplaySubject.create();
 
-    private static Map<Class<? extends UseCase>, Map<Integer, Result>> cachedResults = new HashMap<>();
+    private static Map<Class<? extends UseCase>, ResultStack> cachedResults = new HashMap<>();
 
     /**
      * This will fetch the use case if it is already running, otherwise this will create
@@ -181,7 +181,7 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
         if (supportsCaching()) {
 
             if (cachedResults.get(UseCase.this.getClass()) == null)
-                cachedResults.put(UseCase.this.getClass(), new HashMap<Integer, Result>());
+                cachedResults.put(UseCase.this.getClass(), new ResultStack());
 
             final Rs result = findCachedResult(request);
 
@@ -211,6 +211,11 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
                 .get(request == null ? Request.NO_ID : request.id());
     }
 
+    private Rs popLastResult() {
+        //noinspection unchecked
+        return (Rs) cachedResults.get(UseCase.this.getClass()).pop();
+    }
+
     private boolean isExecuteOnMain(int flags) {
         return (flags & EXECUTE_ON_MAIN) == EXECUTE_ON_MAIN;
     }
@@ -235,7 +240,8 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
                     } else {
                         if ((UseCase.this.flags & UNDO) == UNDO) {
 
-                            final Rs result = findCachedResult(UseCase.this.request);
+                            //noinspection unchecked
+                            final Rs result = (Rs) cachedResults.get(UseCase.this.getClass()).getLast();
 
                             if (result != null) {
                                 onUndo(UseCase.this.request, result);
@@ -390,14 +396,14 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
 
     @SuppressLint("UseSparseArrays")
     private void updateCache(Result result) {
-        Map<Integer, Result> resultsMap;
+        ResultStack resultStack;
         if (cachedResults.get(UseCase.this.getClass()) == null) {
-            resultsMap = new HashMap<>();
-            cachedResults.put(UseCase.this.getClass(), resultsMap);
+            resultStack = new ResultStack();
+            cachedResults.put(UseCase.this.getClass(), resultStack);
         } else
-            resultsMap = cachedResults.get(UseCase.this.getClass());
+            resultStack = cachedResults.get(UseCase.this.getClass());
 
-        resultsMap.put(request == null ? Request.NO_ID : request.id(), result);
+        resultStack.put(request == null ? Request.NO_ID : request.id(), result);
     }
 
     protected boolean supportsCaching() {
@@ -556,7 +562,7 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
             stateMachine.finish();
             running.remove(UseCase.this.getClass());
             if ((flags & UNDO) == UNDO)
-                notify(new Event(Type.UNDO, findCachedResult(null)));
+                notify(new Event(Type.UNDO, popLastResult()));
             else
                 notify(new Event(Type.COMPLETE));
 

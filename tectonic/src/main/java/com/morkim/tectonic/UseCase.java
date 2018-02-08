@@ -110,6 +110,7 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
         if (useCase == null) {
             try {
                 useCase = useCaseClass.newInstance();
+                useCase.onCreate();
                 useCase.onAddPrerequisites();
                 running.put(useCaseClass, useCase);
                 useCase.create();
@@ -274,6 +275,10 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
                                 UseCase.this.notify(new Event(Type.ERROR, throwable));
                             }
                         });
+    }
+
+    protected void onCreate() {
+
     }
 
     protected void onAddPrerequisites() {

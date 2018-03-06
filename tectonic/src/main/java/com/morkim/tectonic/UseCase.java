@@ -12,6 +12,7 @@ import java.util.Map;
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
 import io.reactivex.ObservableOnSubscribe;
+import io.reactivex.Scheduler;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.annotations.NonNull;
 import io.reactivex.disposables.Disposable;
@@ -169,7 +170,7 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
         if (isExecuteCached(flags))
             executeCached(request, flags);
         else if (stateMachine.isExecutable())
-            executeAsync(request, flags);
+            executeAsync(request, flags, isExecuteOnMain(flags) ? AndroidSchedulers.mainThread() : Schedulers.io());
     }
 
     private boolean isExecuteCached(int flags) {
@@ -216,7 +217,7 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
         return (flags & EXECUTE_ON_MAIN) == EXECUTE_ON_MAIN;
     }
 
-    private void executeAsync(Rq request, int flags) {
+    private void executeAsync(Rq request, int flags, Scheduler scheduler) {
 
         this.request = request;
         this.flags = flags;
@@ -224,39 +225,10 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
         subscription = Observable.create(new ObservableOnSubscribe<Event>() {
             @Override
             public void subscribe(@NonNull ObservableEmitter<Event> e) throws Exception {
-
-                UseCase.this.notify(new Event(Type.START));
-
-                if (!stateMachine.isInProgress()) {
-                    stateMachine.start();
-
-                    if (!prerequisites.isEmpty()) {
-                        prerequisiteIndex = 0;
-                        executePrerequisite();
-                    } else {
-                        if ((UseCase.this.flags & UNDO) == UNDO) {
-
-                            //noinspection unchecked
-                            final Rs result = (Rs) cachedResults.get(UseCase.this.getClass()).getLast();
-
-                            if (result != null) {
-                                onUndo(UseCase.this.request, result);
-                            }
-
-                            if (!stateMachine.isDead()) {
-                                stateMachine.kill();
-                                running.remove(UseCase.this.getClass());
-                                UseCase.this.flags = NO_FLAGS;
-                            }
-
-                        } else
-                            onExecute(UseCase.this.request);
-                    }
-                }
-
+                executeSync();
             }
         }).observeOn(AndroidSchedulers.mainThread())
-                .subscribeOn(isExecuteOnMain(flags) ? AndroidSchedulers.mainThread() : Schedulers.io())
+                .subscribeOn(scheduler)
                 .subscribe(
                         new Consumer<Event>() {
                             @Override
@@ -277,12 +249,54 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
                         });
     }
 
+    private Rs executeSync() throws Exception {
+
+        UseCase.this.notify(new Event(Type.START));
+
+        ResultStack resultStack = cachedResults.get(UseCase.this.getClass());
+
+        if (!stateMachine.isInProgress()) {
+            stateMachine.start();
+
+            if (!prerequisites.isEmpty()) {
+                prerequisiteIndex = 0;
+                executePrerequisite();
+            } else {
+                if ((UseCase.this.flags & UNDO) == UNDO) {
+
+                    //noinspection unchecked
+                    final Rs result = (Rs) resultStack.getLast();
+
+                    if (result != null) {
+                        onUndo(UseCase.this.request, result);
+                    }
+
+                    if (!stateMachine.isDead()) {
+                        stateMachine.kill();
+                        running.remove(UseCase.this.getClass());
+                        UseCase.this.flags = NO_FLAGS;
+                    }
+
+                } else {
+                    onExecute(UseCase.this.request);
+                }
+            }
+        }
+
+        //noinspection unchecked
+        return resultStack != null ? (Rs) resultStack.getLast() : null;
+    }
+
     protected void onCreate() {
 
     }
 
     protected void onAddPrerequisites() {
 
+    }
+
+    protected Rs executeBlocking(Rq request) throws Exception {
+         return executeSync();
     }
 
     protected abstract void onExecute(Rq request) throws Exception;

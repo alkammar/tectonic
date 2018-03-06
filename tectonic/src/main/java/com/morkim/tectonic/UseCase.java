@@ -173,6 +173,10 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
             executeAsync(request, flags, isExecuteOnMain(flags) ? AndroidSchedulers.mainThread() : Schedulers.io());
     }
 
+    public Rs executeBlocking(Rq request) throws Exception {
+        return executeSync();
+    }
+
     private boolean isExecuteCached(int flags) {
         return (flags & CACHED) == CACHED;
     }
@@ -293,10 +297,6 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
 
     protected void onAddPrerequisites() {
 
-    }
-
-    protected Rs executeBlocking(Rq request) throws Exception {
-         return executeSync();
     }
 
     protected abstract void onExecute(Rq request) throws Exception;

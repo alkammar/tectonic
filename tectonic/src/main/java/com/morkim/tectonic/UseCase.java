@@ -325,7 +325,7 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
 
         final Prerequisite prerequisite = prerequisites.get(prerequisiteIndex);
 
-        if (prerequisite.precondition.onEvaluate()) {
+        if (prerequisite.useCase != null && prerequisite.precondition.onEvaluate()) {
 
             final UseCase prerequisiteUseCase = UseCase.fetch(prerequisite.useCase);
 
@@ -364,6 +364,7 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
             );
             prerequisiteUseCase.execute();
         } else {
+            prerequisite.block();
             executeNextPrerequisite();
         }
     }

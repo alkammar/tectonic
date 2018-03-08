@@ -2,6 +2,7 @@ package com.morkim.tectonic;
 
 class Prerequisite {
 
+    PreAction preAction = PreAction.NO_ACTION;
     Class<? extends UseCase> useCase;
     UseCaseListener listener;
     Precondition precondition;
@@ -17,6 +18,10 @@ class Prerequisite {
         this.precondition = precondition;
     }
 
+    public Prerequisite(PreAction preAction) {
+        this.preAction = preAction;
+    }
+
     public Prerequisite otherwiseExecute(Class<? extends UseCase> useCase) {
 
         this.useCase = useCase;
@@ -25,5 +30,9 @@ class Prerequisite {
 
     public void subscribe(UseCaseListener listener) {
         this.listener = listener;
+    }
+
+    void block() {
+        preAction.onBlockExecute();
     }
 }

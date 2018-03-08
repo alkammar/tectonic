@@ -305,20 +305,24 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
 
     }
 
+    protected void addPrerequisite(PreAction preAction) {
+        addPrerequisite(Precondition.TRUE_PRECONDITION, null, null, preAction);
+    }
+
     protected void addPrerequisite(Class<? extends UseCase> useCase) {
-        addPrerequisite(Precondition.TRUE_PRECONDITION, useCase, null);
+        addPrerequisite(Precondition.TRUE_PRECONDITION, useCase, null, PreAction.NO_ACTION);
     }
 
     protected void addPrerequisite(Class<? extends UseCase> useCase, UseCaseListener listener) {
-        addPrerequisite(Precondition.TRUE_PRECONDITION, useCase, listener);
+        addPrerequisite(Precondition.TRUE_PRECONDITION, useCase, listener, PreAction.NO_ACTION);
     }
 
     protected void addPrerequisite(Precondition precondition, Class<? extends UseCase> useCase) {
-        addPrerequisite(precondition, useCase, null);
+        addPrerequisite(precondition, useCase, null, PreAction.NO_ACTION);
     }
 
-    protected void addPrerequisite(Precondition precondition, Class<? extends UseCase> useCase, UseCaseListener listener) {
-        prerequisites.add(new Prerequisite(useCase, precondition, listener));
+    protected void addPrerequisite(Precondition precondition, Class<? extends UseCase> useCase, UseCaseListener listener, PreAction preAction) {
+        prerequisites.add(new Prerequisite(useCase, precondition, listener, preAction));
     }
 
     private void executePrerequisite() throws Exception {
@@ -364,7 +368,7 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
             );
             prerequisiteUseCase.execute();
         } else {
-            prerequisite.block();
+            prerequisite.preAction.onBlockExecute();
             executeNextPrerequisite();
         }
     }

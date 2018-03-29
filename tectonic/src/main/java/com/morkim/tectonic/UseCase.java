@@ -174,6 +174,7 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
     }
 
     public Rs executeBlocking(Rq request) throws Exception {
+        this.request = request;
         return executeSync();
     }
 

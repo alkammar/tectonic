@@ -27,57 +27,72 @@ class Subscriptions {
 
     void add(int actor, UseCaseListener<? extends Result> listener) {
         Subscription subscription = new Subscription<>(scheduler, listener);
+
         subscriptionList.add(subscription);
-        subscriptionMap.put(listener, subscription);
+        synchronized (this) {
+            subscriptionMap.put(listener, subscription);
+        }
 
         actorMap.put(actor, subscription);
     }
 
     void remove(UseCaseListener listener) {
         subscriptionList.remove(subscriptionMap.get(listener));
-        subscriptionMap.remove(listener);
+        synchronized (this) {
+            subscriptionMap.remove(listener);
+        }
     }
 
     private void remove(Subscription subscription) {
         subscriptionList.remove(subscription);
-        subscriptionMap.remove(subscription.getListener());
+        synchronized (this) {
+            subscriptionMap.remove(subscription.getListener());
+        }
     }
 
     void clear() {
         subscriptionList.clear();
-        subscriptionMap.clear();
+        synchronized (this) {
+            subscriptionMap.clear();
+        }
     }
 
     void notifyStart() {
 
-        for (final Subscription subscription : subscriptionMap.values())
-            subscription.dispatch(new Consumer<Subscription>() {
-                @Override
-                public void accept(@NonNull Subscription s) throws Exception {
-                    if (!consumedStartList.contains(s)) {
-                        s.getListener().onStart();
-                        consumedStartList.add(s);
+        synchronized (this) {
+            for (final Subscription subscription : subscriptionMap.values())
+                subscription.dispatch(new Consumer<Subscription>() {
+                    @Override
+                    public void accept(@NonNull Subscription s) throws Exception {
+                        if (!consumedStartList.contains(s)) {
+                            s.getListener().onStart();
+                            consumedStartList.add(s);
+                        }
                     }
-                }
-            });
+                });
+        }
     }
 
     <Rs extends Result> void notifyUpdate(final Rs result) {
 
-        for (final Subscription subscription : subscriptionMap.values())
-            subscription.dispatch(new Consumer<Subscription>() {
-                @Override
-                public void accept(@NonNull Subscription s) throws Exception {
-                    //noinspection unchecked
-                    s.getListener().onUpdate(result);
-                }
-            });
+        synchronized (this) {
+            for (final Subscription subscription : subscriptionMap.values())
+                subscription.dispatch(new Consumer<Subscription>() {
+                    @Override
+                    public void accept(@NonNull Subscription s) throws Exception {
+                        //noinspection unchecked
+                        s.getListener().onUpdate(result);
+                    }
+                });
+        }
     }
 
     void notifyComplete() {
 
         final Collection<Subscription> subscriptions = new ArrayList<>();
-        subscriptions.addAll(subscriptionMap.values());
+        synchronized (this) {
+            subscriptions.addAll(subscriptionMap.values());
+        }
 
         for (final Subscription subscription : subscriptions)
             subscription.dispatch(new Consumer<Subscription>() {
@@ -95,16 +110,18 @@ class Subscriptions {
 
     void notifyCancel() {
 
-        for (final Subscription subscription : subscriptionMap.values()) {
-            subscription.dispatch(new Consumer<Subscription>() {
-                @Override
-                public void accept(@NonNull Subscription s) throws Exception {
-                    consumedStartList.remove(s);
-                    s.getListener().onCancel();
+        synchronized (this) {
+            for (final Subscription subscription : subscriptionMap.values()) {
+                subscription.dispatch(new Consumer<Subscription>() {
+                    @Override
+                    public void accept(@NonNull Subscription s) throws Exception {
+                        consumedStartList.remove(s);
+                        s.getListener().onCancel();
 
 //                    removeIfDisposable(subscription);
-                }
-            });
+                    }
+                });
+            }
         }
     }
 
@@ -155,7 +172,9 @@ class Subscriptions {
     <Rs extends Result> void notifyUndone(final Rs result) {
 
         final Collection<Subscription> subscriptions = new ArrayList<>();
-        subscriptions.addAll(subscriptionMap.values());
+        synchronized (this) {
+            subscriptions.addAll(subscriptionMap.values());
+        }
 
         for (final Subscription subscription : subscriptions)
             subscription.dispatch(new Consumer<Subscription>() {

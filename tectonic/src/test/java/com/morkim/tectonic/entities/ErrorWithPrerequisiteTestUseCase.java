@@ -14,9 +14,9 @@ public class ErrorWithPrerequisiteTestUseCase extends TestUseCase {
     }
 
     @Override
-    protected void onExecute(Request request) throws Exception {
+    protected void onExecute(Request request) throws InterruptedException {
 
-        throw new Exception();
+        throw new InterruptedException();
     }
 
     public long getPrerequisiteTimeStamp() {

@@ -1,6 +1,5 @@
 package com.morkim.tectonic.entities;
 
-import com.morkim.tectonic.Precondition;
 import com.morkim.tectonic.SimpleUseCaseListener;
 
 public class HasPrerequisitesTestUseCase extends TestUseCase {
@@ -21,35 +20,35 @@ public class HasPrerequisitesTestUseCase extends TestUseCase {
                     }
                 });
 
-        addPrerequisite(
-                new Precondition() {
-                    @Override
-                    public boolean onEvaluate() {
-                        return false;
-                    }
-                },
-                TestUseCase.class,
-                new SimpleUseCaseListener<TestResult>() {
-                    @Override
-                    public void onComplete() {
-                        prerequisite2TimeStamp = System.nanoTime();
-                    }
-                });
-
-        addPrerequisite(
-                new Precondition() {
-                    @Override
-                    public boolean onEvaluate() {
-                        return true;
-                    }
-                },
-                TestUseCase.class,
-                new SimpleUseCaseListener<TestResult>() {
-                    @Override
-                    public void onComplete() {
-                        prerequisite3TimeStamp = System.nanoTime();
-                    }
-                });
+//        addPrerequisite(
+//                new Precondition() {
+//                    @Override
+//                    public boolean onEvaluate() {
+//                        return false;
+//                    }
+//                },
+//                TestUseCase.class,
+//                new SimpleUseCaseListener<TestResult>() {
+//                    @Override
+//                    public void onComplete() {
+//                        prerequisite2TimeStamp = System.nanoTime();
+//                    }
+//                });
+//
+//        addPrerequisite(
+//                new Precondition() {
+//                    @Override
+//                    public boolean onEvaluate() {
+//                        return true;
+//                    }
+//                },
+//                TestUseCase.class,
+//                new SimpleUseCaseListener<TestResult>() {
+//                    @Override
+//                    public void onComplete() {
+//                        prerequisite3TimeStamp = System.nanoTime();
+//                    }
+//                });
 
         addPrerequisite(
                 TestUseCase.class);

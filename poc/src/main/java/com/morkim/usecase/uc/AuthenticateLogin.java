@@ -27,27 +27,20 @@ public class AuthenticateLogin extends UseCase<AuthenticateLoginRequest, Result>
         // The registration use case is a prerequisite to the login use case
         addPrerequisite(
                 () -> !profile.isRegistered(),
-                RegisterUser.class,
-                new SimpleDisposableUseCaseListener<Result>() {
-                    @Override
-                    public void onComplete() {
-                        // if we completed registration then no need to login, you can see that the
-                        // skip flag is now updated before the execution of the login use case, so
-                        // we can check its state in the onExecute method
-                        skip = true;
-                    }
-                });
+                RegisterUser.class
+        );
     }
 
     @Override
-    protected void onExecute(AuthenticateLoginRequest request) throws Exception {
+    protected void onExecute(AuthenticateLoginRequest request) {
 
         if (skip)
             completeLogin();
         else if (request == null || request.password.isEmpty())
             requestAction(USER, PASSWORD);
         else if (!request.password.equals("asdf"))
-            throw new InvalidLogin();
+//            throw new InvalidLogin();
+            ;
         else
             completeLogin();
     }

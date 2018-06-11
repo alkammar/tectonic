@@ -2,9 +2,11 @@ package com.morkim.tectonic;
 
 import android.support.annotation.NonNull;
 
-import com.morkim.tectonic.entities.CachableTestUseCase;
+import com.morkim.tectonic.entities.CacheableTestUseCase;
+import com.morkim.tectonic.entities.CacheableData;
 import com.morkim.tectonic.entities.TestResult;
 import com.morkim.tectonic.entities.TestUseCase;
+import com.morkim.tectonic.entities.UserActor;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -23,153 +25,181 @@ import static org.junit.Assert.assertNotEquals;
 
 public class CacheTest extends TecTonicTest {
 
-	private Result originalResult;
-	private Result cachedResult;
+    private Result originalResult;
+    private Result cachedResult;
 
-	private int onStartCachedCalled;
-	private int onCompleteCachedCalled;
+    private int onStartCachedCalled;
+    private int onCompleteCachedCalled;
 
-	@BeforeClass
-	public static void setupClass() {
+    public int providedCount;
+    public CacheableData data;
 
-		RxAndroidPlugins.setInitMainThreadSchedulerHandler(new Function<Callable<Scheduler>, Scheduler>() {
-			@Override
-			public Scheduler apply(@NonNull Callable<Scheduler> schedulerCallable) throws Exception {
-				return Schedulers.trampoline();
-			}
-		});
+    @BeforeClass
+    public static void setupClass() {
 
-		RxJavaPlugins.setIoSchedulerHandler(new Function<Scheduler, Scheduler>() {
-			@Override
-			public Scheduler apply(@io.reactivex.annotations.NonNull Scheduler scheduler) throws Exception {
-				return Schedulers.trampoline();
-			}
-		});
+        RxAndroidPlugins.setInitMainThreadSchedulerHandler(new Function<Callable<Scheduler>, Scheduler>() {
+            @Override
+            public Scheduler apply(@NonNull Callable<Scheduler> schedulerCallable) throws Exception {
+                return Schedulers.trampoline();
+            }
+        });
 
-		UseCase.setLooperConfigs(UseCase.STUB_LOOPER_CHECKER);
-	}
+        RxJavaPlugins.setIoSchedulerHandler(new Function<Scheduler, Scheduler>() {
+            @Override
+            public Scheduler apply(@io.reactivex.annotations.NonNull Scheduler scheduler) throws Exception {
+                return Schedulers.trampoline();
+            }
+        });
 
-	@Before
-	public void setup() {
+        UseCase.setLooperConfigs(UseCase.STUB_LOOPER_CHECKER);
+    }
 
-		UseCase.unsubscribeAll();
+    @Before
+    public void setup() {
 
-		originalResult = null;
-		cachedResult = null;
-		onStartCachedCalled = 0;
-		onCompleteCachedCalled = 0;
-	}
+        UseCase.unsubscribeAll();
 
-	@Test
-	public void executeWithoutCaching_returnNewData() throws Exception {
+        originalResult = null;
+        cachedResult = null;
+        onStartCachedCalled = 0;
+        onCompleteCachedCalled = 0;
 
-		CachableTestUseCase useCase;
+        providedCount = 0;
+    }
 
-		useCase = UseCase.fetch(CachableTestUseCase.class);
-		SimpleUseCaseListener<TestResult> originalResultListener = createOriginalResultListener();
-		useCase.subscribe(originalResultListener);
-		useCase.execute();
+    @Test
+    public void executeWithoutCaching_returnNewData() throws Exception {
 
-		useCase.unsubscribe(originalResultListener);
+        CacheableTestUseCase useCase;
 
-		useCase = UseCase.fetch(CachableTestUseCase.class);
-		useCase.subscribe(createCachedResultListener());
-		useCase.execute();
+        useCase = UseCase.fetch(CacheableTestUseCase.class);
+        SimpleUseCaseListener<TestResult> originalResultListener = createOriginalResultListener();
+        useCase.subscribe(originalResultListener);
+        useCase.execute();
 
-		assertNotEquals(originalResult, cachedResult);
-		assertEquals(1, onStartCachedCalled);
-		assertEquals(1, onCompleteCachedCalled);
-	}
+        useCase.unsubscribe(originalResultListener);
 
-	@Test
-	public void executeNonCachable_returnNewData() throws Exception {
+        useCase = UseCase.fetch(CacheableTestUseCase.class);
+        useCase.subscribe(createCachedResultListener());
+        useCase.execute();
 
-		TestUseCase useCase;
+        assertNotEquals(originalResult, cachedResult);
+        assertEquals(1, onStartCachedCalled);
+        assertEquals(1, onCompleteCachedCalled);
+    }
 
-		useCase = UseCase.fetch(TestUseCase.class);
-		SimpleUseCaseListener<TestResult> originalResultListener = createOriginalResultListener();
-		useCase.subscribe(originalResultListener);
-		useCase.execute();
+    @Test
+    public void executeNonCachable_returnNewData() throws Exception {
 
-		useCase.unsubscribe(originalResultListener);
+        TestUseCase useCase;
 
-		useCase = new TestUseCase();
-		useCase.subscribe(createCachedResultListener());
-		useCase.execute(UseCase.CACHED);
+        useCase = UseCase.fetch(TestUseCase.class);
+        SimpleUseCaseListener<TestResult> originalResultListener = createOriginalResultListener();
+        useCase.subscribe(originalResultListener);
+        useCase.execute();
 
-		assertNotEquals(originalResult, cachedResult);
-		assertEquals(0, onStartCachedCalled);
-		assertEquals(0, onCompleteCachedCalled);
-	}
+        useCase.unsubscribe(originalResultListener);
 
-	@Test
-	public void executeSecondTime_returnCachedData() throws Exception {
+        useCase = new TestUseCase();
+        useCase.subscribe(createCachedResultListener());
+        useCase.execute(UseCase.CACHED);
 
-		CachableTestUseCase useCase;
+        assertNotEquals(originalResult, cachedResult);
+        assertEquals(0, onStartCachedCalled);
+        assertEquals(0, onCompleteCachedCalled);
+    }
 
-		useCase = UseCase.fetch(CachableTestUseCase.class);
-		useCase.subscribe(createOriginalResultListener());
-		useCase.execute();
+    @Test
+    public void executeSecondTime_returnCachedData() throws Exception {
 
-		useCase = UseCase.fetch(CachableTestUseCase.class);
-		useCase.subscribe(createCachedResultListener());
-		useCase.execute(UseCase.CACHED);
+        CacheableTestUseCase useCase;
 
-		assertEquals(originalResult, cachedResult);
-		assertEquals(1, onStartCachedCalled);
-		assertEquals(1, onCompleteCachedCalled);
-	}
+        useCase = UseCase.fetch(CacheableTestUseCase.class);
+        useCase.subscribe(createOriginalResultListener());
+        useCase.execute();
 
-	@Test
-	public void executeAfterClear_returnNewData() throws Exception {
+        useCase = UseCase.fetch(CacheableTestUseCase.class);
+        useCase.subscribe(createCachedResultListener());
+        useCase.execute(UseCase.CACHED);
 
-		CachableTestUseCase useCase;
+        assertEquals(originalResult, cachedResult);
+        assertEquals(1, onStartCachedCalled);
+        assertEquals(1, onCompleteCachedCalled);
+    }
 
-		useCase = UseCase.fetch(CachableTestUseCase.class);
-		SimpleUseCaseListener<TestResult> originalResultListener = createOriginalResultListener();
-		useCase.subscribe(originalResultListener);
-		useCase.execute();
+    @Test
+    public void executeAfterClear_returnNewData() throws Exception {
 
-		UseCase.clearCache(CachableTestUseCase.class);
-		useCase.unsubscribe(originalResultListener);
+        CacheableTestUseCase useCase;
 
-		useCase = UseCase.fetch(CachableTestUseCase.class);
-		useCase.subscribe(createCachedResultListener());
-		useCase.execute(UseCase.CACHED);
+        useCase = UseCase.fetch(CacheableTestUseCase.class);
+        SimpleUseCaseListener<TestResult> originalResultListener = createOriginalResultListener();
+        useCase.subscribe(originalResultListener);
+        useCase.execute();
 
-		assertNotEquals(originalResult, cachedResult);
-		assertEquals(1, onStartCachedCalled);
-		assertEquals(1, onCompleteCachedCalled);
-	}
+        UseCase.clearCache(CacheableTestUseCase.class);
+        useCase.unsubscribe(originalResultListener);
 
-	@NonNull
-	private SimpleUseCaseListener<TestResult> createOriginalResultListener() {
-		return new SimpleUseCaseListener<TestResult>() {
-			@Override
-			public void onUpdate(TestResult result) {
-				originalResult = result;
-			}
-		};
-	}
+        useCase = UseCase.fetch(CacheableTestUseCase.class);
+        useCase.subscribe(createCachedResultListener());
+        useCase.execute(UseCase.CACHED);
 
-	@NonNull
-	private SimpleUseCaseListener<TestResult> createCachedResultListener() {
-		return new SimpleUseCaseListener<TestResult>() {
+        assertNotEquals(originalResult, cachedResult);
+        assertEquals(1, onStartCachedCalled);
+        assertEquals(1, onCompleteCachedCalled);
+    }
 
-			@Override
-			public void onStart() {
-				onStartCachedCalled++;
-			}
+    @Test
+    public void cacheStep_restart_usesCache() {
 
-			@Override
-			public void onUpdate(TestResult result) {
-				cachedResult = result;
-			}
+        final CacheableTestUseCase useCase = UseCase.fetch(CacheableTestUseCase.class);
+        UserActor userActor = new UserActor() {
 
-			@Override
-			public void onComplete() {
-				onCompleteCachedCalled++;
-			}
-		};
-	}
+            @Override
+            public CacheableData askToProvideData() {
+                providedCount++;
+                return new CacheableData();
+            }
+
+            @Override
+            public void doYourThing() {
+                useCase.restart();
+            }
+        };
+        useCase.setUserActor(userActor);
+        useCase.execute();
+
+        assertEquals(1, providedCount);
+    }
+
+    @NonNull
+    private SimpleUseCaseListener<TestResult> createOriginalResultListener() {
+        return new SimpleUseCaseListener<TestResult>() {
+            @Override
+            public void onUpdate(TestResult result) {
+                originalResult = result;
+            }
+        };
+    }
+
+    @NonNull
+    private SimpleUseCaseListener<TestResult> createCachedResultListener() {
+        return new SimpleUseCaseListener<TestResult>() {
+
+            @Override
+            public void onStart() {
+                onStartCachedCalled++;
+            }
+
+            @Override
+            public void onUpdate(TestResult result) {
+                cachedResult = result;
+            }
+
+            @Override
+            public void onComplete() {
+                onCompleteCachedCalled++;
+            }
+        };
+    }
 }

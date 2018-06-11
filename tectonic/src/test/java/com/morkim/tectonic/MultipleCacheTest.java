@@ -2,7 +2,7 @@ package com.morkim.tectonic;
 
 import android.support.annotation.NonNull;
 
-import com.morkim.tectonic.entities.CachableTestUseCase;
+import com.morkim.tectonic.entities.CacheableTestUseCase;
 import com.morkim.tectonic.entities.TestResult;
 import com.morkim.tectonic.entities.TestUseCase;
 
@@ -59,17 +59,17 @@ public class MultipleCacheTest {
 	@Test
 	public void executeWithoutCaching_returnNewData() throws Exception {
 
-		CachableTestUseCase useCase;
+		CacheableTestUseCase useCase;
 
-		useCase = UseCase.fetch(CachableTestUseCase.class);
+		useCase = UseCase.fetch(CacheableTestUseCase.class);
 		useCase.subscribe(createOriginalResultListener());
 		useCase.execute(new CachableRequest.Builder()
 				.param1(65)
 				.build());
 
-		UseCase.unsubscribe(CachableTestUseCase.class);
+		UseCase.unsubscribe(CacheableTestUseCase.class);
 
-		useCase = UseCase.fetch(CachableTestUseCase.class);
+		useCase = UseCase.fetch(CacheableTestUseCase.class);
 		useCase.subscribe(createCachedResultListener());
 		useCase.execute(new CachableRequest.Builder()
 				.param1(65)
@@ -104,17 +104,17 @@ public class MultipleCacheTest {
 	@Test
 	public void executeDifferentRequests_returnNewData() throws Exception {
 
-		CachableTestUseCase useCase;
+		CacheableTestUseCase useCase;
 
-		useCase = UseCase.fetch(CachableTestUseCase.class);
+		useCase = UseCase.fetch(CacheableTestUseCase.class);
 		useCase.subscribe(createOriginalResultListener());
 		useCase.execute(new CachableRequest.Builder()
 				.param1(65)
 				.build());
 
-		UseCase.unsubscribe(CachableTestUseCase.class);
+		UseCase.unsubscribe(CacheableTestUseCase.class);
 
-		useCase = UseCase.fetch(CachableTestUseCase.class);
+		useCase = UseCase.fetch(CacheableTestUseCase.class);
 		useCase.subscribe(createCachedResultListener());
 		useCase.execute(new CachableRequest.Builder()
 				.param1(77)
@@ -127,15 +127,15 @@ public class MultipleCacheTest {
 	@Test
 	public void executeSameRequest_returnCachedData() throws Exception {
 
-		CachableTestUseCase useCase;
+		CacheableTestUseCase useCase;
 
-		useCase = UseCase.fetch(CachableTestUseCase.class);
+		useCase = UseCase.fetch(CacheableTestUseCase.class);
 		useCase.subscribe(createOriginalResultListener());
 		useCase.execute(new CachableRequest.Builder()
 				.param1(65)
 				.build());
 
-		useCase = UseCase.fetch(CachableTestUseCase.class);
+		useCase = UseCase.fetch(CacheableTestUseCase.class);
 		useCase.subscribe(createCachedResultListener());
 		useCase.execute(new CachableRequest.Builder()
 				.param1(65)
@@ -148,17 +148,17 @@ public class MultipleCacheTest {
 	@Test
 	public void executeNewRequest_returnNewData() throws Exception {
 
-		CachableTestUseCase useCase;
+		CacheableTestUseCase useCase;
 
-		useCase = UseCase.fetch(CachableTestUseCase.class);
+		useCase = UseCase.fetch(CacheableTestUseCase.class);
 		useCase.subscribe(createOriginalResultListener());
 		useCase.execute(new CachableRequest.Builder()
 				.param1(65)
 				.build());
 
-		UseCase.unsubscribe(CachableTestUseCase.class);
+		UseCase.unsubscribe(CacheableTestUseCase.class);
 
-		useCase = UseCase.fetch(CachableTestUseCase.class);
+		useCase = UseCase.fetch(CacheableTestUseCase.class);
 		useCase.subscribe(createCachedResultListener());
 		useCase.execute(new CachableRequest.Builder()
 				.param1(66)
@@ -177,7 +177,7 @@ public class MultipleCacheTest {
 
 		for (int i = 0; i < params.length; i++) {
 			final int index = i;
-			UseCase.fetch(CachableTestUseCase.class)
+			UseCase.fetch(CacheableTestUseCase.class)
 					.subscribe(new SimpleDisposableUseCaseListener<TestResult>() {
 						@Override
 						public void onUpdate(TestResult result) {

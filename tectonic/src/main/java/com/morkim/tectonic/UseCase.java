@@ -4,6 +4,8 @@ package com.morkim.tectonic;
 import android.annotation.SuppressLint;
 import android.os.Looper;
 
+import com.morkim.tectonic.simplified.PrimaryActor;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -65,6 +67,18 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
         @Override
         public boolean isSingleThread() {
             return false;
+        }
+    };
+
+    private static final PrimaryActor PRIMARY_STUB = new PrimaryActor() {
+        @Override
+        public void onStart(PrimaryActor primaryActor) {
+
+        }
+
+        @Override
+        public void onAbort(PrimaryActor primaryActor) {
+
         }
     };
 
@@ -136,7 +150,8 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
     }
 
     public void undo() {
-        execute(UNDO);
+//        execute(UNDO);
+        restart();
     }
 
     /**
@@ -173,7 +188,7 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
             executeAsync(request, flags, isExecuteOnMain(flags) ? AndroidSchedulers.mainThread() : Schedulers.io());
     }
 
-    public Rs executeBlocking(Rq request) throws Exception {
+    public Rs executeBlocking(Rq request) {
         this.request = request;
         return executeSync();
     }
@@ -218,6 +233,14 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
                 .get(request == null ? Request.NO_ID : request.id());
     }
 
+    protected interface OnNoCacheListener<D> {
+        D onNoCache();
+    }
+
+    protected  <D> D cache(int key, OnNoCacheListener<D> listener) {
+        return listener.onNoCache();
+    }
+
     private boolean isExecuteOnMain(int flags) {
         return (flags & EXECUTE_ON_MAIN) == EXECUTE_ON_MAIN;
     }
@@ -243,18 +266,19 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
                         },
                         new Consumer<Throwable>() {
                             @Override
-                            public void accept(@NonNull Throwable throwable) throws Exception {
+                            public void accept(@NonNull Throwable throwable) {
 
                                 stateMachine.kill();
                                 running.remove(UseCase.this.getClass());
                                 UseCase.this.flags = NO_FLAGS;
 
                                 UseCase.this.notify(new Event(Type.ERROR, throwable));
+                                throw new RuntimeException(throwable);
                             }
                         });
     }
 
-    private Rs executeSync() throws Exception {
+    private Rs executeSync() {
 
         UseCase.this.notify(new Event(Type.START));
 
@@ -263,28 +287,32 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
         if (!stateMachine.isInProgress()) {
             stateMachine.start();
 
-            if (!prerequisites.isEmpty()) {
-                prerequisiteIndex = 0;
-                executePrerequisite();
-            } else {
-                if ((UseCase.this.flags & UNDO) == UNDO) {
-
-                    //noinspection unchecked
-                    final Rs result = (Rs) resultStack.getLast();
-
-                    if (result != null) {
-                        onUndo(UseCase.this.request, result);
-                    }
-
-                    if (!stateMachine.isDead()) {
-                        stateMachine.kill();
-                        running.remove(UseCase.this.getClass());
-                        UseCase.this.flags = NO_FLAGS;
-                    }
-
+            try {
+                if (!prerequisites.isEmpty()) {
+                    prerequisiteIndex = 0;
+                    executePrerequisite();
                 } else {
-                    onExecute(UseCase.this.request);
+                    if ((UseCase.this.flags & UNDO) == UNDO) {
+
+                        //noinspection unchecked
+                        final Rs result = (Rs) resultStack.getLast();
+
+                        if (result != null) {
+                            onUndo(UseCase.this.request, result);
+                        }
+
+                        if (!stateMachine.isDead()) {
+                            stateMachine.kill();
+                            running.remove(UseCase.this.getClass());
+                            UseCase.this.flags = NO_FLAGS;
+                        }
+
+                    } else {
+                        onExecute(UseCase.this.request);
+                    }
                 }
+            } catch (InterruptedException e) {
+                finish();
             }
         }
 
@@ -300,9 +328,9 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
 
     }
 
-    protected abstract void onExecute(Rq request) throws Exception;
+    protected abstract void onExecute(Rq request) throws InterruptedException;
 
-    protected void onUndo(Rq request, Rs oldResult) throws Exception {
+    protected void onUndo(Rq request, Rs oldResult) {
 
     }
 
@@ -326,7 +354,7 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
         prerequisites.add(new Prerequisite(useCase, precondition, listener, preAction));
     }
 
-    private void executePrerequisite() throws Exception {
+    private void executePrerequisite() throws InterruptedException {
 
         final Prerequisite prerequisite = prerequisites.get(prerequisiteIndex);
 
@@ -374,7 +402,7 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
         }
     }
 
-    private void executeNextPrerequisite() throws Exception {
+    private void executeNextPrerequisite() throws InterruptedException {
 
         prerequisiteIndex++;
         if (prerequisiteIndex < prerequisites.size()) {
@@ -450,7 +478,7 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
      * The subscribed listener will stay subscribed to the use case even after the use case has completed.
      * The subscriber will have to be un-subscribed in order not receive further updates.
      *
-     * @param actor Actor to receive a required action request
+     * @param actor           Actor to receive a required action request
      * @param useCaseListener Subscriber listener
      * @return The subscribed use case
      */
@@ -511,7 +539,7 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
      * The subscriber will have to be un-subscribed in order not receive further updates.
      *
      * @param useCaseClass The use case to subscribe to
-     * @param listener Subscriber listener
+     * @param listener     Subscriber listener
      */
     public static void subscribe(Class<? extends UseCase> useCaseClass, UseCaseListener<? extends Result> listener) {
         subscribe(useCaseClass, NO_ACTOR, listener);
@@ -525,8 +553,8 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
      * The subscriber will have to be un-subscribed in order not receive further updates.
      *
      * @param useCaseClass The use case to subscribe to
-     * @param actor Actor to receive a required action request
-     * @param listener Subscriber listener
+     * @param actor        Actor to receive a required action request
+     * @param listener     Subscriber listener
      */
     public static void subscribe(Class<? extends UseCase> useCaseClass, int actor, UseCaseListener<? extends Result> listener) {
 
@@ -599,6 +627,12 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
             useCase.cancel();
     }
 
+    protected void restart() {
+        cancel();
+        //noinspection unchecked
+        fetch(this.getClass()).execute(request, flags);
+    }
+
     protected void cancel() {
 
         if (subscription != null) subscription.dispose();
@@ -608,6 +642,23 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
         stateMachine.kill();
         running.remove(this.getClass());
         flags = NO_FLAGS;
+    }
+
+    public PrimaryActor primaryActor() {
+        return PRIMARY_STUB;
+    }
+
+    public void abort() {
+        cancel();
+
+        PrimaryActor primaryActor = primaryActor();
+        primaryActor.onAbort(primaryActor);
+
+        onAbort();
+    }
+
+    protected void onAbort() {
+
     }
 
     protected void requestAction(int actor, Integer... codes) {

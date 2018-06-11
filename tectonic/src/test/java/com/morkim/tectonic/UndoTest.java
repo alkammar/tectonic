@@ -2,7 +2,7 @@ package com.morkim.tectonic;
 
 import android.support.annotation.NonNull;
 
-import com.morkim.tectonic.entities.CachableTestUseCase;
+import com.morkim.tectonic.entities.CacheableTestUseCase;
 import com.morkim.tectonic.entities.TestResult;
 import com.morkim.tectonic.entities.TestUseCase;
 
@@ -50,7 +50,7 @@ public class UndoTest extends TecTonicTest {
 	public void setup() {
 
 		UseCase.unsubscribeAll();
-		UseCase.clearCache(CachableTestUseCase.class);
+		UseCase.clearCache(CacheableTestUseCase.class);
 
 		onUndoneCalled = 0;
 		originalResult = null;
@@ -60,7 +60,7 @@ public class UndoTest extends TecTonicTest {
 	@Test
 	public void undoWithoutEarlierExecution_onUndoNotCalled() throws Exception {
 
-		UseCase.fetch(CachableTestUseCase.class)
+		UseCase.fetch(CacheableTestUseCase.class)
 				.subscribe(new SimpleUseCaseListener<TestResult>() {
 					@Override
 					public void onUndone(TestResult oldResult) {
@@ -93,7 +93,7 @@ public class UndoTest extends TecTonicTest {
 	@Test
 	public void undoExecutedCached_onUndoCalled() throws Exception {
 
-		UseCase.fetch(CachableTestUseCase.class)
+		UseCase.fetch(CacheableTestUseCase.class)
 				.subscribe(new SimpleUseCaseListener<TestResult>() {
 
 					@Override
@@ -109,7 +109,7 @@ public class UndoTest extends TecTonicTest {
 				})
 				.execute(UseCase.CACHED);
 
-		UseCase.fetch(CachableTestUseCase.class)
+		UseCase.fetch(CacheableTestUseCase.class)
 				.undo();
 
 		assertEquals(1, onUndoneCalled);
@@ -119,7 +119,7 @@ public class UndoTest extends TecTonicTest {
 	@Test
 	public void undoAlreadyUndone_onUndoNotCalledSecondTime() throws Exception {
 
-		UseCase.fetch(CachableTestUseCase.class)
+		UseCase.fetch(CacheableTestUseCase.class)
 				.subscribe(new SimpleUseCaseListener<TestResult>() {
 
 					@Override
@@ -129,10 +129,10 @@ public class UndoTest extends TecTonicTest {
 				})
 				.execute(UseCase.CACHED);
 
-		UseCase.fetch(CachableTestUseCase.class)
+		UseCase.fetch(CacheableTestUseCase.class)
 				.undo();
 
-		UseCase.fetch(CachableTestUseCase.class)
+		UseCase.fetch(CacheableTestUseCase.class)
 				.undo();
 
 		assertEquals(1, onUndoneCalled);

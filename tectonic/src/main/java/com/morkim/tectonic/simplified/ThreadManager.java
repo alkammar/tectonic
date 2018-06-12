@@ -2,5 +2,16 @@ package com.morkim.tectonic.simplified;
 
 public interface ThreadManager {
 
-    void start(Runnable runnable);
+    boolean isRunning();
+
+    interface UseCaseExecution {
+
+        void run() throws InterruptedException;
+    }
+
+    void start(UseCaseExecution execution);
+
+    void stop();
+
+    void restart();
 }

@@ -1,7 +1,5 @@
 package com.morkim.tectonic.simplified.entities;
 
-import com.morkim.tectonic.simplified.UseCase;
-
 public class FailingPreconditionsUseCase extends SimpleUseCase {
 
     @Override

@@ -8,8 +8,11 @@ import java.util.Map;
 public abstract class UseCase {
 
     private static Map<Class<? extends UseCase>, UseCase> created = new HashMap<>();
+    private static ThreadManager defaultThreadManager;
     private boolean running;
     private Map<Integer, Object> cache;
+
+    private ThreadManager threadManager = new ThreadManagerImpl();
 
     public synchronized static <U extends UseCase> U fetch(Class<U> useCaseClass) {
 
@@ -40,18 +43,32 @@ public abstract class UseCase {
 
         if (created.containsKey(getClass()) && !running) {
             running = true;
-            if (onCheckPreconditions())
-                onExecute();
+            getThreadManager().start(new ThreadManager.UseCaseExecution() {
+                @Override
+                public void run() throws InterruptedException {
+
+                    if (onCheckPreconditions())
+                        onExecute();
+                }
+            });
         }
+    }
+
+    private ThreadManager getThreadManager() {
+        return defaultThreadManager == null ? threadManager : defaultThreadManager;
     }
 
     protected abstract void onExecute();
 
-    protected  <D> D cache(int key, CacheDataListener<D> listener) {
+    protected <D> D cache(int key, CacheDataListener<D> listener) {
         if (cache.containsKey(key)) return (D) cache.get(key);
         D newData = listener.onNewData();
         cache.put(key, newData);
         return newData;
+    }
+
+    public static void defaultThreadManager(ThreadManager threadManager) {
+        defaultThreadManager = threadManager;
     }
 
     protected interface CacheDataListener<D> {
@@ -60,6 +77,7 @@ public abstract class UseCase {
 
     protected void finish() {
         created.remove(getClass());
+        getThreadManager().stop();
     }
 
     public static void clearAll() {

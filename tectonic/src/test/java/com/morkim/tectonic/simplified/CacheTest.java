@@ -1,9 +1,7 @@
 package com.morkim.tectonic.simplified;
 
-import com.morkim.tectonic.entities.CacheableData;
 import com.morkim.tectonic.simplified.entities.CacheData;
 import com.morkim.tectonic.simplified.entities.CachingUseCase;
-import com.morkim.tectonic.simplified.entities.FinishedUseCase;
 import com.morkim.tectonic.simplified.entities.NonCachingUseCase;
 import com.morkim.tectonic.simplified.entities.OtherCacheData;
 import com.morkim.tectonic.simplified.entities.WrongDataCachingUseCase;
@@ -13,21 +11,16 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;
 
-public class CacheTest {
+public class CacheTest extends TectonicTest {
 
 	private int count;
 
-	@BeforeClass
-	public static void setupClass() {
-
-	}
-
 	@Before
 	public void setup() {
-		UseCase.clearAll();
+		super.setup();
+
 		count = 0;
 	}
 

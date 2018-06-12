@@ -9,20 +9,9 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;
 
-public class FetchTest {
-
-	@BeforeClass
-	public static void setupClass() {
-
-	}
-
-	@Before
-	public void setup() {
-		UseCase.clearAll();
-	}
+public class FetchTest extends TectonicTest {
 
 	@Test
 	public void construct_new_use_case__callbacks_not_called() {

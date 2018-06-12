@@ -11,17 +11,7 @@ import org.junit.Test;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-public class PreconditionsTest {
-
-	@BeforeClass
-	public static void setupClass() {
-
-	}
-
-	@Before
-	public void setup() {
-
-	}
+public class PreconditionsTest extends TectonicTest {
 
 	@Test
 	public void no_preconditions__onExecute_called() {

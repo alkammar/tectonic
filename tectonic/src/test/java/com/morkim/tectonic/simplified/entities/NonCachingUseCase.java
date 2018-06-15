@@ -5,7 +5,7 @@ public class NonCachingUseCase extends CachingUseCase {
     @Override
     protected void onExecute() {
 
-        CacheData data = actor.requestData();
+        StepData data = actor.requestData();
         data.access();
     }
 }

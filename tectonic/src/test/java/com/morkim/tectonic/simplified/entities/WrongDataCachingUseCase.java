@@ -8,17 +8,17 @@ public class WrongDataCachingUseCase extends SimpleUseCase {
     @Override
     protected void onExecute() {
 
-        CacheData data = cache(Actor.CACHED_DATA_KEY_1, new CacheDataListener<CacheData>() {
+        StepData data = step(Actor.CACHED_DATA_KEY_1, new CacheDataListener<StepData>() {
             @Override
-            public CacheData onNewData() { return actor.requestData();
+            public StepData onNewData() { return actor.requestData();
             }
         });
 
         counter++;
 
-        OtherCacheData otherData = cache(counter == 1 ? Actor.CACHED_DATA_KEY_2 : Actor.CACHED_DATA_KEY_1, new CacheDataListener<OtherCacheData>() {
+        OtherStepData otherData = step(counter == 1 ? Actor.CACHED_DATA_KEY_2 : Actor.CACHED_DATA_KEY_1, new CacheDataListener<OtherStepData>() {
             @Override
-            public OtherCacheData onNewData() { return actor.requestOtherData(); }
+            public OtherStepData onNewData() { return actor.requestOtherData(); }
         });
     }
 
@@ -31,8 +31,8 @@ public class WrongDataCachingUseCase extends SimpleUseCase {
         int CACHED_DATA_KEY_1 = 1;
         int CACHED_DATA_KEY_2 = 2;
 
-        CacheData requestData();
+        StepData requestData();
 
-        OtherCacheData requestOtherData();
+        OtherStepData requestOtherData();
     }
 }

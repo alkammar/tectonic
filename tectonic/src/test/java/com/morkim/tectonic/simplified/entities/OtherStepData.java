@@ -1,4 +1,4 @@
 package com.morkim.tectonic.simplified.entities;
 
-public class OtherCacheData extends CacheData {
+public class OtherStepData extends StepData {
 }

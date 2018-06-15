@@ -2,7 +2,8 @@ package com.morkim.tectonic.simplified;
 
 public class ThreadManagerImpl implements ThreadManager {
 
-    private Thread thread;
+    Thread thread;
+
     private volatile boolean running;
     private volatile boolean terminated;
     private final Object terminationLock = new Object();

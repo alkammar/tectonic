@@ -1,6 +1,6 @@
 package com.morkim.tectonic.simplified.entities;
 
-public class CacheData {
+public class StepData {
 
     private int accessCount;
 

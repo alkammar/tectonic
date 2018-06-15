@@ -2,15 +2,21 @@ package com.morkim.tectonic.simplified;
 
 import android.annotation.SuppressLint;
 
+import com.google.common.util.concurrent.SettableFuture;
+
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
+@SuppressLint("UseSparseArrays")
 public abstract class UseCase {
 
     private static Map<Class<? extends UseCase>, UseCase> created = new HashMap<>();
     private static ThreadManager defaultThreadManager;
+    private static Map<Integer, Reply> replies = new HashMap<>();
+    private static Map<Integer, Object> cache = new HashMap<>();
     private boolean running;
-    private Map<Integer, Object> cache;
+    private Map<Integer, Object> steps;
 
     private ThreadManager threadManager = new ThreadManagerImpl();
 
@@ -32,7 +38,7 @@ public abstract class UseCase {
 
     @SuppressLint("UseSparseArrays")
     protected UseCase() {
-        cache = new HashMap<>();
+        steps = new HashMap<>();
     }
 
     protected boolean onCheckPreconditions() {
@@ -58,17 +64,49 @@ public abstract class UseCase {
         return defaultThreadManager == null ? threadManager : defaultThreadManager;
     }
 
-    protected abstract void onExecute();
+    protected abstract void onExecute() throws InterruptedException;
 
-    protected <D> D cache(int key, CacheDataListener<D> listener) {
-        if (cache.containsKey(key)) return (D) cache.get(key);
+    protected <D> D step(int key, CacheDataListener<D> listener) {
+        if (steps.containsKey(key)) return (D) steps.get(key);
         D newData = listener.onNewData();
-        cache.put(key, newData);
+        steps.put(key, newData);
         return newData;
     }
 
     public static void defaultThreadManager(ThreadManager threadManager) {
         defaultThreadManager = threadManager;
+    }
+
+    public static <D> D immediate(D data) {
+        return data;
+    }
+
+    public static <D> D waitFor(int key) throws InterruptedException {
+        if (cache.containsKey(key))
+            return (D) cache.get(key);
+        else {
+            Reply<D> reply = new Reply<>();
+            replies.put(key, reply);
+            try {
+                return reply.get();
+            } catch (ExecutionException e) {
+                e.printStackTrace();
+            }
+
+            return null;
+        }
+    }
+
+    public static <D> void replyWith(int key, D data) {
+        Reply reply = replies.get(key);
+        Object cachedData = cache.get(key);
+
+        if (reply != null && cachedData != null)
+            reply.interrupt();
+        else {
+            cache.put(key, data);
+            if (reply != null) reply.set(data);
+        }
     }
 
     protected interface CacheDataListener<D> {
@@ -82,6 +120,8 @@ public abstract class UseCase {
 
     public static void clearAll() {
         created.clear();
+        cache.clear();
+        replies.clear();
     }
 
     public void restart() {

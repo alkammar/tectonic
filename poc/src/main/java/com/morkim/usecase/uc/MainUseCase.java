@@ -24,7 +24,7 @@ public class MainUseCase extends UseCase<Request, MainUseCaseResult> {
         // The login use case is a prerequisite to the main use case, and it is preconditioned with
         // this isLoggedIn flag.
         // There is override to this method where you can omit the precondition
-        addPrerequisite(() -> !profile.isLoggedIn(), AuthenticateLogin.class);
+        addPrerequisite(() -> !profile.isLoggedIn(), Login.class);
     }
 
     @Override

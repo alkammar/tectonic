@@ -16,7 +16,7 @@ import com.morkim.tectonic.UseCase;
 import com.morkim.tectonic.UseCaseListener;
 import com.morkim.usecase.R;
 import com.morkim.usecase.actor.User;
-import com.morkim.usecase.uc.AuthenticateLogin;
+import com.morkim.usecase.uc.Login;
 import com.morkim.usecase.uc.ExitApp;
 import com.morkim.usecase.uc.LogoutUser;
 import com.morkim.usecase.uc.MainUseCase;
@@ -58,7 +58,7 @@ public class MainActivity extends AppCompatActivity implements User {
         abort.setOnClickListener(v -> UseCase.cancel(MainUseCase.class));
 
         UseCase.subscribe(RegisterUser.class, RegisterUser.USER, registerUserListener);
-        UseCase.subscribe(AuthenticateLogin.class, authenticateLoginListener);
+        UseCase.subscribe(Login.class, authenticateLoginListener);
 
         UseCase.subscribe(ExitApp.class, new SimpleDisposableUseCaseListener<Result>() {
             @Override
@@ -145,7 +145,7 @@ public class MainActivity extends AppCompatActivity implements User {
         public void onActionRequired(List<Integer> codes) {
             // We received an input required request from the login use case and we need to navigate
             // to the login screen
-            if (codes.contains(AuthenticateLogin.PASSWORD))
+            if (codes.contains(Login.PASSWORD))
                 startActivity(new Intent(getBaseContext(), LoginActivity.class));
         }
     };
@@ -162,7 +162,7 @@ public class MainActivity extends AppCompatActivity implements User {
         // Unsubscribe all your non-disposable listeners
         UseCase.unsubscribe(MainUseCase.class, mainUseCaseListener);
         UseCase.unsubscribe(RegisterUser.class, registerUserListener);
-        UseCase.unsubscribe(AuthenticateLogin.class, authenticateLoginListener);
+        UseCase.unsubscribe(Login.class, authenticateLoginListener);
         UseCase.unsubscribe(LogoutUser.class, logoutListener);
     }
 }

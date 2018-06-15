@@ -12,7 +12,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-public class ThreadTest {
+public class ThreadManagerTest extends ConcurrentTectonicTest {
 
     @BeforeClass
     public static void setupClass() {
@@ -56,16 +56,12 @@ public class ThreadTest {
         ThreadManager threadManager = new ThreadManagerImpl();
         threadManager.start(new ThreadManager.UseCaseExecution() {
             @Override
-            public void run() throws InterruptedException {
+            public void run() {
 
             }
         });
 
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        sleep();
 
         threadManager.stop();
 
@@ -78,16 +74,12 @@ public class ThreadTest {
         ThreadManager threadManager = new ThreadManagerImpl();
         threadManager.start(new ThreadManager.UseCaseExecution() {
             @Override
-            public void run() throws InterruptedException {
+            public void run() {
 
             }
         });
 
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        sleep();
 
         threadManager.restart();
 
@@ -100,16 +92,12 @@ public class ThreadTest {
         ThreadManager threadManager = new ThreadManagerImpl();
         threadManager.start(new ThreadManager.UseCaseExecution() {
             @Override
-            public void run() throws InterruptedException {
+            public void run() {
 
             }
         });
 
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        sleep();
 
         threadManager.stop();
         threadManager.restart();
@@ -123,16 +111,12 @@ public class ThreadTest {
         ThreadManager threadManager = new ThreadManagerImpl();
         threadManager.start(new ThreadManager.UseCaseExecution() {
             @Override
-            public void run() throws InterruptedException {
+            public void run() {
 
             }
         });
 
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        sleep();
 
         assertTrue(threadManager.isRunning());
     }
@@ -153,11 +137,7 @@ public class ThreadTest {
             }
         });
 
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        sleep();
 
         threadManager.stop();
 
@@ -180,11 +160,7 @@ public class ThreadTest {
             }
         });
 
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        sleep();
 
         threadManager.restart();
 

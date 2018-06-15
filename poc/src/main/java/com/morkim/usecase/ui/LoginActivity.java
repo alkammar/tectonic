@@ -9,7 +9,7 @@ import com.morkim.tectonic.SimpleDisposableUseCaseListener;
 import com.morkim.tectonic.SimpleUseCaseListener;
 import com.morkim.tectonic.UseCase;
 import com.morkim.usecase.R;
-import com.morkim.usecase.uc.AuthenticateLogin;
+import com.morkim.usecase.uc.Login;
 import com.morkim.usecase.uc.AuthenticateLoginRequest;
 import com.morkim.usecase.uc.ExitApp;
 import com.morkim.usecase.uc.InvalidLogin;
@@ -31,7 +31,7 @@ public class LoginActivity extends AppCompatActivity {
         password = (EditText) findViewById(R.id.ti_password);
 
         findViewById(R.id.btn_submit).setOnClickListener(v ->
-                UseCase.fetch(AuthenticateLogin.class)
+                UseCase.fetch(Login.class)
                         .subscribe(authenticateLoginListener)
                         .execute(new AuthenticateLoginRequest.Builder()
                                 .password(password.getText().toString())
@@ -74,6 +74,6 @@ public class LoginActivity extends AppCompatActivity {
     protected void onStop() {
         super.onStop();
 
-        UseCase.unsubscribe(AuthenticateLogin.class, authenticateLoginListener);
+        UseCase.unsubscribe(Login.class, authenticateLoginListener);
     }
 }

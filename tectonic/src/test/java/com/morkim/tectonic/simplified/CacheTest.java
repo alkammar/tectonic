@@ -1,13 +1,12 @@
 package com.morkim.tectonic.simplified;
 
-import com.morkim.tectonic.simplified.entities.CacheData;
+import com.morkim.tectonic.simplified.entities.StepData;
 import com.morkim.tectonic.simplified.entities.CachingUseCase;
 import com.morkim.tectonic.simplified.entities.NonCachingUseCase;
-import com.morkim.tectonic.simplified.entities.OtherCacheData;
+import com.morkim.tectonic.simplified.entities.OtherStepData;
 import com.morkim.tectonic.simplified.entities.WrongDataCachingUseCase;
 
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -27,14 +26,14 @@ public class CacheTest extends TectonicTest {
 	@Test
 	public void no_caching__new_data_accessed() {
 
-		final CacheData data1 = new CacheData();
-		final CacheData data2 = new CacheData();
+		final StepData data1 = new StepData();
+		final StepData data2 = new StepData();
 
 		NonCachingUseCase useCase = UseCase.fetch(NonCachingUseCase.class);
 		NonCachingUseCase.Actor actor = new NonCachingUseCase.Actor() {
 
 			@Override
-			public CacheData requestData() {
+			public StepData requestData() {
 				count++;
 				return count == 1 ? data1 : data2;
 			}
@@ -52,14 +51,14 @@ public class CacheTest extends TectonicTest {
 	@Test
 	public void cache_data__cached_data_accessed() {
 
-		final CacheData data1 = new CacheData();
-		final CacheData data2 = new CacheData();
+		final StepData data1 = new StepData();
+		final StepData data2 = new StepData();
 
 		CachingUseCase useCase = UseCase.fetch(CachingUseCase.class);
 		CachingUseCase.Actor actor = new CachingUseCase.Actor() {
 
 			@Override
-			public CacheData requestData() {
+			public StepData requestData() {
 				count++;
 				return count == 1 ? data1 : data2;
 			}
@@ -77,8 +76,8 @@ public class CacheTest extends TectonicTest {
 	@Test
 	public void access_cached_data_with_wrong_key__class_cast_exception_thrown() {
 
-		final CacheData data = new CacheData();
-		final OtherCacheData otherData = new OtherCacheData();
+		final StepData data = new StepData();
+		final OtherStepData otherData = new OtherStepData();
 
 		boolean classCastException = false;
 
@@ -86,12 +85,12 @@ public class CacheTest extends TectonicTest {
 		WrongDataCachingUseCase.Actor actor = new WrongDataCachingUseCase.Actor() {
 
 			@Override
-			public CacheData requestData() {
+			public StepData requestData() {
 				return data;
 			}
 
 			@Override
-			public OtherCacheData requestOtherData() {
+			public OtherStepData requestOtherData() {
 				return otherData;
 			}
 		};

@@ -14,7 +14,7 @@ public class SimpleUseCase extends UseCase {
     }
 
     @Override
-    protected void onExecute() {
+    protected void onExecute() throws InterruptedException {
         onExecuteCalledCount++;
     }
 

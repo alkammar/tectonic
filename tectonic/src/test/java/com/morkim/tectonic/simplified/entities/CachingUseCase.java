@@ -5,12 +5,12 @@ public class CachingUseCase extends SimpleUseCase {
     protected Actor actor;
 
     @Override
-    protected void onExecute() {
+    protected void onExecute() throws InterruptedException {
         super.onExecute();
 
-        CacheData data = cache(Actor.CACHED_DATA_KEY_1, new CacheDataListener<CacheData>() {
+        StepData data = step(Actor.STEP_DATA_KEY_1, new CacheDataListener<StepData>() {
             @Override
-            public CacheData onNewData() { return actor.requestData();
+            public StepData onNewData() { return actor.requestData();
             }
         });
         data.access();
@@ -22,8 +22,8 @@ public class CachingUseCase extends SimpleUseCase {
 
     public interface Actor {
 
-        int CACHED_DATA_KEY_1 = 1;
+        int STEP_DATA_KEY_1 = 1;
 
-        CacheData requestData();
+        StepData requestData();
     }
 }

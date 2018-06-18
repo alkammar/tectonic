@@ -1,37 +1,37 @@
 package com.morkim.tectonic.simplified.entities;
 
+import com.morkim.tectonic.simplified.PrimaryActor;
+
 public class UndoUseCase extends SimpleUseCase {
 
     private Actor actor;
-    private boolean canFinish;
 
     @Override
     protected void onExecute() throws InterruptedException {
         super.onExecute();
 
-        StepData data = actor.requestData();
-        data.access();
+        StepData data1 = actor.requestData();
+        data1.access();
 
-        if (canFinish) finish();
-    }
+        StepData data2 = actor.requestOtherData();
+        data2.access();
 
-    @Override
-    public void restart() {
-        super.restart();
+        StepData data3 = actor.requestAnotherData();
+        data3.access();
 
-        canFinish = true;
+        finish();
     }
 
     public void setActor(Actor actor) {
         this.actor = actor;
     }
 
-    public interface Actor {
+    public interface Actor extends PrimaryActor {
 
-        StepData requestData();
+        StepData requestData() throws InterruptedException;
 
-        StepData requestOtherData();
+        StepData requestOtherData() throws InterruptedException;
 
-        StepData requestAnotherData();
+        StepData requestAnotherData() throws InterruptedException;
     }
 }

@@ -20,6 +20,11 @@ public class TectonicTest {
             }
 
             @Override
+            public void release() throws InterruptedException {
+
+            }
+
+            @Override
             public void start(UseCaseExecution execution) {
                 try {
                     execution.run();

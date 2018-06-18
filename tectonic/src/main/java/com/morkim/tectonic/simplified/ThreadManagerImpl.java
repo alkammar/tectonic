@@ -47,4 +47,9 @@ public class ThreadManagerImpl implements ThreadManager {
     public void restart() {
         thread.interrupt();
     }
+
+    @Override
+    public void release() throws InterruptedException {
+        terminationLock.wait();
+    }
 }

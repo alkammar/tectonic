@@ -1,6 +1,10 @@
 package com.morkim.usecase.app;
 
-public interface AppTrigger {
+import com.morkim.tectonic.simplified.Triggers;
 
-    int PC_REGISTRATION = 1;
+public interface AppTrigger extends Triggers<AppTrigger.Event> {
+
+    enum Event {
+        USER_LOGOUT, LAUNCH_MAIN
+    }
 }

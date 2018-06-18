@@ -4,17 +4,18 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.EditText;
 
-import com.morkim.tectonic.Result;
-import com.morkim.tectonic.SimpleUseCaseListener;
-import com.morkim.tectonic.UseCase;
 import com.morkim.usecase.R;
-import com.morkim.usecase.uc.RegisterUser;
-import com.morkim.usecase.uc.RegisterUserRequest;
+import com.morkim.usecase.contract.RegistrationFlow;
+
+import javax.inject.Inject;
 
 
-public class Registration2Activity extends AppCompatActivity {
+public class Registration2Activity extends AppCompatActivity implements RegistrationFlow.Step2 {
 
     private EditText mobile;
+
+    @Inject
+    RegistrationFlow.Flow flow;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,30 +29,16 @@ public class Registration2Activity extends AppCompatActivity {
         mobile = (EditText) findViewById(R.id.ti_mobile);
 
         findViewById(R.id.btn_submit).setOnClickListener(v ->
-                // Execute the registration use with the data we received from the previous screens
-                // in the registration flow + the data we are entering here
-                UseCase.fetch(RegisterUser.class)
-                        .subscribe(registerUserListener)
-                        .execute(new RegisterUserRequest.Builder()
-                                .email(getIntent().getStringExtra("email"))
-                                .password(getIntent().getStringExtra("password"))
-                                .mobile(mobile.getText().toString())
-                                .build()));
+                flow.submit(mobile.getText().toString()));
     }
 
-    private final SimpleUseCaseListener<Result> registerUserListener = new SimpleUseCaseListener<Result>() {
-
-        @Override
-        public void onComplete() {
-            // We finished registration, so finish this screen
-            Registration2Activity.this.finish();
-        }
-    };
+    @Override
+    public void onBackPressed() {
+        flow.goBack(this);
+    }
 
     @Override
-    protected void onStop() {
-        super.onStop();
-
-        UseCase.unsubscribe(RegisterUser.class, registerUserListener);
+    public void terminate() {
+        finish();
     }
 }

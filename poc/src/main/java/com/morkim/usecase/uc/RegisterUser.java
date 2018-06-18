@@ -1,44 +1,73 @@
 package com.morkim.usecase.uc;
 
-import com.morkim.tectonic.Result;
-import com.morkim.tectonic.UseCase;
+import com.morkim.tectonic.simplified.PrimaryActor;
+import com.morkim.tectonic.simplified.UseCase;
 import com.morkim.usecase.di.AppInjector;
 import com.morkim.usecase.model.Profile;
 
 import javax.inject.Inject;
 
 
-public class RegisterUser extends UseCase<RegisterUserRequest, Result> {
-
-    public static final int EMAIL = 1;
-    public static final int PASSWORD = 2;
-    public static final int MOBILE = 3;
+public class RegisterUser extends UseCase {
 
     public static final int USER = 1;
+
+    @Inject
+    User user;
 
     @Inject
     Profile profile = AppInjector.getAppComponent().getProfile();
 
     @Override
-    protected void onExecute(RegisterUserRequest request) {
+    protected void onExecute() throws InterruptedException {
 
-        if (request == null) {
-            requestAction(USER, EMAIL, PASSWORD, MOBILE);
-        } else {
-
-            // Validate the registration inputs (from business model perspective)
-            if (startInputValidation()
-                    .check(request.email.isEmpty(), EMAIL)
-                    .check(request.password.isEmpty(), PASSWORD)
-                    .check(request.mobile.isEmpty(), MOBILE)
-                    .validate()) {
-
-                profile.setRegistered(true);
-
-                // Registration is done, finish the use case so other blocking use cases can
-                // continue their execution
-                finish();
-            }
+        String email = null;
+        String password = null;
+        String mobile = null;
+        try {
+            email = validateEmail(user.askToEnterEmail());
+        } catch (EmptyEmail | InvalidEmail e) {
+            user.handle(e);
         }
+
+        try {
+            password = validatePassword(user.askToEnterPassword());
+        } catch (EmptyPassword e) {
+            user.handle(e);
+        }
+
+        try {
+            mobile = validatePassword(user.askToEnterMobile());
+        } catch (EmptyPassword e) {
+            user.handle(e);
+        }
+
+        if (email != null && password != null && mobile != null) {
+            profile.setRegistered(true);
+            finish();
+        } else
+            restart();
+    }
+
+    private String validatePassword(String password) throws EmptyPassword {
+        if (password.isEmpty()) throw new EmptyPassword();
+        return password;
+    }
+
+    private String validateEmail(String email) throws EmptyEmail, InvalidEmail {
+        if (email.isEmpty()) throw new EmptyEmail();
+        if (!email.contains("@")) throw new InvalidEmail();
+        return email;
+    }
+
+    public interface User extends PrimaryActor {
+
+        String askToEnterEmail() throws InterruptedException;
+
+        String askToEnterPassword() throws InterruptedException;
+
+        String askToEnterMobile() throws InterruptedException;
+
+        void handle(Exception e);
     }
 }

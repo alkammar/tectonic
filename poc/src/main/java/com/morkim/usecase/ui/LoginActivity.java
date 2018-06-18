@@ -2,22 +2,20 @@ package com.morkim.usecase.ui;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.view.View;
 import android.widget.EditText;
 
-import com.morkim.tectonic.Result;
-import com.morkim.tectonic.SimpleDisposableUseCaseListener;
-import com.morkim.tectonic.SimpleUseCaseListener;
-import com.morkim.tectonic.UseCase;
+import com.morkim.tectonic.simplified.UseCase;
 import com.morkim.usecase.R;
-import com.morkim.usecase.uc.Login;
-import com.morkim.usecase.uc.AuthenticateLoginRequest;
-import com.morkim.usecase.uc.ExitApp;
 import com.morkim.usecase.uc.InvalidLogin;
+import com.morkim.usecase.uc.Login;
 
 
-public class LoginActivity extends AppCompatActivity {
+public class LoginActivity extends AppCompatActivity implements Login.User {
 
+    private static final int PASSWORD = 1;
     private EditText password;
+    private View submit;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,51 +27,27 @@ public class LoginActivity extends AppCompatActivity {
         getSupportActionBar().setTitle("Login");
 
         password = (EditText) findViewById(R.id.ti_password);
-
-        findViewById(R.id.btn_submit).setOnClickListener(v ->
-                UseCase.fetch(Login.class)
-                        .subscribe(authenticateLoginListener)
-                        .execute(new AuthenticateLoginRequest.Builder()
-                                .password(password.getText().toString())
-                                .build()));
+        findViewById(R.id.btn_submit).setOnClickListener(v -> UseCase.replyWith(PASSWORD, password.getText().toString()));
     }
-
-    private SimpleUseCaseListener<Result> authenticateLoginListener = new SimpleUseCaseListener<Result>() {
-
-        @Override
-        public void onComplete() {
-            // We are now logged in, so finish the Login screen
-            LoginActivity.this.finish();
-        }
-
-        @Override
-        public boolean onError(Throwable throwable) {
-
-            if (throwable instanceof InvalidLogin)
-                password.setError("Wrong password!");
-
-            return true;
-        }
-    };
 
     @Override
     public void onBackPressed() {
-        // Exiting from login means we need to exit the app, although we are on top of the main
-        // screen, the main should listen to this and finish as well
-        UseCase.fetch(ExitApp.class)
-                .subscribe(new SimpleDisposableUseCaseListener<Result>() {
-                    @Override
-                    public void onComplete() {
-                        LoginActivity.this.finish();
-                    }
-                })
-                .execute();
+        finishAffinity();
     }
 
     @Override
-    protected void onStop() {
-        super.onStop();
+    public String askToEnterUserName() throws InterruptedException {
+        return UseCase.immediate("");
+    }
 
-        UseCase.unsubscribe(Login.class, authenticateLoginListener);
+    @Override
+    public String askToEnterPassword() throws InterruptedException {
+        return UseCase.waitFor(PASSWORD);
+    }
+
+    @Override
+    public void handle(Exception e) {
+        if (e instanceof InvalidLogin)
+            password.setError("Wrong password!");
     }
 }

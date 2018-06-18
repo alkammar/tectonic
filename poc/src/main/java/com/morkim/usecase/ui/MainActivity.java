@@ -1,6 +1,5 @@
 package com.morkim.usecase.ui;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -10,26 +9,22 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.morkim.tectonic.Result;
-import com.morkim.tectonic.SimpleDisposableUseCaseListener;
 import com.morkim.tectonic.SimpleUseCaseListener;
-import com.morkim.tectonic.UseCase;
-import com.morkim.tectonic.UseCaseListener;
+import com.morkim.tectonic.simplified.Triggers;
 import com.morkim.usecase.R;
 import com.morkim.usecase.actor.User;
-import com.morkim.usecase.uc.Login;
-import com.morkim.usecase.uc.ExitApp;
-import com.morkim.usecase.uc.LogoutUser;
-import com.morkim.usecase.uc.MainUseCase;
+import com.morkim.usecase.app.AppTrigger;
 import com.morkim.usecase.uc.MainUseCaseResult;
-import com.morkim.usecase.uc.RegisterUser;
 
-import java.util.List;
+import javax.inject.Inject;
 
 
 public class MainActivity extends AppCompatActivity implements User {
 
+    @Inject
+    Triggers<AppTrigger.Event> trigger;
+
     private Button refresh;
-    @SuppressWarnings("FieldCanBeLocal")
     private Button abort;
 
     private TextView label;
@@ -53,46 +48,15 @@ public class MainActivity extends AppCompatActivity implements User {
 
         // While refreshing you need the use case to overwrite its cached result, so here we use
         // non-cached execution
-        refresh.setOnClickListener(v -> UseCase.fetch(MainUseCase.class).execute());
-
-        abort.setOnClickListener(v -> UseCase.cancel(MainUseCase.class));
-
-        UseCase.subscribe(RegisterUser.class, RegisterUser.USER, registerUserListener);
-        UseCase.subscribe(Login.class, authenticateLoginListener);
-
-        UseCase.subscribe(ExitApp.class, new SimpleDisposableUseCaseListener<Result>() {
-            @Override
-            public void onComplete() {
-                MainActivity.this.finish();
-            }
-        });
+        refresh.setOnClickListener(v -> trigger.trigger(AppTrigger.Event.LAUNCH_MAIN));
+        trigger.trigger(AppTrigger.Event.LAUNCH_MAIN);
+//
+//        abort.setOnClickListener(v -> UseCase.cancel(MainUseCase.class));
 
         findViewById(R.id.btn_logout).setOnClickListener(v -> {
-            logoutListener = new SimpleUseCaseListener<Result>() {
-                @Override
-                public void onComplete() {
-                    label.setText("");
-                    UseCase.cancel(MainUseCase.class);
-                    UseCase.clearCache(MainUseCase.class);
-                    startActivity(new Intent(getBaseContext(), LoginActivity.class));
-                }
-            };
-            UseCase.fetch(LogoutUser.class)
-                    .subscribe(logoutListener)
-                    .execute();
+            label.setText("");
+            trigger.trigger(AppTrigger.Event.USER_LOGOUT);
         });
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-
-        // Execute the main use case cached. If this is our first time to execute it then there will
-        // be no cache available in the use case and it will execute normally, otherwise a cached
-        // result will be returned
-        UseCase.fetch(MainUseCase.class)
-                .subscribe(mainUseCaseListener)
-                .execute(UseCase.CACHED);
     }
 
     private SimpleUseCaseListener<MainUseCaseResult> mainUseCaseListener = new SimpleUseCaseListener<MainUseCaseResult>() {
@@ -130,39 +94,8 @@ public class MainActivity extends AppCompatActivity implements User {
         }
     };
 
-    private UseCaseListener<Result> registerUserListener = new SimpleUseCaseListener<Result>() {
-        @Override
-        public void onActionRequired(List<Integer> codes) {
-            // We received an input required request from the registration use case and we need to
-            // navigate to the registration screen
-            startActivity(new Intent(getBaseContext(), Registration1Activity.class));
-        }
-    };
-
-    private UseCaseListener<Result> authenticateLoginListener = new SimpleUseCaseListener<Result>() {
-
-        @Override
-        public void onActionRequired(List<Integer> codes) {
-            // We received an input required request from the login use case and we need to navigate
-            // to the login screen
-            if (codes.contains(Login.PASSWORD))
-                startActivity(new Intent(getBaseContext(), LoginActivity.class));
-        }
-    };
-
     @Override
     public void onBackPressed() {
 
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-
-        // Unsubscribe all your non-disposable listeners
-        UseCase.unsubscribe(MainUseCase.class, mainUseCaseListener);
-        UseCase.unsubscribe(RegisterUser.class, registerUserListener);
-        UseCase.unsubscribe(Login.class, authenticateLoginListener);
-        UseCase.unsubscribe(LogoutUser.class, logoutListener);
     }
 }

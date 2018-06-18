@@ -8,7 +8,7 @@ import org.junit.Test;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;
 
-public class FinishTest extends TectonicTest{
+public class FinishTest extends TectonicTest {
 
 	private boolean stopCalled;
 
@@ -26,6 +26,11 @@ public class FinishTest extends TectonicTest{
 			@Override
 			public boolean isRunning() {
 				return true;
+			}
+
+			@Override
+			public void release() throws InterruptedException {
+
 			}
 
 			@Override

@@ -4,7 +4,9 @@ package com.morkim.tectonic;
 import android.annotation.SuppressLint;
 import android.os.Looper;
 
+import com.morkim.tectonic.flow.Step;
 import com.morkim.tectonic.simplified.PrimaryActor;
+import com.morkim.tectonic.simplified.UseCaseHandle;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -71,13 +73,19 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
     };
 
     private static final PrimaryActor PRIMARY_STUB = new PrimaryActor() {
+
         @Override
-        public void onStart(PrimaryActor primaryActor) {
+        public void onStart(UseCaseHandle handle) {
 
         }
 
         @Override
-        public void onAbort(PrimaryActor primaryActor) {
+        public void onUndo(Step step) {
+
+        }
+
+        @Override
+        public void onAbort() {
 
         }
     };
@@ -652,7 +660,7 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
         cancel();
 
         PrimaryActor primaryActor = primaryActor();
-        primaryActor.onAbort(primaryActor);
+        primaryActor.onAbort();
 
         onAbort();
     }

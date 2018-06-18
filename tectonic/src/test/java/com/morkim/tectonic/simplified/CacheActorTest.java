@@ -33,7 +33,7 @@ public class CacheActorTest extends ConcurrentTectonicTest {
         ActorCachingUseCase.Actor actor = new ActorCachingUseCase.Actor() {
 
             @Override
-            public StepData requestData() {
+            public StepData requestData() throws InterruptedException {
                 count++;
                 return UseCase.immediate(count == 1 ? data1 : data2);
             }
@@ -208,8 +208,8 @@ public class CacheActorTest extends ConcurrentTectonicTest {
 
         useCaseThread.join();
 
-        assertEquals(2, data1.getAccessCount());
-        assertEquals(0, data2.getAccessCount());
+        assertEquals(1, data1.getAccessCount());
+        assertEquals(1, data2.getAccessCount());
         assertEquals(1, data3.getAccessCount());
         assertEquals(4, count);
     }

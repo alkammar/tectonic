@@ -1,24 +1,25 @@
 package com.morkim.usecase.ui;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.EditText;
 
-import com.morkim.tectonic.Result;
-import com.morkim.tectonic.SimpleUseCaseListener;
-import com.morkim.tectonic.UseCase;
 import com.morkim.usecase.R;
-import com.morkim.usecase.uc.RegisterUser;
-import com.morkim.usecase.uc.RegisterUserRequest;
+import com.morkim.usecase.contract.RegistrationFlow;
+import com.morkim.usecase.uc.EmptyEmail;
+import com.morkim.usecase.uc.EmptyPassword;
+import com.morkim.usecase.uc.InvalidEmail;
 
-import java.util.List;
+import javax.inject.Inject;
 
 
-public class Registration1Activity extends AppCompatActivity {
+public class Registration1Activity extends AppCompatActivity implements RegistrationFlow.Step1 {
 
     private EditText email;
     private EditText password;
+
+    @Inject
+    RegistrationFlow.Flow flow;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,46 +33,27 @@ public class Registration1Activity extends AppCompatActivity {
         email = (EditText) findViewById(R.id.ti_email);
         password = (EditText) findViewById(R.id.ti_password);
 
-        findViewById(R.id.btn_submit).setOnClickListener(v ->
-                UseCase.fetch(RegisterUser.class)
-                        .subscribe(new SimpleUseCaseListener<Result>() {
+        findViewById(R.id.btn_submit)
+                .setOnClickListener(v -> flow.submit(email.getText().toString(), password.getText().toString()));
+    }
 
-                            @Override
-                            public void onActionRequired(List<Integer> codes) {
-
-                                if (ourInputsComplete(codes)) {
-                                    if (codes.contains(RegisterUser.MOBILE)) {
-
-                                        // Navigate to the second screen in the registration screens,
-                                        // passing the data that we entered here
-                                        Intent intent = new Intent(getBaseContext(), Registration2Activity.class);
-                                        intent.putExtra("email", email.getText().toString());
-                                        intent.putExtra("password", password.getText().toString());
-                                        startActivity(intent);
-                                    }
-                                } else {
-                                    // Maybe here we can show some error for the error texts
-                                }
-                            }
-
-                            private boolean ourInputsComplete(List<Integer> codes) {
-                                return !codes.contains(RegisterUser.EMAIL) &&
-                                        !codes.contains(RegisterUser.PASSWORD);
-                            }
-
-                            @Override
-                            public void onComplete() {
-                                Registration1Activity.this.finish();
-                            }
-                        })
-                        .execute(new RegisterUserRequest.Builder()
-                                .email(email.getText().toString())
-                                .password(password.getText().toString())
-                                .build()));
+    @Override
+    public void handle(Exception e) {
+        if (e instanceof EmptyEmail)
+            email.setError("Please enter your email");
+        else if (e instanceof InvalidEmail)
+            email.setError("Please enter a valid email");
+        else if (e instanceof EmptyPassword)
+            password.setError("Please enter your password");
     }
 
     @Override
     public void onBackPressed() {
+        flow.goBack(this);
+    }
 
+    @Override
+    public void terminate() {
+        finish();
     }
 }

@@ -1,23 +1,30 @@
 package com.morkim.usecase.uc;
 
-import com.morkim.tectonic.Request;
-import com.morkim.tectonic.Result;
-import com.morkim.tectonic.UseCase;
+import com.morkim.tectonic.simplified.UseCase;
 import com.morkim.usecase.di.AppInjector;
 import com.morkim.usecase.model.Profile;
 
 import javax.inject.Inject;
 
 
-public class LogoutUser extends UseCase<Request, Result> {
+public class LogoutUser extends UseCase {
 
     @Inject
     Profile profile = AppInjector.getAppComponent().getProfile();
 
+    @Inject
+    User user;
+
     @Override
-    protected void onExecute(Request request) {
+    protected void onExecute() {
 
         profile.setLoggedIn(false);
+        user.askToLogin();
         finish();
+    }
+
+    public interface User {
+
+        void askToLogin();
     }
 }

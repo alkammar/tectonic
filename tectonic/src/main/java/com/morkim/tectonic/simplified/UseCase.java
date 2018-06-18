@@ -2,16 +2,17 @@ package com.morkim.tectonic.simplified;
 
 import android.annotation.SuppressLint;
 
-import com.google.common.util.concurrent.SettableFuture;
+import com.morkim.tectonic.flow.Step;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 @SuppressLint("UseSparseArrays")
-public abstract class UseCase {
+public abstract class UseCase implements UseCaseHandle {
 
     private static Map<Class<? extends UseCase>, UseCase> created = new HashMap<>();
+    private static Map<Thread, ThreadManager> waitingUndo = new HashMap<>();
     private static ThreadManager defaultThreadManager;
     private static Map<Integer, Reply> replies = new HashMap<>();
     private static Map<Integer, Object> cache = new HashMap<>();
@@ -19,6 +20,7 @@ public abstract class UseCase {
     private Map<Integer, Object> steps;
 
     private ThreadManager threadManager = new ThreadManagerImpl();
+    private PrimaryActor primaryActor;
 
     public synchronized static <U extends UseCase> U fetch(Class<U> useCaseClass) {
 
@@ -53,8 +55,10 @@ public abstract class UseCase {
                 @Override
                 public void run() throws InterruptedException {
 
-                    if (onCheckPreconditions())
+                    if (onCheckPreconditions()) {
+                        if (primaryActor != null) primaryActor.onStart(UseCase.this);
                         onExecute();
+                    }
                 }
             });
         }
@@ -77,7 +81,14 @@ public abstract class UseCase {
         defaultThreadManager = threadManager;
     }
 
-    public static <D> D immediate(D data) {
+    public static <D> D immediate(D data) throws InterruptedException {
+        Thread currentThread = Thread.currentThread();
+        if (waitingUndo.containsKey(currentThread)) {
+            ThreadManager threadManager = waitingUndo.get(currentThread);
+            waitingUndo.remove(currentThread);
+            threadManager.release();
+        }
+
         return data;
     }
 
@@ -101,12 +112,19 @@ public abstract class UseCase {
         Reply reply = replies.get(key);
         Object cachedData = cache.get(key);
 
-        if (reply != null && cachedData != null)
+        if (reply != null && cachedData != null) {
+            cache.put(key, data);
             reply.interrupt();
-        else {
+        } else {
             cache.put(key, data);
             if (reply != null) reply.set(data);
         }
+    }
+
+    public UseCase setPrimaryActor(PrimaryActor primaryActor) {
+        this.primaryActor = primaryActor;
+
+        return this;
     }
 
     protected interface CacheDataListener<D> {
@@ -114,6 +132,7 @@ public abstract class UseCase {
     }
 
     protected void finish() {
+        running = false;
         created.remove(getClass());
         getThreadManager().stop();
     }
@@ -127,5 +146,20 @@ public abstract class UseCase {
     public void restart() {
         running = false;
         execute();
+    }
+
+    @Override
+    public void undo(Step step, int... actions) {
+        ThreadManager threadManager = getThreadManager();
+        waitingUndo.put(Thread.currentThread(), threadManager);
+        for (int action : actions) cache.remove(action);
+        threadManager.restart();
+
+        if (running && primaryActor != null) primaryActor.onUndo(step);
+    }
+
+    @Override
+    public void abort() {
+        if (running && primaryActor != null) primaryActor.onAbort();
     }
 }

@@ -1,11 +1,13 @@
 package com.morkim.tectonic.simplified.entities;
 
+import com.morkim.tectonic.simplified.PrimaryActor;
 import com.morkim.tectonic.simplified.UseCase;
 
 public class SimpleUseCase extends UseCase {
 
     private int onExecuteCalledCount;
     private boolean onCheckPreconditionsCalled;
+    private Actor actor;
 
     @Override
     protected boolean onCheckPreconditions() {
@@ -28,5 +30,12 @@ public class SimpleUseCase extends UseCase {
 
     public boolean isOnCheckPreconditionsCalled() {
         return onCheckPreconditionsCalled;
+    }
+
+    public void setActor(Actor actor) {
+        this.actor = actor;
+    }
+
+    public interface Actor extends PrimaryActor {
     }
 }

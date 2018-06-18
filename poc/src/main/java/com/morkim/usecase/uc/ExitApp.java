@@ -1,16 +1,12 @@
 package com.morkim.usecase.uc;
 
-import com.morkim.tectonic.Result;
-import com.morkim.tectonic.UseCase;
 
+import com.morkim.tectonic.simplified.UseCase;
 
-public class ExitApp extends UseCase<RegisterUserRequest, Result> {
+public class ExitApp extends UseCase {
 
     @Override
-    protected void onExecute(RegisterUserRequest request) {
-
-        notifySubscribers(new Result() {});
+    protected void onExecute() {
         finish();
     }
-
 }

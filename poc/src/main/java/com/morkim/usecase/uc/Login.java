@@ -20,7 +20,7 @@ public class Login extends UseCase {
     }
 
     @Override
-    protected void onExecute() {
+    protected void onExecute() throws InterruptedException {
 
         String userName = user.askToEnterUserName();
         String password = user.askToEnterPassword();
@@ -44,9 +44,9 @@ public class Login extends UseCase {
 
     public interface User {
 
-        String askToEnterUserName();
+        String askToEnterUserName() throws InterruptedException;
 
-        String askToEnterPassword();
+        String askToEnterPassword() throws InterruptedException;
 
         void handle(Exception e);
     }

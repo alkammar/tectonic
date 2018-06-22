@@ -2,6 +2,8 @@ package com.morkim.usecase.di;
 
 import android.content.Context;
 
+import com.morkim.tectonic.simplified.Triggers;
+import com.morkim.usecase.app.AppTrigger;
 import com.morkim.usecase.model.Profile;
 
 import javax.inject.Singleton;
@@ -16,4 +18,6 @@ public interface AppComponent {
     Context getContext();
 
     Profile getProfile();
+
+    Triggers<AppTrigger.Event> triggers();
 }

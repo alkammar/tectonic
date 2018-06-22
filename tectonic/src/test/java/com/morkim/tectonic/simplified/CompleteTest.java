@@ -1,6 +1,6 @@
 package com.morkim.tectonic.simplified;
 
-import com.morkim.tectonic.simplified.entities.FinishedUseCase;
+import com.morkim.tectonic.simplified.entities.CompletedUseCase;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -8,7 +8,7 @@ import org.junit.Test;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;
 
-public class FinishTest extends TectonicTest {
+public class CompleteTest extends TectonicTest {
 
 	private boolean stopCalled;
 
@@ -20,7 +20,7 @@ public class FinishTest extends TectonicTest {
 	}
 
 	@Test
-	public void start_finished_use_case__new_use_instance() {
+	public void start_completed_use_case__new_use_instance() {
 
 		UseCase.defaultThreadManager(new ThreadManager() {
 			@Override
@@ -53,12 +53,12 @@ public class FinishTest extends TectonicTest {
 			}
 		});
 
-		FinishedUseCase useCase1 = UseCase.fetch(FinishedUseCase.class);
+		CompletedUseCase useCase1 = UseCase.fetch(CompletedUseCase.class);
 		useCase1.execute();
 
 		assertTrue(stopCalled);
 
-		FinishedUseCase useCase2 = UseCase.fetch(FinishedUseCase.class);
+		CompletedUseCase useCase2 = UseCase.fetch(CompletedUseCase.class);
 
 		assertNotSame(useCase1, useCase2);
 	}

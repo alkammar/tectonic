@@ -1,7 +1,7 @@
 package com.morkim.tectonic.simplified;
 
 import com.morkim.tectonic.flow.Step;
-import com.morkim.tectonic.simplified.entities.FinishedUseCase;
+import com.morkim.tectonic.simplified.entities.CompletedUseCase;
 import com.morkim.tectonic.simplified.entities.SimpleUseCase;
 
 import org.junit.Before;
@@ -14,6 +14,7 @@ public class AbortTest extends TectonicTest {
 
 	private boolean onAbortCalled;
 	private UseCaseHandle handle;
+	private boolean onCompleteCalled;
 
 	@Before
 	public void setup() {
@@ -31,6 +32,11 @@ public class AbortTest extends TectonicTest {
 			@Override
 			public void onStart(UseCaseHandle handle) {
 
+			}
+
+			@Override
+			public void onComplete(Void result) {
+				onCompleteCalled = true;
 			}
 
 			@Override
@@ -60,6 +66,11 @@ public class AbortTest extends TectonicTest {
 			}
 
 			@Override
+			public void onComplete(Void result) {
+				onCompleteCalled = true;
+			}
+
+			@Override
 			public void onUndo(Step step) {
 
 			}
@@ -72,17 +83,23 @@ public class AbortTest extends TectonicTest {
 		useCase.execute();
 
 		assertTrue(onAbortCalled);
+		assertFalse(onCompleteCalled);
 	}
 
 	@Test
-	public void abort_finished_use_case__onAbort_not_called() {
+	public void abort_completed_use_case__onAbort_not_called() {
 
-		FinishedUseCase useCase = UseCase.fetch(FinishedUseCase.class);
-		useCase.setPrimaryActor(new FinishedUseCase.Actor() {
+		CompletedUseCase useCase = UseCase.fetch(CompletedUseCase.class);
+		useCase.setPrimaryActor(new CompletedUseCase.Actor() {
 
 			@Override
 			public void onStart(UseCaseHandle handle) {
 				AbortTest.this.handle = handle;
+			}
+
+			@Override
+			public void onComplete(Void result) {
+				onCompleteCalled = true;
 			}
 
 			@Override

@@ -19,14 +19,14 @@ public class UndoUseCase extends SimpleUseCase {
         StepData data3 = actor.requestAnotherData();
         data3.access();
 
-        finish();
+        complete();
     }
 
     public void setActor(Actor actor) {
         this.actor = actor;
     }
 
-    public interface Actor extends PrimaryActor {
+    public interface Actor extends PrimaryActor<Void> {
 
         StepData requestData() throws InterruptedException;
 

@@ -7,6 +7,6 @@ public class ExitApp extends UseCase {
 
     @Override
     protected void onExecute() {
-        finish();
+        complete();
     }
 }

@@ -36,7 +36,12 @@ public class UndoTest extends ConcurrentTectonicTest {
     @Test
     public void undo_non_cached__actor_data_accessed() throws InterruptedException {
 
-        final Step step = new Step() {};
+        final Step step = new Step() {
+            @Override
+            public void terminate() {
+
+            }
+        };
 
         final StepData data1 = new StepData();
         final StepData data2 = new StepData();
@@ -48,6 +53,11 @@ public class UndoTest extends ConcurrentTectonicTest {
             @Override
             public void onStart(UseCaseHandle handle) {
                 UndoTest.this.handle = handle;
+            }
+
+            @Override
+            public void onComplete(Void result) {
+
             }
 
             @Override
@@ -94,7 +104,12 @@ public class UndoTest extends ConcurrentTectonicTest {
     @Test
     public void undo_cached__new_data_accessed_for_undone() throws InterruptedException {
 
-        final Step step = new Step() {};
+        final Step step = new Step() {
+            @Override
+            public void terminate() {
+
+            }
+        };
 
         final StepData data1 = new StepData();
         final StepData data2 = new StepData();
@@ -107,6 +122,11 @@ public class UndoTest extends ConcurrentTectonicTest {
             @Override
             public void onStart(UseCaseHandle handle) {
                 UndoTest.this.handle = handle;
+            }
+
+            @Override
+            public void onComplete(Void result) {
+
             }
 
             @Override

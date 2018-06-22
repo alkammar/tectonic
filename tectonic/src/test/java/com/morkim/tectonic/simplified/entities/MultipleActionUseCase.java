@@ -14,7 +14,7 @@ public class MultipleActionUseCase extends SimpleUseCase {
         StepData data2 = actor.requestData2();
         data2.access();
 
-        finish();
+        complete();
     }
 
     public void setActor(Actor actor) {

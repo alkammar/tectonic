@@ -2,7 +2,7 @@ package com.morkim.tectonic.simplified.entities;
 
 import com.morkim.tectonic.simplified.PrimaryActor;
 
-public class FinishedUseCase extends SimpleUseCase {
+public class CompletedUseCase extends SimpleUseCase {
 
     private Actor actor;
 
@@ -10,14 +10,14 @@ public class FinishedUseCase extends SimpleUseCase {
     protected void onExecute() throws InterruptedException {
         super.onExecute();
 
-        finish();
+        complete();
     }
 
     public void setActor(Actor actor) {
         this.actor = actor;
     }
 
-    public interface Actor extends PrimaryActor {
+    public interface Actor extends PrimaryActor<Void> {
 
     }
 }

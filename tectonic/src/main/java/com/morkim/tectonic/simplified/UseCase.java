@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 @SuppressLint("UseSparseArrays")
-public abstract class UseCase implements UseCaseHandle {
+public abstract class UseCase<R> implements UseCaseHandle {
 
     private static Map<Class<? extends UseCase>, UseCase> created = new HashMap<>();
     private static Map<Thread, ThreadManager> waitingUndo = new HashMap<>();
@@ -20,7 +20,7 @@ public abstract class UseCase implements UseCaseHandle {
     private Map<Integer, Object> steps;
 
     private ThreadManager threadManager = new ThreadManagerImpl();
-    private PrimaryActor primaryActor;
+    private PrimaryActor<R> primaryActor;
 
     public synchronized static <U extends UseCase> U fetch(Class<U> useCaseClass) {
 
@@ -121,7 +121,7 @@ public abstract class UseCase implements UseCaseHandle {
         }
     }
 
-    public UseCase setPrimaryActor(PrimaryActor primaryActor) {
+    public UseCase setPrimaryActor(PrimaryActor<R> primaryActor) {
         this.primaryActor = primaryActor;
 
         return this;
@@ -131,7 +131,12 @@ public abstract class UseCase implements UseCaseHandle {
         D onNewData();
     }
 
-    protected void finish() {
+    protected void complete() {
+        complete(null);
+    }
+
+    protected void complete(R result) {
+        if (running && primaryActor != null) primaryActor.onComplete(result);
         running = false;
         created.remove(getClass());
         getThreadManager().stop();

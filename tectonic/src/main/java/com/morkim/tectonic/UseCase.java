@@ -80,6 +80,11 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
         }
 
         @Override
+        public void onComplete(Object o) {
+
+        }
+
+        @Override
         public void onUndo(Step step) {
 
         }

@@ -2,15 +2,13 @@ package com.morkim.usecase.uc;
 
 import android.os.SystemClock;
 
-import com.morkim.tectonic.Request;
+import com.morkim.tectonic.simplified.PrimaryActor;
 import com.morkim.tectonic.simplified.UseCase;
-import com.morkim.usecase.di.AppInjector;
-import com.morkim.usecase.model.Profile;
 
 import javax.inject.Inject;
 
 
-public class MainUseCase extends UseCase {
+public class MainUseCase extends UseCase<String> {
 
     private static final int STEP = 1;
 
@@ -34,9 +32,7 @@ public class MainUseCase extends UseCase {
             user.updateResult("" + (i + 1) * STEP);
         }
 
-        user.updateResult("Some data sent by the main use case");
-
-        finish();
+        complete("Final data sent by the main use case");
     }
 
     public interface Authenticator {
@@ -44,7 +40,7 @@ public class MainUseCase extends UseCase {
         boolean checkLogin();
     }
 
-    public interface User {
+    public interface User extends PrimaryActor<String> {
 
         void updateResult(String data);
     }

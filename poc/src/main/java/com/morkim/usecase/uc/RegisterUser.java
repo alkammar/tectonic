@@ -44,7 +44,7 @@ public class RegisterUser extends UseCase {
 
         if (email != null && password != null && mobile != null) {
             profile.setRegistered(true);
-            finish();
+            complete();
         } else
             restart();
     }
@@ -60,7 +60,7 @@ public class RegisterUser extends UseCase {
         return email;
     }
 
-    public interface User extends PrimaryActor {
+    public interface User extends PrimaryActor<Void> {
 
         String askToEnterEmail() throws InterruptedException;
 

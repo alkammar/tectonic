@@ -12,7 +12,7 @@ public class ActorCachingUseCase extends SimpleUseCase {
         StepData data = actor.requestData();
         data.access();
 
-        if (canFinish) finish();
+        if (canFinish) complete();
     }
 
     @Override

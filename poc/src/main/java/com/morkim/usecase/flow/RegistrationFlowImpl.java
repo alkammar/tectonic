@@ -29,6 +29,11 @@ public class RegistrationFlowImpl implements RegistrationFlow.Flow, RegisterUser
     }
 
     @Override
+    public void onComplete(Void result) {
+
+    }
+
+    @Override
     public String askToEnterEmail() throws InterruptedException {
 
         step1 = stepFactory.create(RegistrationFlow.Step1.class);

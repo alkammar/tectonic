@@ -20,7 +20,7 @@ public class LogoutUser extends UseCase {
 
         profile.setLoggedIn(false);
         user.askToLogin();
-        finish();
+        complete();
     }
 
     public interface User {

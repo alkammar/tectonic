@@ -1,7 +1,7 @@
 package com.morkim.tectonic.simplified;
 
 import com.morkim.tectonic.flow.Step;
-import com.morkim.tectonic.simplified.entities.FinishedUseCase;
+import com.morkim.tectonic.simplified.entities.CompletedUseCase;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -13,6 +13,7 @@ import static org.junit.Assert.assertTrue;
 public class PrimaryActorTest extends TectonicTest {
 
 	private boolean onStartCalled;
+	private boolean onCompleteCalled;
 	private boolean onAbortCalled;
 	private UseCaseHandle handle;
 
@@ -27,12 +28,17 @@ public class PrimaryActorTest extends TectonicTest {
 	@Test
 	public void no_primary_actor__callbacks_not_called() {
 
-		FinishedUseCase useCase = UseCase.fetch(FinishedUseCase.class);
-		useCase.setActor(new FinishedUseCase.Actor() {
+		CompletedUseCase useCase = UseCase.fetch(CompletedUseCase.class);
+		useCase.setActor(new CompletedUseCase.Actor() {
 
 			@Override
 			public void onStart(UseCaseHandle handle) {
 				onStartCalled = true;
+			}
+
+			@Override
+			public void onComplete(Void result) {
+				onCompleteCalled = true;
 			}
 
 			@Override
@@ -52,16 +58,56 @@ public class PrimaryActorTest extends TectonicTest {
 	}
 
 	@Test
-	public void primary_actor__callbacks_called() {
+	public void completed_use_case__callbacks_called() {
 
-		FinishedUseCase useCase = UseCase.fetch(FinishedUseCase.class);
-		FinishedUseCase.Actor actor = new FinishedUseCase.Actor() {
+		CompletedUseCase useCase = UseCase.fetch(CompletedUseCase.class);
+		CompletedUseCase.Actor actor = new CompletedUseCase.Actor() {
+
+			@Override
+			public void onStart(UseCaseHandle handle) {
+				PrimaryActorTest.this.handle = handle;
+				onStartCalled = true;
+			}
+
+			@Override
+			public void onComplete(Void result) {
+				onCompleteCalled = true;
+			}
+
+			@Override
+			public void onUndo(Step step) {
+
+			}
+
+			@Override
+			public void onAbort() {
+				onAbortCalled = true;
+			}
+		};
+		useCase.setPrimaryActor(actor);
+		useCase.setActor(actor);
+		useCase.execute();
+
+		assertTrue(onStartCalled);
+		assertTrue(onCompleteCalled);
+	}
+
+	@Test
+	public void primary_actor_abort__callbacks_called() {
+
+		CompletedUseCase useCase = UseCase.fetch(CompletedUseCase.class);
+		CompletedUseCase.Actor actor = new CompletedUseCase.Actor() {
 
 			@Override
 			public void onStart(UseCaseHandle handle) {
 				PrimaryActorTest.this.handle = handle;
 				onStartCalled = true;
 				handle.abort();
+			}
+
+			@Override
+			public void onComplete(Void result) {
+				onCompleteCalled = true;
 			}
 
 			@Override

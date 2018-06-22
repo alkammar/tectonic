@@ -1,10 +1,27 @@
 package com.morkim.usecase.app;
 
 import com.morkim.tectonic.simplified.Triggers;
+import com.morkim.tectonic.simplified.UseCase;
+import com.morkim.usecase.uc.MainUseCase;
 
-public interface AppTrigger extends Triggers<AppTrigger.Event> {
+public class AppTrigger implements Triggers<AppTrigger.Event> {
 
-    enum Event {
-        USER_LOGOUT, LAUNCH_MAIN
+    @Override
+    public void trigger(Event event) {
+
+        switch (event) {
+
+            case LAUNCH_MAIN:
+
+                UseCase.fetch(MainUseCase.class).execute();
+                break;
+            case USER_LOGOUT:
+                break;
+        }
+    }
+
+    public enum Event {
+        LAUNCH_MAIN,
+        USER_LOGOUT,
     }
 }

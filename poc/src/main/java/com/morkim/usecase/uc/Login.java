@@ -1,7 +1,6 @@
 package com.morkim.usecase.uc;
 
 import com.morkim.tectonic.simplified.UseCase;
-import com.morkim.usecase.model.Profile;
 
 import javax.inject.Inject;
 
@@ -32,7 +31,7 @@ public class Login extends UseCase {
             restart();
         }
 
-        finish();
+        complete();
     }
 
     public interface Authenticator {

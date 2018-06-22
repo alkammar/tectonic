@@ -14,6 +14,7 @@ import com.morkim.tectonic.simplified.Triggers;
 import com.morkim.usecase.R;
 import com.morkim.usecase.actor.User;
 import com.morkim.usecase.app.AppTrigger;
+import com.morkim.usecase.di.AppInjector;
 import com.morkim.usecase.uc.MainUseCaseResult;
 
 import javax.inject.Inject;
@@ -35,16 +36,18 @@ public class MainActivity extends AppCompatActivity implements User {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        AppInjector.getMainScreenComponent().inject(this);
+
         setContentView(R.layout.screen_main);
 
         //noinspection ConstantConditions
         getSupportActionBar().setTitle("Home");
 
-        refresh = (Button) findViewById(R.id.btn_refresh);
-        abort = (Button) findViewById(R.id.btn_abort);
+        refresh = findViewById(R.id.btn_refresh);
+        abort = findViewById(R.id.btn_abort);
 
-        label = (TextView) findViewById(R.id.label);
-        progress = (ProgressBar) findViewById(R.id.prg_progress);
+        label = findViewById(R.id.label);
+        progress = findViewById(R.id.prg_progress);
 
         // While refreshing you need the use case to overwrite its cached result, so here we use
         // non-cached execution

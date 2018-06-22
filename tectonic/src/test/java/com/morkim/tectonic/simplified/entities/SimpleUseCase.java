@@ -3,7 +3,7 @@ package com.morkim.tectonic.simplified.entities;
 import com.morkim.tectonic.simplified.PrimaryActor;
 import com.morkim.tectonic.simplified.UseCase;
 
-public class SimpleUseCase extends UseCase {
+public class SimpleUseCase extends UseCase<Void> {
 
     private int onExecuteCalledCount;
     private boolean onCheckPreconditionsCalled;
@@ -36,6 +36,6 @@ public class SimpleUseCase extends UseCase {
         this.actor = actor;
     }
 
-    public interface Actor extends PrimaryActor {
+    public interface Actor extends PrimaryActor<Void> {
     }
 }

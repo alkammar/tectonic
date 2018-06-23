@@ -80,7 +80,7 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
         }
 
         @Override
-        public void onComplete(Object o) {
+        public void onComplete(Object event, Object result) {
 
         }
 
@@ -90,7 +90,7 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
         }
 
         @Override
-        public void onAbort() {
+        public void onAbort(Object event) {
 
         }
     };
@@ -665,7 +665,7 @@ public abstract class UseCase<Rq extends Request, Rs extends Result> {
         cancel();
 
         PrimaryActor primaryActor = primaryActor();
-        primaryActor.onAbort();
+        primaryActor.onAbort(null);
 
         onAbort();
     }

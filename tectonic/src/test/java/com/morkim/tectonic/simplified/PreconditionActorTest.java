@@ -2,36 +2,44 @@ package com.morkim.tectonic.simplified;
 
 import com.morkim.tectonic.flow.Step;
 import com.morkim.tectonic.simplified.entities.CompletedUseCase;
-import com.morkim.tectonic.simplified.entities.SimpleUseCase;
 
 import org.junit.Before;
 import org.junit.Test;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-public class AbortTest extends TectonicTest {
+public class PreconditionActorTest extends TectonicTest {
 
+	private boolean onStartCalled;
+	private boolean onCompleteCalled;
 	private boolean onAbortCalled;
 	private UseCaseHandle handle;
-	private boolean onCompleteCalled;
+	private int onCompleteCalledCount;
+	private int onAbortCalledCount;
 
 	@Before
 	public void setup() {
 		super.setup();
 
+		onStartCalled = false;
+		onCompleteCalled = false;
 		onAbortCalled = false;
+
+		onCompleteCalledCount = 0;
+		onAbortCalledCount = 0;
 	}
 
 	@Test
-	public void abort_not_started__onAbort_not_called() {
+	public void no_precondition_actor__callbacks_not_called() {
 
-		SimpleUseCase useCase = UseCase.fetch(SimpleUseCase.class);
-		useCase.setPrimaryActor(new SimpleUseCase.Actor() {
+		CompletedUseCase useCase = UseCase.fetch(CompletedUseCase.class);
+		useCase.setActor(new CompletedUseCase.Actor() {
 
 			@Override
 			public void onStart(UseCaseHandle handle) {
-
+				onStartCalled = true;
 			}
 
 			@Override
@@ -49,25 +57,66 @@ public class AbortTest extends TectonicTest {
 				onAbortCalled = true;
 			}
 		});
+		useCase.execute();
 
+		assertFalse(onStartCalled);
 		assertFalse(onAbortCalled);
 	}
 
 	@Test
-	public void abort_running_use_case__onAbort_called() {
+	public void completed_use_case__callbacks_called() {
 
-		SimpleUseCase useCase = UseCase.fetch(SimpleUseCase.class);
-		useCase.setPrimaryActor(new SimpleUseCase.Actor() {
+		CompletedUseCase useCase = UseCase.fetch(CompletedUseCase.class);
+		CompletedUseCase.Actor actor = new CompletedUseCase.Actor() {
 
 			@Override
 			public void onStart(UseCaseHandle handle) {
-				AbortTest.this.handle = handle;
+				PreconditionActorTest.this.handle = handle;
+				onStartCalled = true;
+			}
+
+			@Override
+			public void onComplete(Integer event, Void result) {
+				onCompleteCalled = true;
+				onCompleteCalledCount++;
+			}
+
+			@Override
+			public void onUndo(Step step) {
+
+			}
+
+			@Override
+			public void onAbort(Integer event) {
+				onAbortCalled = true;
+				onAbortCalledCount++;
+			}
+		};
+		useCase.setPreconditionActor(actor);
+		useCase.setActor(actor);
+		useCase.execute();
+
+		assertTrue(onCompleteCalled);
+		assertEquals(1, onCompleteCalledCount);
+	}
+
+	@Test
+	public void primary_actor_abort__callbacks_called() {
+
+		CompletedUseCase useCase = UseCase.fetch(CompletedUseCase.class);
+		CompletedUseCase.Actor actor = new CompletedUseCase.Actor() {
+
+			@Override
+			public void onStart(UseCaseHandle handle) {
+				PreconditionActorTest.this.handle = handle;
+				onStartCalled = true;
 				handle.abort();
 			}
 
 			@Override
 			public void onComplete(Integer event, Void result) {
 				onCompleteCalled = true;
+				onCompleteCalledCount++;
 			}
 
 			@Override
@@ -78,43 +127,15 @@ public class AbortTest extends TectonicTest {
 			@Override
 			public void onAbort(Integer event) {
 				onAbortCalled = true;
+				onAbortCalledCount++;
 			}
-		});
+		};
+		useCase.setPreconditionActor(actor);
+		useCase.setPrimaryActor(actor);
+		useCase.setActor(actor);
 		useCase.execute();
 
 		assertTrue(onAbortCalled);
-		assertFalse(onCompleteCalled);
-	}
-
-	@Test
-	public void abort_completed_use_case__onAbort_not_called() {
-
-		CompletedUseCase useCase = UseCase.fetch(CompletedUseCase.class);
-		useCase.setPrimaryActor(new CompletedUseCase.Actor() {
-
-			@Override
-			public void onStart(UseCaseHandle handle) {
-				AbortTest.this.handle = handle;
-			}
-
-			@Override
-			public void onComplete(Integer event, Void result) {
-				onCompleteCalled = true;
-			}
-
-			@Override
-			public void onUndo(Step step) {
-
-			}
-
-			@Override
-			public void onAbort(Integer event) {
-				onAbortCalled = true;
-			}
-		});
-		useCase.execute();
-		handle.abort();
-
-		assertFalse(onAbortCalled);
+		assertEquals(1, onAbortCalledCount);
 	}
 }

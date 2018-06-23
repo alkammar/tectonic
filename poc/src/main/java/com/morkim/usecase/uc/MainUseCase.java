@@ -4,23 +4,32 @@ import android.os.SystemClock;
 
 import com.morkim.tectonic.simplified.PrimaryActor;
 import com.morkim.tectonic.simplified.UseCase;
+import com.morkim.usecase.app.AppTrigger;
+import com.morkim.usecase.di.AppInjector;
 
 import javax.inject.Inject;
 
 
-public class MainUseCase extends UseCase<String> {
+public class MainUseCase extends UseCase<AppTrigger.Event, String> {
 
     private static final int STEP = 1;
-
-    @Inject
-    Authenticator authenticator;
 
     @Inject
     User user;
 
     @Override
+    protected void onCreate() {
+        super.onCreate();
+
+        AppInjector.getMainUseCaseComponent().inject(this);
+    }
+
+    @Override
     protected boolean onCheckPreconditions() {
-        return authenticator.checkLogin();
+
+        triggerPreconditions(AppTrigger.Event.PRECONDITION_LOGIN);
+
+        return true;
     }
 
     @Override
@@ -32,7 +41,7 @@ public class MainUseCase extends UseCase<String> {
             user.updateResult("" + (i + 1) * STEP);
         }
 
-        complete("Final data sent by the main use case");
+        complete("Final result sent by the main use case");
     }
 
     public interface Authenticator {
@@ -40,7 +49,7 @@ public class MainUseCase extends UseCase<String> {
         boolean checkLogin();
     }
 
-    public interface User extends PrimaryActor<String> {
+    public interface User extends PrimaryActor<AppTrigger.Event, String> {
 
         void updateResult(String data);
     }

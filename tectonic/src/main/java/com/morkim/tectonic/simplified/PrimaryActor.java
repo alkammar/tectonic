@@ -1,14 +1,15 @@
 package com.morkim.tectonic.simplified;
 
+import com.morkim.tectonic.Precondition;
 import com.morkim.tectonic.flow.Step;
 
-public interface PrimaryActor<R> {
+public interface PrimaryActor<E, R> {
 
     void onStart(UseCaseHandle handle);
 
-    void onComplete(R result);
+    void onComplete(E event, R result);
 
     void onUndo(Step step);
 
-    void onAbort();
+    void onAbort(E event);
 }

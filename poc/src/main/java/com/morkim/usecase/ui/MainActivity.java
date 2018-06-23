@@ -10,17 +10,20 @@ import android.widget.TextView;
 
 import com.morkim.tectonic.Result;
 import com.morkim.tectonic.SimpleUseCaseListener;
+import com.morkim.tectonic.flow.Step;
 import com.morkim.tectonic.simplified.Triggers;
+import com.morkim.tectonic.simplified.UseCaseHandle;
 import com.morkim.usecase.R;
-import com.morkim.usecase.actor.User;
 import com.morkim.usecase.app.AppTrigger;
 import com.morkim.usecase.di.AppInjector;
-import com.morkim.usecase.uc.MainUseCaseResult;
+import com.morkim.usecase.di.ui.DaggerMainScreenComponent;
+import com.morkim.usecase.di.ui.MainScreenModule;
+import com.morkim.usecase.uc.MainUseCase;
 
 import javax.inject.Inject;
 
 
-public class MainActivity extends AppCompatActivity implements User {
+public class MainActivity extends AppCompatActivity implements MainUseCase.User {
 
     @Inject
     Triggers<AppTrigger.Event> trigger;
@@ -35,6 +38,13 @@ public class MainActivity extends AppCompatActivity implements User {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+
+        AppInjector.setMainScreenComponent(
+                DaggerMainScreenComponent.builder()
+                        .appComponent(AppInjector.getAppComponent())
+                        .mainScreenModule(new MainScreenModule(this))
+                        .build());
 
         AppInjector.getMainScreenComponent().inject(this);
 
@@ -62,43 +72,50 @@ public class MainActivity extends AppCompatActivity implements User {
         });
     }
 
-    private SimpleUseCaseListener<MainUseCaseResult> mainUseCaseListener = new SimpleUseCaseListener<MainUseCaseResult>() {
-
-        @Override
-        public void onStart() {
-            // use case has started
-            refresh.setEnabled(false);
-            progress.setVisibility(View.VISIBLE);
-            Log.i("MainActivity", "onStart");
-        }
-
-        @Override
-        public void onUpdate(MainUseCaseResult result) {
-            // received an update result from the use case
-            label.setText(result.data);
-            Log.i("MainActivity", "onUpdate: " + result.data);
-        }
-
-        @Override
-        public void onComplete() {
-            // use case has completed
-            refresh.setEnabled(true);
-            progress.setVisibility(View.GONE);
-            Log.i("MainActivity", "onComplete");
-        }
-
-        @Override
-        public void onCancel() {
-            // use case was cancelled
-            label.setText(R.string.cancelled);
-            refresh.setEnabled(true);
-            progress.setVisibility(View.GONE);
-            Log.i("MainActivity", "onCancel");
-        }
-    };
-
     @Override
     public void onBackPressed() {
 
+    }
+
+    @Override
+    public void updateResult(String data) {
+        // received an update result from the use case
+
+        runOnUiThread(() -> {
+            label.setText(data);
+            Log.i("MainActivity", "onUpdate: " + data);
+        });
+    }
+
+    @Override
+    public void onStart(UseCaseHandle handle) {
+
+        // use case has started
+        refresh.setEnabled(false);
+        progress.setVisibility(View.VISIBLE);
+        Log.i("MainActivity", "onStart");
+    }
+
+    @Override
+    public void onComplete(AppTrigger.Event event, String result) {
+        // use case has completed
+        refresh.setEnabled(true);
+        progress.setVisibility(View.GONE);
+        Log.i("MainActivity", "onComplete");
+
+    }
+
+    @Override
+    public void onUndo(Step step) {
+
+    }
+
+    @Override
+    public void onAbort(AppTrigger.Event event) {
+        // use case was cancelled
+        label.setText(R.string.cancelled);
+        refresh.setEnabled(true);
+        progress.setVisibility(View.GONE);
+        Log.i("MainActivity", "onAbort");
     }
 }

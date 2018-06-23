@@ -37,7 +37,7 @@ public class PrimaryActorTest extends TectonicTest {
 			}
 
 			@Override
-			public void onComplete(Void result) {
+			public void onComplete(Integer event, Void result) {
 				onCompleteCalled = true;
 			}
 
@@ -47,7 +47,7 @@ public class PrimaryActorTest extends TectonicTest {
 			}
 
 			@Override
-			public void onAbort() {
+			public void onAbort(Integer event) {
 				onAbortCalled = true;
 			}
 		});
@@ -70,7 +70,7 @@ public class PrimaryActorTest extends TectonicTest {
 			}
 
 			@Override
-			public void onComplete(Void result) {
+			public void onComplete(Integer event, Void result) {
 				onCompleteCalled = true;
 			}
 
@@ -80,7 +80,7 @@ public class PrimaryActorTest extends TectonicTest {
 			}
 
 			@Override
-			public void onAbort() {
+			public void onAbort(Integer event) {
 				onAbortCalled = true;
 			}
 		};
@@ -106,7 +106,7 @@ public class PrimaryActorTest extends TectonicTest {
 			}
 
 			@Override
-			public void onComplete(Void result) {
+			public void onComplete(Integer event, Void result) {
 				onCompleteCalled = true;
 			}
 
@@ -116,7 +116,7 @@ public class PrimaryActorTest extends TectonicTest {
 			}
 
 			@Override
-			public void onAbort() {
+			public void onAbort(Integer event) {
 				onAbortCalled = true;
 			}
 		};

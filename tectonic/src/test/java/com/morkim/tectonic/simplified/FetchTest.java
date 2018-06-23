@@ -3,8 +3,6 @@ package com.morkim.tectonic.simplified;
 import com.morkim.tectonic.simplified.entities.CrashingUseCase;
 import com.morkim.tectonic.simplified.entities.SimpleUseCase;
 
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -19,6 +17,7 @@ public class FetchTest extends TectonicTest {
 		SimpleUseCase useCase = new SimpleUseCase();
 		useCase.execute();
 
+		assertFalse(useCase.isOnCreateCalled());
 		assertFalse(useCase.isOnCheckPreconditionsCalled());
 		assertFalse(useCase.isOnExecuteCalled());
 	}
@@ -42,6 +41,7 @@ public class FetchTest extends TectonicTest {
 		SimpleUseCase useCase = UseCase.fetch(SimpleUseCase.class);
 		useCase.execute();
 
+		assertTrue(useCase.isOnCreateCalled());
 		assertTrue(useCase.isOnCheckPreconditionsCalled());
 		assertTrue(useCase.isOnExecuteCalled());
 	}
@@ -55,6 +55,7 @@ public class FetchTest extends TectonicTest {
         UseCase.fetch(SimpleUseCase.class).execute();
 
 		assertTrue(useCase.isOnCheckPreconditionsCalled());
+		assertEquals(1, useCase.getOnCreateCalledCount());
 		assertEquals(1, useCase.getOnExecuteCalledCount());
 	}
 }

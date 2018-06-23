@@ -1,5 +1,6 @@
 package com.morkim.tectonic.simplified.entities;
 
+import com.morkim.tectonic.simplified.PreconditionActor;
 import com.morkim.tectonic.simplified.PrimaryActor;
 
 public class CompletedUseCase extends SimpleUseCase {
@@ -17,7 +18,7 @@ public class CompletedUseCase extends SimpleUseCase {
         this.actor = actor;
     }
 
-    public interface Actor extends PrimaryActor<Void> {
+    public interface Actor extends PrimaryActor<Integer, Void>, PreconditionActor<Integer, Void> {
 
     }
 }

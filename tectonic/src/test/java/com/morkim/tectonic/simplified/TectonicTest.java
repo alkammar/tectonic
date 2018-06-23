@@ -3,7 +3,7 @@ package com.morkim.tectonic.simplified;
 import org.junit.Before;
 import org.junit.BeforeClass;
 
-public class TectonicTest {
+public abstract class TectonicTest {
 
     @BeforeClass
     public static void setupClass() {

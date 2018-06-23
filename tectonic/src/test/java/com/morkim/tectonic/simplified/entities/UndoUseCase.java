@@ -26,7 +26,7 @@ public class UndoUseCase extends SimpleUseCase {
         this.actor = actor;
     }
 
-    public interface Actor extends PrimaryActor<Void> {
+    public interface Actor extends PrimaryActor<Integer, Void> {
 
         StepData requestData() throws InterruptedException;
 

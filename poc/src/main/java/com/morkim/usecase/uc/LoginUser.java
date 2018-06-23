@@ -1,11 +1,14 @@
 package com.morkim.usecase.uc;
 
+import com.morkim.tectonic.simplified.PrimaryActor;
 import com.morkim.tectonic.simplified.UseCase;
+import com.morkim.usecase.app.AppTrigger;
+import com.morkim.usecase.di.AppInjector;
 
 import javax.inject.Inject;
 
 
-public class Login extends UseCase {
+public class LoginUser extends UseCase<AppTrigger.Event, Void> {
 
     @Inject
     Authenticator authenticator;
@@ -14,36 +17,37 @@ public class Login extends UseCase {
     User user;
 
     @Override
+    protected void onCreate() {
+        super.onCreate();
+
+        AppInjector.getLoginUserComponent().inject(this);
+    }
+
+    @Override
     protected boolean onCheckPreconditions() {
-        return authenticator.checkRegistration();
+        return true;
     }
 
     @Override
     protected void onExecute() throws InterruptedException {
 
-        String userName = user.askToEnterUserName();
         String password = user.askToEnterPassword();
 
         try {
-            authenticator.validateCredentials(userName, password);
+            authenticator.validateCredentials(password);
+            complete();
         } catch (InvalidLogin e) {
             user.handle(e);
             restart();
         }
-
-        complete();
     }
 
     public interface Authenticator {
 
-        boolean checkRegistration();
-
-        void validateCredentials(String userName, String password) throws InvalidLogin;
+        void validateCredentials(String password) throws InvalidLogin;
     }
 
     public interface User {
-
-        String askToEnterUserName() throws InterruptedException;
 
         String askToEnterPassword() throws InterruptedException;
 

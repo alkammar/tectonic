@@ -4,8 +4,6 @@ import com.morkim.tectonic.simplified.entities.CompletedPreconditionsUseCase;
 import com.morkim.tectonic.simplified.entities.FailingPreconditionsUseCase;
 import com.morkim.tectonic.simplified.entities.SimpleUseCase;
 
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import static org.junit.Assert.assertFalse;

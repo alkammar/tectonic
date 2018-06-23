@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 @SuppressLint("UseSparseArrays")
-public abstract class UseCase<R> implements UseCaseHandle {
+public abstract class UseCase<E, R> implements PreconditionActor<E, R>, UseCaseHandle {
 
     private static Map<Class<? extends UseCase>, UseCase> created = new HashMap<>();
     private static Map<Thread, ThreadManager> waitingUndo = new HashMap<>();
@@ -20,7 +20,11 @@ public abstract class UseCase<R> implements UseCaseHandle {
     private Map<Integer, Object> steps;
 
     private ThreadManager threadManager = new ThreadManagerImpl();
-    private PrimaryActor<R> primaryActor;
+    private PrimaryActor<E, R> primaryActor;
+    private PreconditionActor<E, R> preconditionActor;
+
+    private Triggers<E> triggers;
+    private E event;
 
     public synchronized static <U extends UseCase> U fetch(Class<U> useCaseClass) {
 
@@ -30,12 +34,17 @@ public abstract class UseCase<R> implements UseCaseHandle {
             try {
                 useCase = useCaseClass.newInstance();
                 created.put(useCaseClass, useCase);
+                useCase.onCreate();
             } catch (Exception e) {
                 throw new UnableToInstantiateUseCase(e.getCause());
             }
         }
 
         return useCase;
+    }
+
+    protected void onCreate() {
+
     }
 
     @SuppressLint("UseSparseArrays")
@@ -47,7 +56,17 @@ public abstract class UseCase<R> implements UseCaseHandle {
         return true;
     }
 
+    @SafeVarargs
+    protected final void triggerPreconditions(E... events) {
+        for (E event : events) triggers.trigger(event);
+    }
+
     public void execute() {
+        execute(null);
+    }
+
+    public void execute(E event) {
+        this.event = event;
 
         if (created.containsKey(getClass()) && !running) {
             running = true;
@@ -121,8 +140,24 @@ public abstract class UseCase<R> implements UseCaseHandle {
         }
     }
 
-    public UseCase setPrimaryActor(PrimaryActor<R> primaryActor) {
+    public static void clear(int key) {
+        cache.remove(key);
+    }
+
+    public UseCase<E, R> setPrimaryActor(PrimaryActor<E, R> primaryActor) {
         this.primaryActor = primaryActor;
+
+        return this;
+    }
+
+    public UseCase setPreconditionActor(PreconditionActor<E, R> preconditionActor) {
+        this.preconditionActor = preconditionActor;
+
+        return this;
+    }
+
+    public UseCase<E, R> setTriggers(Triggers<E> triggers) {
+        this.triggers = triggers;
 
         return this;
     }
@@ -136,7 +171,9 @@ public abstract class UseCase<R> implements UseCaseHandle {
     }
 
     protected void complete(R result) {
-        if (running && primaryActor != null) primaryActor.onComplete(result);
+        if (running && preconditionActor != null) preconditionActor.onComplete(event, result);
+        if (preconditionActor != primaryActor)
+            if (running && primaryActor != null) primaryActor.onComplete(event, result);
         running = false;
         created.remove(getClass());
         getThreadManager().stop();
@@ -150,7 +187,7 @@ public abstract class UseCase<R> implements UseCaseHandle {
 
     public void restart() {
         running = false;
-        execute();
+        execute(event);
     }
 
     @Override
@@ -165,6 +202,18 @@ public abstract class UseCase<R> implements UseCaseHandle {
 
     @Override
     public void abort() {
-        if (running && primaryActor != null) primaryActor.onAbort();
+        if (running && preconditionActor != null) preconditionActor.onAbort(event);
+        if (preconditionActor != primaryActor)
+            if (running && primaryActor != null) primaryActor.onAbort(event);
+    }
+
+    @Override
+    public void onComplete(E event, R result) {
+
+    }
+
+    @Override
+    public void onAbort(E event) {
+
     }
 }

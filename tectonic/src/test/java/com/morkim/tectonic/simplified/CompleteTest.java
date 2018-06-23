@@ -54,7 +54,7 @@ public class CompleteTest extends TectonicTest {
 		});
 
 		CompletedUseCase useCase1 = UseCase.fetch(CompletedUseCase.class);
-		useCase1.execute();
+		useCase1.execute(null);
 
 		assertTrue(stopCalled);
 

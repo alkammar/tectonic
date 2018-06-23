@@ -19,11 +19,5 @@ public class App extends Application {
                 DaggerAppComponent.builder()
                         .appModule(new AppModule(this))
                         .build());
-
-        AppInjector.setMainScreenComponent(
-                DaggerMainScreenComponent.builder()
-                        .appComponent(AppInjector.getAppComponent())
-                        .mainScreenModule(new MainScreenModule())
-                        .build());
     }
 }

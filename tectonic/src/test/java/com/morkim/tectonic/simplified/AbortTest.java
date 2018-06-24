@@ -99,6 +99,11 @@ public class AbortTest extends TectonicTest {
 
 			@Override
 			public void onComplete(Integer event, Void result) {
+
+			}
+
+			@Override
+			public void onComplete(Integer event) {
 				onCompleteCalled = true;
 			}
 

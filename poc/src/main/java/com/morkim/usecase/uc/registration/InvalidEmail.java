@@ -1,4 +1,4 @@
-package com.morkim.usecase.uc;
+package com.morkim.usecase.uc.registration;
 
 public class InvalidEmail extends Exception {
 }

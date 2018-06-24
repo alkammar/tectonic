@@ -1,4 +1,4 @@
-package com.morkim.usecase.uc;
+package com.morkim.usecase.uc.registration;
 
 import com.morkim.tectonic.simplified.PrimaryActor;
 import com.morkim.tectonic.simplified.UseCase;
@@ -10,8 +10,6 @@ import javax.inject.Inject;
 
 
 public class RegisterUser extends UseCase {
-
-    public static final int USER = 1;
 
     @Inject
     User user;
@@ -25,6 +23,7 @@ public class RegisterUser extends UseCase {
         String email = null;
         String password = null;
         String mobile = null;
+
         try {
             email = validateEmail(user.askToEnterEmail());
         } catch (EmptyEmail | InvalidEmail e) {

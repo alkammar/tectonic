@@ -1,9 +1,10 @@
-package com.morkim.usecase.uc;
+package com.morkim.usecase.uc.login;
 
-import com.morkim.tectonic.simplified.PrimaryActor;
 import com.morkim.tectonic.simplified.UseCase;
 import com.morkim.usecase.app.AppTrigger;
 import com.morkim.usecase.di.AppInjector;
+
+import java.util.Set;
 
 import javax.inject.Inject;
 
@@ -24,8 +25,8 @@ public class LoginUser extends UseCase<AppTrigger.Event, Void> {
     }
 
     @Override
-    protected boolean onCheckPreconditions() {
-        return true;
+    protected void onAddPreconditions(Set<AppTrigger.Event> events) {
+
     }
 
     @Override

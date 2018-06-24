@@ -1,10 +1,20 @@
 package com.morkim.tectonic.simplified.entities;
 
+import java.util.Set;
+
 public class CompletedPreconditionsUseCase extends SimpleUseCase {
 
+    public static final Integer SUCCESSFUL_EVENT = 11;
+
     @Override
-    protected boolean onCheckPreconditions() {
-        //noinspection PointlessBooleanExpression
-        return super.onCheckPreconditions() && true;
+    protected void onAddPreconditions(Set<Integer> events) {
+        events.add(SUCCESSFUL_EVENT);
+    }
+
+    @Override
+    protected void onExecute() throws InterruptedException {
+        super.onExecute();
+
+        complete();
     }
 }

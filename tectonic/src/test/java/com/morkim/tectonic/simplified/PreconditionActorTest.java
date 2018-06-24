@@ -44,6 +44,11 @@ public class PreconditionActorTest extends TectonicTest {
 
 			@Override
 			public void onComplete(Integer event, Void result) {
+
+			}
+
+			@Override
+			public void onComplete(Integer event) {
 				onCompleteCalled = true;
 			}
 
@@ -77,6 +82,11 @@ public class PreconditionActorTest extends TectonicTest {
 
 			@Override
 			public void onComplete(Integer event, Void result) {
+
+			}
+
+			@Override
+			public void onComplete(Integer event) {
 				onCompleteCalled = true;
 				onCompleteCalledCount++;
 			}
@@ -115,6 +125,11 @@ public class PreconditionActorTest extends TectonicTest {
 
 			@Override
 			public void onComplete(Integer event, Void result) {
+
+			}
+
+			@Override
+			public void onComplete(Integer event) {
 				onCompleteCalled = true;
 				onCompleteCalledCount++;
 			}

@@ -1,6 +1,7 @@
 package com.morkim.tectonic.simplified;
 
 import com.morkim.tectonic.simplified.entities.CompletedPreconditionsUseCase;
+import com.morkim.tectonic.simplified.entities.CompletedUseCase;
 import com.morkim.tectonic.simplified.entities.FailingPreconditionsUseCase;
 import com.morkim.tectonic.simplified.entities.SimpleUseCase;
 
@@ -9,13 +10,15 @@ import org.junit.Test;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-public class PreconditionsTest extends TectonicTest {
+public class PreconditionsTest extends ConcurrentTectonicTest {
 
 	@Test
-	public void no_preconditions__onExecute_called() {
+	public void no_preconditions__onExecute_called() throws InterruptedException {
 
-		SimpleUseCase useCase = UseCase.fetch(SimpleUseCase.class);
+		CompletedUseCase useCase = UseCase.fetch(CompletedUseCase.class);
 		useCase.execute();
+
+		useCaseThread.join();
 
 		assertTrue(useCase.isOnExecuteCalled());
 	}
@@ -30,10 +33,24 @@ public class PreconditionsTest extends TectonicTest {
 	}
 
 	@Test
-	public void preconditions_complete__onExecute_called() {
+	public void preconditions_complete__onExecute_called() throws InterruptedException {
 
-		CompletedPreconditionsUseCase useCase = UseCase.fetch(CompletedPreconditionsUseCase.class);
+		final CompletedPreconditionsUseCase useCase = UseCase.fetch(CompletedPreconditionsUseCase.class);
 		useCase.execute();
+
+		Thread thread = new Thread(new Runnable() {
+			@Override
+			public void run() {
+				sleep();
+				useCase.onComplete(CompletedPreconditionsUseCase.SUCCESSFUL_EVENT);
+			}
+		});
+		thread.start();
+
+		sleep();
+		sleep();
+		sleep();
+		sleep();
 
 		assertTrue(useCase.isOnExecuteCalled());
 	}

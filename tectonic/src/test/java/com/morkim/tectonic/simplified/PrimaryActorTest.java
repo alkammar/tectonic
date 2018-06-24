@@ -38,6 +38,11 @@ public class PrimaryActorTest extends TectonicTest {
 
 			@Override
 			public void onComplete(Integer event, Void result) {
+
+			}
+
+			@Override
+			public void onComplete(Integer event) {
 				onCompleteCalled = true;
 			}
 
@@ -75,6 +80,11 @@ public class PrimaryActorTest extends TectonicTest {
 			}
 
 			@Override
+			public void onComplete(Integer event) {
+
+			}
+
+			@Override
 			public void onUndo(Step step) {
 
 			}
@@ -107,6 +117,11 @@ public class PrimaryActorTest extends TectonicTest {
 
 			@Override
 			public void onComplete(Integer event, Void result) {
+
+			}
+
+			@Override
+			public void onComplete(Integer event) {
 				onCompleteCalled = true;
 			}
 

@@ -5,11 +5,13 @@ import android.annotation.SuppressLint;
 import com.morkim.tectonic.flow.Step;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 @SuppressLint("UseSparseArrays")
-public abstract class UseCase<E, R> implements PreconditionActor<E, R>, UseCaseHandle {
+public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHandle {
 
     private static Map<Class<? extends UseCase>, UseCase> created = new HashMap<>();
     private static Map<Thread, ThreadManager> waitingUndo = new HashMap<>();
@@ -21,10 +23,11 @@ public abstract class UseCase<E, R> implements PreconditionActor<E, R>, UseCaseH
 
     private ThreadManager threadManager = new ThreadManagerImpl();
     private PrimaryActor<E, R> primaryActor;
-    private PreconditionActor<E, R> preconditionActor;
+    private PreconditionActor<E> preconditionActor;
 
     private Triggers<E> triggers;
     private E event;
+    private volatile Set<E> preconditions = new HashSet<>();
 
     public synchronized static <U extends UseCase> U fetch(Class<U> useCaseClass) {
 
@@ -52,15 +55,6 @@ public abstract class UseCase<E, R> implements PreconditionActor<E, R>, UseCaseH
         steps = new HashMap<>();
     }
 
-    protected boolean onCheckPreconditions() {
-        return true;
-    }
-
-    @SafeVarargs
-    protected final void triggerPreconditions(E... events) {
-        for (E event : events) triggers.trigger(event);
-    }
-
     public void execute() {
         execute(null);
     }
@@ -74,13 +68,23 @@ public abstract class UseCase<E, R> implements PreconditionActor<E, R>, UseCaseH
                 @Override
                 public void run() throws InterruptedException {
 
-                    if (onCheckPreconditions()) {
-                        if (primaryActor != null) primaryActor.onStart(UseCase.this);
-                        onExecute();
-                    }
+                    waitForPreconditions();
+                    if (primaryActor != null) primaryActor.onStart(UseCase.this);
+                    onExecute();
                 }
             });
         }
+    }
+
+    private void waitForPreconditions() {
+        onAddPreconditions(preconditions);
+        for (E event : preconditions) triggers.trigger(event);
+        //noinspection StatementWithEmptyBody
+        while (preconditions.size() > 0);
+    }
+
+    protected void onAddPreconditions(Set<E> events) {
+
     }
 
     private ThreadManager getThreadManager() {
@@ -150,7 +154,7 @@ public abstract class UseCase<E, R> implements PreconditionActor<E, R>, UseCaseH
         return this;
     }
 
-    public UseCase setPreconditionActor(PreconditionActor<E, R> preconditionActor) {
+    public UseCase<E, R> setPreconditionActor(PreconditionActor<E> preconditionActor) {
         this.preconditionActor = preconditionActor;
 
         return this;
@@ -171,7 +175,7 @@ public abstract class UseCase<E, R> implements PreconditionActor<E, R>, UseCaseH
     }
 
     protected void complete(R result) {
-        if (running && preconditionActor != null) preconditionActor.onComplete(event, result);
+        if (running && preconditionActor != null) preconditionActor.onComplete(event);
         if (preconditionActor != primaryActor)
             if (running && primaryActor != null) primaryActor.onComplete(event, result);
         running = false;
@@ -208,8 +212,8 @@ public abstract class UseCase<E, R> implements PreconditionActor<E, R>, UseCaseH
     }
 
     @Override
-    public void onComplete(E event, R result) {
-
+    public void onComplete(E event) {
+        preconditions.remove(event);
     }
 
     @Override

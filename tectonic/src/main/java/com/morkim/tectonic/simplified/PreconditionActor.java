@@ -1,8 +1,8 @@
 package com.morkim.tectonic.simplified;
 
-public interface PreconditionActor<E, R> {
+public interface PreconditionActor<E> {
     
-    void onComplete(E event, R result);
+    void onComplete(E event);
     
     void onAbort(E event);
 }

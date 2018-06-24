@@ -7,8 +7,8 @@ import com.morkim.usecase.app.AppTrigger;
 import com.morkim.usecase.contract.login.Login;
 import com.morkim.usecase.di.PerUseCase;
 import com.morkim.usecase.flow.login.LoginFlowImpl;
-import com.morkim.usecase.uc.InvalidLogin;
-import com.morkim.usecase.uc.LoginUser;
+import com.morkim.usecase.uc.login.InvalidLogin;
+import com.morkim.usecase.uc.login.LoginUser;
 
 import dagger.Module;
 import dagger.Provides;

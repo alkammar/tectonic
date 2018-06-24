@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="10dp"
-    tools:context="com.morkim.usecase.ui.MainActivity">
+    tools:context="com.morkim.usecase.ui.main.MainActivity">
 
     <Button
         android:id="@+id/btn_refresh"

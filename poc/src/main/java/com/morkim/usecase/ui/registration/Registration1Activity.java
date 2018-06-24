@@ -1,4 +1,4 @@
-package com.morkim.usecase.ui;
+package com.morkim.usecase.ui.registration;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -6,9 +6,9 @@ import android.widget.EditText;
 
 import com.morkim.usecase.R;
 import com.morkim.usecase.contract.RegistrationFlow;
-import com.morkim.usecase.uc.EmptyEmail;
-import com.morkim.usecase.uc.EmptyPassword;
-import com.morkim.usecase.uc.InvalidEmail;
+import com.morkim.usecase.uc.registration.EmptyEmail;
+import com.morkim.usecase.uc.registration.EmptyPassword;
+import com.morkim.usecase.uc.registration.InvalidEmail;
 
 import javax.inject.Inject;
 
@@ -30,8 +30,8 @@ public class Registration1Activity extends AppCompatActivity implements Registra
         //noinspection ConstantConditions
         getSupportActionBar().setTitle("Registration - Credentials");
 
-        email = (EditText) findViewById(R.id.ti_email);
-        password = (EditText) findViewById(R.id.ti_password);
+        email = findViewById(R.id.ti_email);
+        password = findViewById(R.id.ti_password);
 
         findViewById(R.id.btn_submit)
                 .setOnClickListener(v -> flow.submit(email.getText().toString(), password.getText().toString()));

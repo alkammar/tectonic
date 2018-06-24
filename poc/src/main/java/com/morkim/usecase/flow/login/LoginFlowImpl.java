@@ -8,7 +8,7 @@ import com.morkim.tectonic.simplified.UseCase;
 import com.morkim.tectonic.simplified.UseCaseHandle;
 import com.morkim.usecase.app.AppTrigger;
 import com.morkim.usecase.contract.login.Login;
-import com.morkim.usecase.uc.LoginUser;
+import com.morkim.usecase.uc.login.LoginUser;
 
 import javax.inject.Inject;
 

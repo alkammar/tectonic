@@ -10,7 +10,7 @@ import com.morkim.usecase.app.App;
 import com.morkim.usecase.app.AppTrigger;
 import com.morkim.usecase.contract.login.Login;
 import com.morkim.usecase.model.Profile;
-import com.morkim.usecase.ui.LoginActivity;
+import com.morkim.usecase.ui.login.LoginActivity;
 
 import javax.inject.Singleton;
 

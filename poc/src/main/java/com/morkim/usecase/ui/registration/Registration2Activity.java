@@ -1,4 +1,4 @@
-package com.morkim.usecase.ui;
+package com.morkim.usecase.ui.registration;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -26,7 +26,7 @@ public class Registration2Activity extends AppCompatActivity implements Registra
         //noinspection ConstantConditions
         getSupportActionBar().setTitle("Registration - Mobile");
 
-        mobile = (EditText) findViewById(R.id.ti_mobile);
+        mobile = findViewById(R.id.ti_mobile);
 
         findViewById(R.id.btn_submit).setOnClickListener(v ->
                 flow.submit(mobile.getText().toString()));

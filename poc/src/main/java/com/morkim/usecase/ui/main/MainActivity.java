@@ -1,4 +1,4 @@
-package com.morkim.usecase.ui;
+package com.morkim.usecase.ui.main;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -18,7 +18,7 @@ import com.morkim.usecase.app.AppTrigger;
 import com.morkim.usecase.di.AppInjector;
 import com.morkim.usecase.di.ui.DaggerMainScreenComponent;
 import com.morkim.usecase.di.ui.MainScreenModule;
-import com.morkim.usecase.uc.MainUseCase;
+import com.morkim.usecase.uc.main.MainUseCase;
 
 import javax.inject.Inject;
 
@@ -62,7 +62,7 @@ public class MainActivity extends AppCompatActivity implements MainUseCase.User 
         // While refreshing you need the use case to overwrite its cached result, so here we use
         // non-cached execution
         refresh.setOnClickListener(v -> trigger.trigger(AppTrigger.Event.LAUNCH_MAIN));
-        trigger.trigger(AppTrigger.Event.LAUNCH_MAIN);
+        trigger.trigger(AppTrigger.Event.REFRESH_MAIN);
 //
 //        abort.setOnClickListener(v -> UseCase.cancel(MainUseCase.class));
 
@@ -90,18 +90,24 @@ public class MainActivity extends AppCompatActivity implements MainUseCase.User 
     @Override
     public void onStart(UseCaseHandle handle) {
 
-        // use case has started
-        refresh.setEnabled(false);
-        progress.setVisibility(View.VISIBLE);
-        Log.i("MainActivity", "onStart");
+        runOnUiThread(() -> {
+            // use case has started
+            refresh.setEnabled(false);
+            progress.setVisibility(View.VISIBLE);
+            Log.i("MainActivity", "onStart");
+        });
     }
 
     @Override
     public void onComplete(AppTrigger.Event event, String result) {
-        // use case has completed
-        refresh.setEnabled(true);
-        progress.setVisibility(View.GONE);
-        Log.i("MainActivity", "onComplete");
+
+        runOnUiThread(() -> {
+            // use case has completed
+            refresh.setEnabled(true);
+            progress.setVisibility(View.GONE);
+            updateResult(result);
+            Log.i("MainActivity", "onComplete");
+        });
 
     }
 

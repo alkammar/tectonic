@@ -18,7 +18,7 @@ public class CompletedUseCase extends SimpleUseCase {
         this.actor = actor;
     }
 
-    public interface Actor extends PrimaryActor<Integer, Void>, PreconditionActor<Integer, Void> {
+    public interface Actor extends PrimaryActor<Integer, Void>, PreconditionActor<Integer> {
 
     }
 }

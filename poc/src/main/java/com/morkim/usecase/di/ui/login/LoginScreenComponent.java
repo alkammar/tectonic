@@ -1,10 +1,8 @@
 package com.morkim.usecase.di.ui.login;
 
-import com.morkim.usecase.contract.login.Login;
-import com.morkim.usecase.di.AppComponent;
 import com.morkim.usecase.di.PerActivity;
 import com.morkim.usecase.di.uc.login.LoginUserComponent;
-import com.morkim.usecase.ui.LoginActivity;
+import com.morkim.usecase.ui.login.LoginActivity;
 
 import dagger.Component;
 

@@ -1,4 +1,4 @@
-package com.morkim.usecase.ui;
+package com.morkim.usecase.ui.login;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -11,7 +11,7 @@ import com.morkim.usecase.contract.login.Login;
 import com.morkim.usecase.di.AppInjector;
 import com.morkim.usecase.di.ui.login.DaggerLoginScreenComponent;
 import com.morkim.usecase.di.ui.login.LoginScreenModule;
-import com.morkim.usecase.uc.InvalidLogin;
+import com.morkim.usecase.uc.login.InvalidLogin;
 
 import javax.inject.Inject;
 

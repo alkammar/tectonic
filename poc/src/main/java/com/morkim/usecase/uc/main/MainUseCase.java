@@ -1,4 +1,4 @@
-package com.morkim.usecase.uc;
+package com.morkim.usecase.uc.main;
 
 import android.os.SystemClock;
 
@@ -6,6 +6,8 @@ import com.morkim.tectonic.simplified.PrimaryActor;
 import com.morkim.tectonic.simplified.UseCase;
 import com.morkim.usecase.app.AppTrigger;
 import com.morkim.usecase.di.AppInjector;
+
+import java.util.Set;
 
 import javax.inject.Inject;
 
@@ -25,11 +27,8 @@ public class MainUseCase extends UseCase<AppTrigger.Event, String> {
     }
 
     @Override
-    protected boolean onCheckPreconditions() {
-
-        triggerPreconditions(AppTrigger.Event.PRECONDITION_LOGIN);
-
-        return true;
+    protected void onAddPreconditions(Set<AppTrigger.Event> events) {
+        events.add(AppTrigger.Event.PRECONDITION_LOGIN);
     }
 
     @Override
@@ -42,11 +41,6 @@ public class MainUseCase extends UseCase<AppTrigger.Event, String> {
         }
 
         complete("Final result sent by the main use case");
-    }
-
-    public interface Authenticator {
-
-        boolean checkLogin();
     }
 
     public interface User extends PrimaryActor<AppTrigger.Event, String> {

@@ -3,6 +3,8 @@ package com.morkim.tectonic.simplified.entities;
 import com.morkim.tectonic.simplified.PrimaryActor;
 import com.morkim.tectonic.simplified.UseCase;
 
+import java.util.Set;
+
 public class SimpleUseCase extends UseCase<Integer, Void> {
 
     private int onCreateCalledCount;
@@ -18,9 +20,8 @@ public class SimpleUseCase extends UseCase<Integer, Void> {
     }
 
     @Override
-    protected boolean onCheckPreconditions() {
+    protected void onAddPreconditions(Set<Integer> events) {
         onCheckPreconditionsCalled = true;
-        return true;
     }
 
     @Override

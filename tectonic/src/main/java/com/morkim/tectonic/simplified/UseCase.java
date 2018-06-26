@@ -78,7 +78,7 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
 
     private void waitForPreconditions() {
         onAddPreconditions(preconditions);
-        for (E event : preconditions) triggers.trigger(event);
+        for (E event : preconditions) triggers.trigger(event, preconditionActor);
         //noinspection StatementWithEmptyBody
         while (preconditions.size() > 0);
     }
@@ -140,6 +140,7 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
             reply.interrupt();
         } else {
             cache.put(key, data);
+            replies.remove(key);
             if (reply != null) reply.set(data);
         }
     }
@@ -164,6 +165,10 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
         this.triggers = triggers;
 
         return this;
+    }
+
+    public Builder builder() {
+        return new Builder();
     }
 
     protected interface CacheDataListener<D> {

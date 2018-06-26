@@ -1,5 +1,6 @@
 package com.morkim.usecase.uc.login;
 
+import com.morkim.tectonic.simplified.PrimaryActor;
 import com.morkim.tectonic.simplified.UseCase;
 import com.morkim.usecase.app.AppTrigger;
 import com.morkim.usecase.di.AppInjector;
@@ -48,7 +49,7 @@ public class LoginUser extends UseCase<AppTrigger.Event, Void> {
         void validateCredentials(String password) throws InvalidLogin;
     }
 
-    public interface User {
+    public interface User extends PrimaryActor<AppTrigger.Event, Void> {
 
         String askToEnterPassword() throws InterruptedException;
 

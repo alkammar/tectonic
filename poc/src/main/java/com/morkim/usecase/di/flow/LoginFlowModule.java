@@ -1,8 +1,6 @@
 package com.morkim.usecase.di.flow;
 
 import com.morkim.tectonic.flow.StepFactory;
-import com.morkim.tectonic.simplified.Triggers;
-import com.morkim.usecase.app.AppTrigger;
 import com.morkim.usecase.di.PerUseCase;
 import com.morkim.usecase.flow.login.LoginFlowImpl;
 import com.morkim.usecase.uc.login.InvalidLogin;
@@ -16,8 +14,8 @@ public class LoginFlowModule {
 
     @Provides
     @PerUseCase
-    LoginUser.User provideUser(Triggers<AppTrigger.Event> triggers, StepFactory stepFactory) {
-        return new LoginFlowImpl(triggers, stepFactory);
+    LoginUser.User provideUser(StepFactory stepFactory) {
+        return new LoginFlowImpl(stepFactory);
     }
 
     @Provides

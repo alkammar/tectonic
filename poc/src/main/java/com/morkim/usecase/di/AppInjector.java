@@ -1,9 +1,12 @@
 package com.morkim.usecase.di;
 
+import com.morkim.usecase.di.flow.LoginFlowComponent;
 import com.morkim.usecase.di.uc.login.LoginUserComponent;
+import com.morkim.usecase.di.uc.logout.LogoutUserComponent;
 import com.morkim.usecase.di.uc.main.MainUseCaseComponent;
 import com.morkim.usecase.di.ui.MainScreenComponent;
 import com.morkim.usecase.di.ui.login.LoginScreenComponent;
+import com.morkim.usecase.uc.LogoutUser;
 
 public class AppInjector {
 
@@ -14,6 +17,7 @@ public class AppInjector {
 
     private static LoginUserComponent loginUserComponent;
     private static LoginScreenComponent loginScreenComponent;
+    private static LogoutUserComponent logoutUserComponent;
 
     public static AppComponent getAppComponent() {
         return appComponent;
@@ -53,5 +57,13 @@ public class AppInjector {
 
     public static void setLoginScreenComponent(LoginScreenComponent loginScreenComponent) {
         AppInjector.loginScreenComponent = loginScreenComponent;
+    }
+
+    public static LogoutUserComponent getLogoutUserComponent() {
+        return logoutUserComponent;
+    }
+
+    public static void setLogoutUserComponent(LogoutUserComponent logoutUserComponent) {
+        AppInjector.logoutUserComponent = logoutUserComponent;
     }
 }

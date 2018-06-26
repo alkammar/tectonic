@@ -5,6 +5,7 @@ import android.content.Context;
 import com.morkim.tectonic.flow.StepFactory;
 import com.morkim.tectonic.simplified.Triggers;
 import com.morkim.usecase.app.AppTrigger;
+import com.morkim.usecase.auth.AuthenticationFlow;
 import com.morkim.usecase.model.Profile;
 
 import javax.inject.Singleton;
@@ -16,7 +17,9 @@ import dagger.Component;
 @Component(modules = AppModule.class)
 public interface AppComponent {
 
-    Context getContext();
+    Context context();
+
+    AuthenticationFlow authentication();
 
     Profile getProfile();
 

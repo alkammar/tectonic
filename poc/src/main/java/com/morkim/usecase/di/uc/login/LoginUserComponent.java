@@ -1,8 +1,6 @@
 package com.morkim.usecase.di.uc.login;
 
 import com.morkim.tectonic.flow.StepFactory;
-import com.morkim.tectonic.simplified.PrimaryActor;
-import com.morkim.usecase.app.AppTrigger;
 import com.morkim.usecase.contract.login.Login;
 import com.morkim.usecase.di.AppComponent;
 import com.morkim.usecase.di.PerUseCase;
@@ -11,7 +9,7 @@ import com.morkim.usecase.uc.login.LoginUser;
 import dagger.Component;
 
 @PerUseCase
-@Component(dependencies = {AppComponent.class}, modules = {LoginModule.class})
+@Component(dependencies = {AppComponent.class}, modules = {LoginUserModule.class})
 public interface LoginUserComponent {
 
     void inject(LoginUser loginUser);
@@ -19,6 +17,4 @@ public interface LoginUserComponent {
     StepFactory stepFactory();
 
     Login.Flow flow();
-
-    PrimaryActor<AppTrigger.Event,Void> primaryActor();
 }

@@ -3,7 +3,6 @@ package com.morkim.usecase.flow.login;
 import com.morkim.tectonic.flow.Step;
 import com.morkim.tectonic.flow.StepFactory;
 import com.morkim.tectonic.simplified.PrimaryActor;
-import com.morkim.tectonic.simplified.Triggers;
 import com.morkim.tectonic.simplified.UseCase;
 import com.morkim.tectonic.simplified.UseCaseHandle;
 import com.morkim.usecase.app.AppTrigger;
@@ -16,14 +15,12 @@ public class LoginFlowImpl implements Login.Flow, LoginUser.User, PrimaryActor<A
 
     private static final int PASSWORD = 1;
 
-    private final Triggers<AppTrigger.Event> triggers;
     private final StepFactory stepFactory;
     private Login.Screen login;
 
     @Inject
-    public LoginFlowImpl(Triggers<AppTrigger.Event> triggers, StepFactory stepFactory) {
+    public LoginFlowImpl(StepFactory stepFactory) {
 
-        this.triggers = triggers;
         this.stepFactory = stepFactory;
     }
 

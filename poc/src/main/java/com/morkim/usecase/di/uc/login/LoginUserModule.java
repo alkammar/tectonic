@@ -1,9 +1,8 @@
 package com.morkim.usecase.di.uc.login;
 
-import com.morkim.tectonic.flow.StepFactory;
 import com.morkim.tectonic.simplified.PrimaryActor;
-import com.morkim.tectonic.simplified.Triggers;
 import com.morkim.usecase.app.AppTrigger;
+import com.morkim.usecase.auth.AuthenticationFlow;
 import com.morkim.usecase.contract.login.Login;
 import com.morkim.usecase.di.PerUseCase;
 import com.morkim.usecase.flow.login.LoginFlowImpl;
@@ -14,25 +13,18 @@ import dagger.Module;
 import dagger.Provides;
 
 @Module
-public class LoginModule {
-
+public class LoginUserModule {
 
     @Provides
     @PerUseCase
-    LoginFlowImpl provideLoginFlow(Triggers<AppTrigger.Event> triggers, StepFactory stepFactory) {
-        return new LoginFlowImpl(triggers, stepFactory);
+    PrimaryActor<AppTrigger.Event, Void> provideUI(AuthenticationFlow authenticationFlow) {
+        return authenticationFlow;
     }
 
     @Provides
     @PerUseCase
-    PrimaryActor<AppTrigger.Event, Void> provideUI(LoginFlowImpl loginFlow) {
-        return loginFlow;
-    }
-
-    @Provides
-    @PerUseCase
-    LoginUser.User provideUser(LoginFlowImpl loginFlow) {
-        return loginFlow;
+    LoginUser.User provideUser(AuthenticationFlow authenticationFlow) {
+        return authenticationFlow;
     }
 
     @Provides
@@ -43,8 +35,8 @@ public class LoginModule {
 
     @Provides
     @PerUseCase
-    Login.Flow provideFlow(LoginFlowImpl loginFlow) {
-        return loginFlow;
+    Login.Flow provideFlow(AuthenticationFlow authenticationFlow) {
+        return authenticationFlow;
     }
 
 }

@@ -7,14 +7,18 @@ import com.morkim.tectonic.simplified.UseCase;
 import com.morkim.usecase.app.AppTrigger;
 import com.morkim.usecase.di.AppInjector;
 
-import java.util.Set;
-
 import javax.inject.Inject;
 
 
 public class MainUseCase extends UseCase<AppTrigger.Event, String> {
 
     private static final int STEP = 1;
+
+    @Inject
+    Backend backend;
+
+    @Inject
+    Authenticator authenticator;
 
     @Inject
     User user;
@@ -27,20 +31,33 @@ public class MainUseCase extends UseCase<AppTrigger.Event, String> {
     }
 
     @Override
-    protected void onAddPreconditions(Set<AppTrigger.Event> events) {
-        events.add(AppTrigger.Event.PRECONDITION_LOGIN);
+    protected void onExecute() throws InterruptedException {
+
+        try {
+            String someData = backend.retrieveSomeData();
+
+            for (int i = 0; i < 100 / STEP; i++) {
+                SystemClock.sleep(50);
+
+                user.updateResult("" + (i + 1) * STEP);
+            }
+
+            complete("Final result sent by the main use case\n" + someData);
+
+        } catch (ExpiredCredentials e) {
+            authenticator.refreshAuthentication();
+            restart();
+        }
     }
 
-    @Override
-    protected void onExecute() {
+    public interface Backend {
 
-        for (int i = 0; i < 100 / STEP; i++) {
-            SystemClock.sleep(50);
+        String retrieveSomeData() throws ExpiredCredentials;
+    }
 
-            user.updateResult("" + (i + 1) * STEP);
-        }
+    public interface Authenticator {
 
-        complete("Final result sent by the main use case");
+        Boolean refreshAuthentication() throws InterruptedException;
     }
 
     public interface User extends PrimaryActor<AppTrigger.Event, String> {

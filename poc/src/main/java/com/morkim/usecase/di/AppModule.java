@@ -8,6 +8,7 @@ import com.morkim.tectonic.simplified.Triggers;
 import com.morkim.tectonic.simplified.UseCase;
 import com.morkim.usecase.app.App;
 import com.morkim.usecase.app.AppTrigger;
+import com.morkim.usecase.auth.AuthenticationFlow;
 import com.morkim.usecase.contract.login.Login;
 import com.morkim.usecase.model.Profile;
 import com.morkim.usecase.ui.login.LoginActivity;
@@ -61,6 +62,7 @@ public class AppModule {
             @Override
             public <S> void onCreated(S step) {
                 UseCase.replyWith(100, step);
+                UseCase.clear(100);
             }
 
             private <S> S createActivity(Class<?> cls) throws InterruptedException {
@@ -68,5 +70,11 @@ public class AppModule {
                 return UseCase.waitFor(100);
             }
         };
+    }
+
+    @Provides
+    @Singleton
+    AuthenticationFlow provideAuthentication(StepFactory stepFactory, Triggers<AppTrigger.Event> triggers) {
+        return new AuthenticationFlow(stepFactory, triggers);
     }
 }

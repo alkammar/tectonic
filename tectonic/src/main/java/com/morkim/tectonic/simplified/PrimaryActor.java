@@ -1,6 +1,5 @@
 package com.morkim.tectonic.simplified;
 
-import com.morkim.tectonic.Precondition;
 import com.morkim.tectonic.flow.Step;
 
 public interface PrimaryActor<E, R> {

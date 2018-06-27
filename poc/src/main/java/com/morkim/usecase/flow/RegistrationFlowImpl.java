@@ -5,12 +5,12 @@ import com.morkim.tectonic.flow.StepFactory;
 import com.morkim.tectonic.usecase.UseCase;
 import com.morkim.tectonic.usecase.UseCaseHandle;
 import com.morkim.usecase.app.AppTrigger;
-import com.morkim.usecase.contract.RegistrationFlow;
+import com.morkim.usecase.contract.Registration;
 import com.morkim.usecase.uc.registration.RegisterUser;
 
 import javax.inject.Inject;
 
-public class RegistrationFlowImpl implements RegistrationFlow.Flow, RegisterUser.User {
+public class RegistrationFlowImpl implements Registration.Flow, RegisterUser.User {
 
     private static final int EMAIL = 1;
     private static final int PASSWORD = 2;
@@ -21,8 +21,8 @@ public class RegistrationFlowImpl implements RegistrationFlow.Flow, RegisterUser
 
     private UseCaseHandle handle;
 
-    private RegistrationFlow.Step1 step1;
-    private RegistrationFlow.Step2 step2;
+    private Registration.Step1 step1;
+    private Registration.Step2 step2;
 
     @Override
     public void onStart(UseCaseHandle handle) {
@@ -37,7 +37,7 @@ public class RegistrationFlowImpl implements RegistrationFlow.Flow, RegisterUser
     @Override
     public String askToEnterEmail() throws InterruptedException {
 
-        step1 = stepFactory.create(RegistrationFlow.Step1.class);
+        step1 = stepFactory.create(Registration.Step1.class);
 
         return UseCase.waitFor(EMAIL);
     }
@@ -50,7 +50,7 @@ public class RegistrationFlowImpl implements RegistrationFlow.Flow, RegisterUser
     @Override
     public String askToEnterMobile() throws InterruptedException {
 
-        step2 = stepFactory.create(RegistrationFlow.Step2.class);
+        step2 = stepFactory.create(Registration.Step2.class);
 
         return UseCase.waitFor(MOBILE);
     }

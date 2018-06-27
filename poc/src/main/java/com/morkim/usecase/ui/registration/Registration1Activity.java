@@ -5,7 +5,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.widget.EditText;
 
 import com.morkim.usecase.R;
-import com.morkim.usecase.contract.RegistrationFlow;
+import com.morkim.usecase.contract.Registration;
 import com.morkim.usecase.uc.registration.EmptyEmail;
 import com.morkim.usecase.uc.registration.EmptyPassword;
 import com.morkim.usecase.uc.registration.InvalidEmail;
@@ -13,13 +13,13 @@ import com.morkim.usecase.uc.registration.InvalidEmail;
 import javax.inject.Inject;
 
 
-public class Registration1Activity extends AppCompatActivity implements RegistrationFlow.Step1 {
+public class Registration1Activity extends AppCompatActivity implements Registration.Step1 {
 
     private EditText email;
     private EditText password;
 
     @Inject
-    RegistrationFlow.Flow flow;
+    Registration.Flow flow;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

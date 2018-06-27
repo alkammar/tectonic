@@ -37,7 +37,7 @@ public class MainUseCase extends UseCase<AppTrigger.Event, String> {
             String someData = backend.retrieveSomeData();
 
             for (int i = 0; i < 100 / STEP; i++) {
-                SystemClock.sleep(50);
+                Thread.sleep(50);
 
                 ui.updateResult("" + (i + 1) * STEP);
             }

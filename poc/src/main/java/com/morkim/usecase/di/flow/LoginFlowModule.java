@@ -2,7 +2,7 @@ package com.morkim.usecase.di.flow;
 
 import com.morkim.tectonic.flow.StepFactory;
 import com.morkim.usecase.di.PerUseCase;
-import com.morkim.usecase.flow.login.LoginFlowImpl;
+import com.morkim.usecase.flow.LoginFlowImpl;
 import com.morkim.usecase.uc.login.InvalidLogin;
 import com.morkim.usecase.uc.login.LoginUser;
 

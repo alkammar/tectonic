@@ -16,6 +16,7 @@ public class AppInjector {
     private static LoginUserComponent loginUserComponent;
     private static LoginScreenComponent loginScreenComponent;
     private static LogoutUserComponent logoutUserComponent;
+//    private static SecondaryUseCaseComponent secondaryUseCaseComponent;
 
     public static AppComponent getAppComponent() {
         return appComponent;
@@ -64,4 +65,8 @@ public class AppInjector {
     public static void setLogoutUserComponent(LogoutUserComponent logoutUserComponent) {
         AppInjector.logoutUserComponent = logoutUserComponent;
     }
+
+//    public static SecondaryUseCaseComponent getSecondaryUseCaseComponent() {
+//        return secondaryUseCaseComponent;
+//    }
 }

@@ -2,25 +2,29 @@ package com.morkim.tectonic.usecase;
 
 import com.morkim.tectonic.flow.Step;
 import com.morkim.tectonic.usecase.entities.CompletedUseCase;
+import com.morkim.tectonic.usecase.entities.InterruptableUseCase;
 import com.morkim.tectonic.usecase.entities.SimpleUseCase;
 
 import org.junit.Before;
 import org.junit.Test;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-public class AbortTest extends TectonicTest {
+public class AbortTest extends ConcurrentTectonicTest {
 
-	private boolean onAbortCalled;
+	private volatile boolean onAbortCalled;
 	private UseCaseHandle handle;
 	private boolean onCompleteCalled;
+	private int onAbortCalledCount;
 
 	@Before
 	public void setup() {
 		super.setup();
 
 		onAbortCalled = false;
+		onAbortCalledCount = 0;
 	}
 
 	@Test
@@ -56,13 +60,12 @@ public class AbortTest extends TectonicTest {
 	@Test
 	public void abort_running_use_case__onAbort_called() {
 
-		SimpleUseCase useCase = UseCase.fetch(SimpleUseCase.class);
+		InterruptableUseCase useCase = UseCase.fetch(InterruptableUseCase.class);
 		useCase.setPrimaryActor(new SimpleUseCase.Actor() {
 
 			@Override
 			public void onStart(UseCaseHandle handle) {
 				AbortTest.this.handle = handle;
-				handle.abort();
 			}
 
 			@Override
@@ -77,12 +80,33 @@ public class AbortTest extends TectonicTest {
 
 			@Override
 			public void onAbort(Integer event) {
-				onAbortCalled = true;
+				onAbortCalledCount++;
+			}
+		});
+		useCase.setPreconditionActor(new PreconditionActor<Integer>() {
+			@Override
+			public void onComplete(Integer event) {
+
+			}
+
+			@Override
+			public void onAbort(Integer event) {
+				onAbortCalledCount++;
 			}
 		});
 		useCase.execute();
 
-		assertTrue(onAbortCalled);
+		sleep();
+
+		useCase.abort();
+
+		try {
+			useCaseThread.join();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+
+		assertEquals(2, onAbortCalledCount);
 		assertFalse(onCompleteCalled);
 	}
 
@@ -114,12 +138,30 @@ public class AbortTest extends TectonicTest {
 
 			@Override
 			public void onAbort(Integer event) {
-				onAbortCalled = true;
+				onAbortCalledCount++;
+			}
+		});
+		useCase.setPreconditionActor(new PreconditionActor<Integer>() {
+			@Override
+			public void onComplete(Integer event) {
+
+			}
+
+			@Override
+			public void onAbort(Integer event) {
+				onAbortCalledCount++;
 			}
 		});
 		useCase.execute();
-		handle.abort();
 
-		assertFalse(onAbortCalled);
+		try {
+			useCaseThread.join();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+
+		useCase.abort();
+
+		assertEquals(0, onAbortCalledCount);
 	}
 }

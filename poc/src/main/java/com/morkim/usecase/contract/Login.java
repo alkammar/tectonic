@@ -1,4 +1,4 @@
-package com.morkim.usecase.contract.login;
+package com.morkim.usecase.contract;
 
 import com.morkim.tectonic.flow.Step;
 
@@ -12,7 +12,5 @@ public interface Login {
     interface Screen extends Step {
 
         void handle(Exception e);
-
-        void finish();
     }
 }

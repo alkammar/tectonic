@@ -7,7 +7,7 @@ import android.widget.EditText;
 
 import com.morkim.tectonic.flow.StepFactory;
 import com.morkim.usecase.R;
-import com.morkim.usecase.contract.login.Login;
+import com.morkim.usecase.contract.Login;
 import com.morkim.usecase.di.AppInjector;
 import com.morkim.usecase.di.ui.login.DaggerLoginScreenComponent;
 import com.morkim.usecase.di.ui.login.LoginScreenModule;
@@ -61,5 +61,10 @@ public class LoginActivity extends AppCompatActivity implements Login.Screen {
     public void handle(Exception e) {
         if (e instanceof InvalidLogin)
             runOnUiThread(() -> password.setError("Wrong password!"));
+    }
+
+    @Override
+    public void terminate() {
+        finish();
     }
 }

@@ -4,7 +4,7 @@ import java.util.Set;
 
 public class CompletedPreconditionsUseCase extends SimpleUseCase {
 
-    public static final Integer SUCCESSFUL_EVENT = 11;
+    public static final int SUCCESSFUL_EVENT = 11;
 
     @Override
     protected void onAddPreconditions(Set<Integer> events) {

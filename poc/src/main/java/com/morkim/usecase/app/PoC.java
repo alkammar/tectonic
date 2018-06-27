@@ -10,7 +10,7 @@ import com.morkim.usecase.uc.logout.LogoutUser;
 import com.morkim.usecase.ui.main.MainActivity;
 
 
-public class PoC extends Application implements LogoutUser.UI {
+public class PoC extends Application {
 
     @Override
     public void onCreate() {
@@ -20,12 +20,5 @@ public class PoC extends Application implements LogoutUser.UI {
                 DaggerAppComponent.builder()
                         .appModule(new AppModule(this))
                         .build());
-    }
-
-    @Override
-    public void showLogin() {
-        Intent intent = new Intent(this, MainActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        startActivity(intent);
     }
 }

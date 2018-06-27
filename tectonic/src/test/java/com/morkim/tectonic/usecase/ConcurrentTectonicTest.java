@@ -29,8 +29,12 @@ public class ConcurrentTectonicTest {
     }
 
     void sleep() {
+        sleep(100);
+    }
+
+    void sleep(long delay) {
         try {
-            Thread.sleep(100);
+            Thread.sleep(delay);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

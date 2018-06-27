@@ -6,7 +6,7 @@ import com.morkim.tectonic.usecase.Triggers;
 import com.morkim.tectonic.usecase.UseCase;
 import com.morkim.tectonic.usecase.UseCaseHandle;
 import com.morkim.usecase.app.AppTrigger;
-import com.morkim.usecase.contract.login.Login;
+import com.morkim.usecase.contract.Login;
 import com.morkim.usecase.uc.login.LoginUser;
 import com.morkim.usecase.uc.main.MainUseCase;
 
@@ -62,7 +62,7 @@ public class AuthenticationFlow implements MainUseCase.Authenticator, LoginUser.
     public void onComplete(AppTrigger.Event event, Void result) {
         switch (event) {
             case REFRESH_AUTH:
-                login.finish();
+                login.terminate();
                 login = null;
                 UseCase.replyWith(REFRESH);
                 UseCase.clear(PASSWORD);

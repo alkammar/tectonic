@@ -3,6 +3,7 @@ package com.morkim.tectonic.usecase;
 import com.morkim.tectonic.usecase.entities.CompletedPreconditionsUseCase;
 import com.morkim.tectonic.usecase.entities.CompletedUseCase;
 import com.morkim.tectonic.usecase.entities.FailingPreconditionsUseCase;
+import com.morkim.tectonic.usecase.entities.SimpleTriggers;
 import com.morkim.tectonic.usecase.entities.SimpleUseCase;
 
 import org.junit.Test;
@@ -27,6 +28,7 @@ public class PreconditionsTest extends ConcurrentTectonicTest {
 	public void preconditions_fail__onExecute_not_called() {
 
 		FailingPreconditionsUseCase useCase = UseCase.fetch(FailingPreconditionsUseCase.class);
+		useCase.setTriggers(new SimpleTriggers());
 		useCase.execute();
 
 		assertFalse(useCase.isOnExecuteCalled());
@@ -36,6 +38,7 @@ public class PreconditionsTest extends ConcurrentTectonicTest {
 	public void preconditions_complete__onExecute_called() throws InterruptedException {
 
 		final CompletedPreconditionsUseCase useCase = UseCase.fetch(CompletedPreconditionsUseCase.class);
+		useCase.setTriggers(new SimpleTriggers());
 		useCase.execute();
 
 		Thread thread = new Thread(new Runnable() {

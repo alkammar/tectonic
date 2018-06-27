@@ -1,4 +1,4 @@
-package com.morkim.usecase.flow.login;
+package com.morkim.usecase.flow;
 
 import com.morkim.tectonic.flow.Step;
 import com.morkim.tectonic.flow.StepFactory;
@@ -6,7 +6,7 @@ import com.morkim.tectonic.usecase.PrimaryActor;
 import com.morkim.tectonic.usecase.UseCase;
 import com.morkim.tectonic.usecase.UseCaseHandle;
 import com.morkim.usecase.app.AppTrigger;
-import com.morkim.usecase.contract.login.Login;
+import com.morkim.usecase.contract.Login;
 import com.morkim.usecase.uc.login.LoginUser;
 
 import javax.inject.Inject;
@@ -48,7 +48,7 @@ public class LoginFlowImpl implements Login.Flow, LoginUser.UI, PrimaryActor<App
 
     @Override
     public void onComplete(AppTrigger.Event event, Void result) {
-        login.finish();
+        login.terminate();
     }
 
     @Override

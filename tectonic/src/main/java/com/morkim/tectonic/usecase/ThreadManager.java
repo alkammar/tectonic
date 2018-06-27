@@ -9,6 +9,8 @@ public interface ThreadManager {
     interface UseCaseExecution {
 
         void run() throws InterruptedException;
+
+        void stop();
     }
 
     void start(UseCaseExecution execution);

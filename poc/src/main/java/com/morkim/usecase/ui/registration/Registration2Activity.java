@@ -5,17 +5,17 @@ import android.support.v7.app.AppCompatActivity;
 import android.widget.EditText;
 
 import com.morkim.usecase.R;
-import com.morkim.usecase.contract.RegistrationFlow;
+import com.morkim.usecase.contract.Registration;
 
 import javax.inject.Inject;
 
 
-public class Registration2Activity extends AppCompatActivity implements RegistrationFlow.Step2 {
+public class Registration2Activity extends AppCompatActivity implements Registration.Step2 {
 
     private EditText mobile;
 
     @Inject
-    RegistrationFlow.Flow flow;
+    Registration.Flow flow;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

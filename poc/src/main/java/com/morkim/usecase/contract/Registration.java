@@ -2,7 +2,7 @@ package com.morkim.usecase.contract;
 
 import com.morkim.tectonic.flow.Step;
 
-public interface RegistrationFlow {
+public interface Registration {
 
     interface Flow {
 

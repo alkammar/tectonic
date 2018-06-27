@@ -27,7 +27,10 @@ public class ThreadManagerImpl implements ThreadManager {
                                 execution.run();
                                 terminationLock.wait();
                             } catch (InterruptedException e) {
-                                if (terminated) break;
+                                if (terminated) {
+                                    execution.stop();
+                                    break;
+                                }
                             }
                         }
                     }

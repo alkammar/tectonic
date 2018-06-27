@@ -59,7 +59,7 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
         execute(null);
     }
 
-    public void execute(E event) {
+    public void execute(final E event) {
         this.event = event;
 
         if (created.containsKey(getClass()) && !running) {
@@ -72,6 +72,16 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
                     if (primaryActor != null) primaryActor.onStart(UseCase.this);
                     onExecute();
                 }
+
+                @Override
+                public void stop() {
+                    if (running) {
+                        if (preconditionActor != null) preconditionActor.onAbort(event);
+                        if (preconditionActor != primaryActor)
+                            if (primaryActor != null) primaryActor.onAbort(event);
+                        running = false;
+                    }
+                }
             });
         }
     }
@@ -80,7 +90,7 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
         onAddPreconditions(preconditions);
         for (E event : preconditions) triggers.trigger(event, preconditionActor);
         //noinspection StatementWithEmptyBody
-        while (preconditions.size() > 0);
+        while (preconditions.size() > 0) ;
     }
 
     protected void onAddPreconditions(Set<E> events) {
@@ -131,7 +141,7 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
         }
     }
 
-    public static <D> void replyWith(int key) {
+    public static void replyWith(int key) {
         replyWith(key, null);
     }
 
@@ -144,7 +154,7 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
             reply.interrupt();
         } else {
             cache.put(key, data);
-            replies.remove(key);
+//            replies.remove(key);
             if (reply != null) reply.set(data);
         }
     }
@@ -215,9 +225,8 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
 
     @Override
     public void abort() {
-        if (running && preconditionActor != null) preconditionActor.onAbort(event);
-        if (preconditionActor != primaryActor)
-            if (running && primaryActor != null) primaryActor.onAbort(event);
+        created.remove(getClass());
+        getThreadManager().stop();
     }
 
     @Override

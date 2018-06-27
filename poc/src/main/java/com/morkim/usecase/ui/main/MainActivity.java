@@ -31,6 +31,7 @@ public class MainActivity extends AppCompatActivity implements MainUseCase.UI {
 
     private TextView label;
     private ProgressBar progress;
+    private UseCaseHandle handle;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,7 +64,7 @@ public class MainActivity extends AppCompatActivity implements MainUseCase.UI {
 
         trigger.trigger(AppTrigger.Event.LAUNCH_MAIN, this);
 //
-//        abort.setOnClickListener(v -> UseCase.cancel(MainUseCase.class));
+        abort.setOnClickListener(v -> handle.abort());
 
         findViewById(R.id.btn_logout).setOnClickListener(v -> {
             label.setText("");
@@ -88,6 +89,7 @@ public class MainActivity extends AppCompatActivity implements MainUseCase.UI {
 
     @Override
     public void onStart(UseCaseHandle handle) {
+        this.handle = handle;
 
         runOnUiThread(() -> {
             // use case has started
@@ -117,10 +119,12 @@ public class MainActivity extends AppCompatActivity implements MainUseCase.UI {
 
     @Override
     public void onAbort(AppTrigger.Event event) {
-        // use case was cancelled
-        label.setText(R.string.cancelled);
-        refresh.setEnabled(true);
-        progress.setVisibility(View.GONE);
-        Log.i("MainActivity", "onAbort");
+        runOnUiThread(() -> {
+            // use case was cancelled
+            label.setText(R.string.cancelled);
+            refresh.setEnabled(true);
+            progress.setVisibility(View.GONE);
+            Log.i("MainActivity", "onAbort");
+        });
     }
 }

@@ -101,45 +101,4 @@ public class PrimaryActorTest extends TectonicTest {
 		assertTrue(onStartCalled);
 		assertTrue(onCompleteCalled);
 	}
-
-	@Test
-	public void primary_actor_abort__callbacks_called() {
-
-		CompletedUseCase useCase = UseCase.fetch(CompletedUseCase.class);
-		CompletedUseCase.Actor actor = new CompletedUseCase.Actor() {
-
-			@Override
-			public void onStart(UseCaseHandle handle) {
-				PrimaryActorTest.this.handle = handle;
-				onStartCalled = true;
-				handle.abort();
-			}
-
-			@Override
-			public void onComplete(Integer event, Void result) {
-
-			}
-
-			@Override
-			public void onComplete(Integer event) {
-				onCompleteCalled = true;
-			}
-
-			@Override
-			public void onUndo(Step step) {
-
-			}
-
-			@Override
-			public void onAbort(Integer event) {
-				onAbortCalled = true;
-			}
-		};
-		useCase.setPrimaryActor(actor);
-		useCase.setActor(actor);
-		useCase.execute();
-
-		assertTrue(onStartCalled);
-		assertTrue(onAbortCalled);
-	}
 }

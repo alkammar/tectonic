@@ -59,6 +59,11 @@ public class ThreadManagerTest extends ConcurrentTectonicTest {
             public void run() {
 
             }
+
+            @Override
+            public void stop() {
+
+            }
         });
 
         sleep();
@@ -75,6 +80,11 @@ public class ThreadManagerTest extends ConcurrentTectonicTest {
         threadManager.start(new ThreadManager.UseCaseExecution() {
             @Override
             public void run() {
+
+            }
+
+            @Override
+            public void stop() {
 
             }
         });
@@ -95,6 +105,11 @@ public class ThreadManagerTest extends ConcurrentTectonicTest {
             public void run() {
 
             }
+
+            @Override
+            public void stop() {
+
+            }
         });
 
         sleep();
@@ -112,6 +127,11 @@ public class ThreadManagerTest extends ConcurrentTectonicTest {
         threadManager.start(new ThreadManager.UseCaseExecution() {
             @Override
             public void run() {
+
+            }
+
+            @Override
+            public void stop() {
 
             }
         });
@@ -135,6 +155,11 @@ public class ThreadManagerTest extends ConcurrentTectonicTest {
                     e.printStackTrace();
                 }
             }
+
+            @Override
+            public void stop() {
+
+            }
         });
 
         sleep();
@@ -157,6 +182,11 @@ public class ThreadManagerTest extends ConcurrentTectonicTest {
                 } catch (ExecutionException e) {
                     e.printStackTrace();
                 }
+            }
+
+            @Override
+            public void stop() {
+
             }
         });
 

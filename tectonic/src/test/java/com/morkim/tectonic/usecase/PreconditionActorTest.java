@@ -15,9 +15,7 @@ public class PreconditionActorTest extends TectonicTest {
 	private boolean onStartCalled;
 	private boolean onCompleteCalled;
 	private boolean onAbortCalled;
-	private UseCaseHandle handle;
 	private int onCompleteCalledCount;
-	private int onAbortCalledCount;
 
 	@Before
 	public void setup() {
@@ -28,7 +26,6 @@ public class PreconditionActorTest extends TectonicTest {
 		onAbortCalled = false;
 
 		onCompleteCalledCount = 0;
-		onAbortCalledCount = 0;
 	}
 
 	@Test
@@ -76,7 +73,6 @@ public class PreconditionActorTest extends TectonicTest {
 
 			@Override
 			public void onStart(UseCaseHandle handle) {
-				PreconditionActorTest.this.handle = handle;
 				onStartCalled = true;
 			}
 
@@ -99,7 +95,6 @@ public class PreconditionActorTest extends TectonicTest {
 			@Override
 			public void onAbort(Integer event) {
 				onAbortCalled = true;
-				onAbortCalledCount++;
 			}
 		};
 		useCase.setPreconditionActor(actor);
@@ -108,49 +103,5 @@ public class PreconditionActorTest extends TectonicTest {
 
 		assertTrue(onCompleteCalled);
 		assertEquals(1, onCompleteCalledCount);
-	}
-
-	@Test
-	public void primary_actor_abort__callbacks_called() {
-
-		CompletedUseCase useCase = UseCase.fetch(CompletedUseCase.class);
-		CompletedUseCase.Actor actor = new CompletedUseCase.Actor() {
-
-			@Override
-			public void onStart(UseCaseHandle handle) {
-				PreconditionActorTest.this.handle = handle;
-				onStartCalled = true;
-				handle.abort();
-			}
-
-			@Override
-			public void onComplete(Integer event, Void result) {
-
-			}
-
-			@Override
-			public void onComplete(Integer event) {
-				onCompleteCalled = true;
-				onCompleteCalledCount++;
-			}
-
-			@Override
-			public void onUndo(Step step) {
-
-			}
-
-			@Override
-			public void onAbort(Integer event) {
-				onAbortCalled = true;
-				onAbortCalledCount++;
-			}
-		};
-		useCase.setPreconditionActor(actor);
-		useCase.setPrimaryActor(actor);
-		useCase.setActor(actor);
-		useCase.execute();
-
-		assertTrue(onAbortCalled);
-		assertEquals(1, onAbortCalledCount);
 	}
 }

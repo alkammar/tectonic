@@ -1,6 +1,6 @@
 package com.morkim.usecase.backend;
 
-import com.morkim.usecase.uc.LogoutUser;
+import com.morkim.usecase.uc.logout.LogoutUser;
 import com.morkim.usecase.uc.main.ExpiredCredentials;
 import com.morkim.usecase.uc.main.MainUseCase;
 

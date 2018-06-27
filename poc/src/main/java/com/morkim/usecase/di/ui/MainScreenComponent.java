@@ -13,5 +13,5 @@ public interface MainScreenComponent {
 
     void inject(MainActivity MainActivity);
 
-    MainUseCase.User user();
+    MainUseCase.UI user();
 }

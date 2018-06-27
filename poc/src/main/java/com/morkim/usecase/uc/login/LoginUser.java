@@ -1,7 +1,7 @@
 package com.morkim.usecase.uc.login;
 
-import com.morkim.tectonic.simplified.PrimaryActor;
-import com.morkim.tectonic.simplified.UseCase;
+import com.morkim.tectonic.usecase.PrimaryActor;
+import com.morkim.tectonic.usecase.UseCase;
 import com.morkim.usecase.app.AppTrigger;
 import com.morkim.usecase.di.AppInjector;
 
@@ -16,7 +16,7 @@ public class LoginUser extends UseCase<AppTrigger.Event, Void> {
     Authenticator authenticator;
 
     @Inject
-    User user;
+    UI ui;
 
     @Override
     protected void onCreate() {
@@ -33,13 +33,13 @@ public class LoginUser extends UseCase<AppTrigger.Event, Void> {
     @Override
     protected void onExecute() throws InterruptedException {
 
-        String password = user.askToEnterPassword();
+        String password = ui.askForPassword();
 
         try {
             authenticator.validateCredentials(password);
             complete();
         } catch (InvalidLogin e) {
-            user.handle(e);
+            ui.show(e);
             restart();
         }
     }
@@ -49,11 +49,11 @@ public class LoginUser extends UseCase<AppTrigger.Event, Void> {
         void validateCredentials(String password) throws InvalidLogin;
     }
 
-    public interface User extends PrimaryActor<AppTrigger.Event, Void> {
+    public interface UI extends PrimaryActor<AppTrigger.Event, Void> {
 
-        String askToEnterPassword() throws InterruptedException;
+        String askForPassword() throws InterruptedException;
 
-        void handle(Exception e);
+        void show(Exception e);
     }
 
 }

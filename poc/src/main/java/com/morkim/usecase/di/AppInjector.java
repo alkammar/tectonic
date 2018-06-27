@@ -1,12 +1,10 @@
 package com.morkim.usecase.di;
 
-import com.morkim.usecase.di.flow.LoginFlowComponent;
 import com.morkim.usecase.di.uc.login.LoginUserComponent;
 import com.morkim.usecase.di.uc.logout.LogoutUserComponent;
 import com.morkim.usecase.di.uc.main.MainUseCaseComponent;
 import com.morkim.usecase.di.ui.MainScreenComponent;
 import com.morkim.usecase.di.ui.login.LoginScreenComponent;
-import com.morkim.usecase.uc.LogoutUser;
 
 public class AppInjector {
 

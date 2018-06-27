@@ -14,7 +14,7 @@ public class LoginFlowModule {
 
     @Provides
     @PerUseCase
-    LoginUser.User provideUser(StepFactory stepFactory) {
+    LoginUser.UI provideUser(StepFactory stepFactory) {
         return new LoginFlowImpl(stepFactory);
     }
 

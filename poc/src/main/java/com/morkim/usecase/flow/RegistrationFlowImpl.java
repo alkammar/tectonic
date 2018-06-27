@@ -2,8 +2,8 @@ package com.morkim.usecase.flow;
 
 import com.morkim.tectonic.flow.Step;
 import com.morkim.tectonic.flow.StepFactory;
-import com.morkim.tectonic.simplified.UseCase;
-import com.morkim.tectonic.simplified.UseCaseHandle;
+import com.morkim.tectonic.usecase.UseCase;
+import com.morkim.tectonic.usecase.UseCaseHandle;
 import com.morkim.usecase.app.AppTrigger;
 import com.morkim.usecase.contract.RegistrationFlow;
 import com.morkim.usecase.uc.registration.RegisterUser;

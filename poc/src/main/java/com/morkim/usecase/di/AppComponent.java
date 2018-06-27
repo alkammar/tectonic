@@ -3,8 +3,9 @@ package com.morkim.usecase.di;
 import android.content.Context;
 
 import com.morkim.tectonic.flow.StepFactory;
-import com.morkim.tectonic.simplified.Triggers;
+import com.morkim.tectonic.usecase.Triggers;
 import com.morkim.usecase.app.AppTrigger;
+import com.morkim.usecase.app.PoC;
 import com.morkim.usecase.auth.AuthenticationFlow;
 import com.morkim.usecase.model.Profile;
 
@@ -17,11 +18,11 @@ import dagger.Component;
 @Component(modules = AppModule.class)
 public interface AppComponent {
 
+    PoC poc();
+
     Context context();
 
     AuthenticationFlow authentication();
-
-    Profile getProfile();
 
     Triggers<AppTrigger.Event> triggers();
 

@@ -1,7 +1,7 @@
 package com.morkim.usecase.uc.registration;
 
-import com.morkim.tectonic.simplified.PrimaryActor;
-import com.morkim.tectonic.simplified.UseCase;
+import com.morkim.tectonic.usecase.PrimaryActor;
+import com.morkim.tectonic.usecase.UseCase;
 import com.morkim.usecase.app.AppTrigger;
 import com.morkim.usecase.di.AppInjector;
 import com.morkim.usecase.model.Profile;
@@ -13,9 +13,6 @@ public class RegisterUser extends UseCase {
 
     @Inject
     User user;
-
-    @Inject
-    Profile profile = AppInjector.getAppComponent().getProfile();
 
     @Override
     protected void onExecute() throws InterruptedException {
@@ -43,7 +40,7 @@ public class RegisterUser extends UseCase {
         }
 
         if (email != null && password != null && mobile != null) {
-            profile.setRegistered(true);
+//            profile.setRegistered(true);
             complete();
         } else
             restart();

@@ -2,16 +2,16 @@ package com.morkim.usecase.flow.login;
 
 import com.morkim.tectonic.flow.Step;
 import com.morkim.tectonic.flow.StepFactory;
-import com.morkim.tectonic.simplified.PrimaryActor;
-import com.morkim.tectonic.simplified.UseCase;
-import com.morkim.tectonic.simplified.UseCaseHandle;
+import com.morkim.tectonic.usecase.PrimaryActor;
+import com.morkim.tectonic.usecase.UseCase;
+import com.morkim.tectonic.usecase.UseCaseHandle;
 import com.morkim.usecase.app.AppTrigger;
 import com.morkim.usecase.contract.login.Login;
 import com.morkim.usecase.uc.login.LoginUser;
 
 import javax.inject.Inject;
 
-public class LoginFlowImpl implements Login.Flow, LoginUser.User, PrimaryActor<AppTrigger.Event, Void> {
+public class LoginFlowImpl implements Login.Flow, LoginUser.UI, PrimaryActor<AppTrigger.Event, Void> {
 
     private static final int PASSWORD = 1;
 
@@ -25,13 +25,13 @@ public class LoginFlowImpl implements Login.Flow, LoginUser.User, PrimaryActor<A
     }
 
     @Override
-    public String askToEnterPassword() throws InterruptedException {
+    public String askForPassword() throws InterruptedException {
         if (login == null) login = stepFactory.create(Login.Screen.class);
         return UseCase.waitFor(PASSWORD);
     }
 
     @Override
-    public void handle(Exception e) {
+    public void show(Exception e) {
         UseCase.clear(PASSWORD);
         login.handle(e);
     }

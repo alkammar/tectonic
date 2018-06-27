@@ -8,11 +8,9 @@ import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.morkim.tectonic.Result;
-import com.morkim.tectonic.SimpleUseCaseListener;
 import com.morkim.tectonic.flow.Step;
-import com.morkim.tectonic.simplified.Triggers;
-import com.morkim.tectonic.simplified.UseCaseHandle;
+import com.morkim.tectonic.usecase.Triggers;
+import com.morkim.tectonic.usecase.UseCaseHandle;
 import com.morkim.usecase.R;
 import com.morkim.usecase.app.AppTrigger;
 import com.morkim.usecase.di.AppInjector;
@@ -23,7 +21,7 @@ import com.morkim.usecase.uc.main.MainUseCase;
 import javax.inject.Inject;
 
 
-public class MainActivity extends AppCompatActivity implements MainUseCase.User {
+public class MainActivity extends AppCompatActivity implements MainUseCase.UI {
 
     @Inject
     Triggers<AppTrigger.Event> trigger;
@@ -33,7 +31,6 @@ public class MainActivity extends AppCompatActivity implements MainUseCase.User 
 
     private TextView label;
     private ProgressBar progress;
-    private SimpleUseCaseListener<Result> logoutListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

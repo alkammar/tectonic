@@ -2,8 +2,8 @@ package com.morkim.usecase.uc.main;
 
 import android.os.SystemClock;
 
-import com.morkim.tectonic.simplified.PrimaryActor;
-import com.morkim.tectonic.simplified.UseCase;
+import com.morkim.tectonic.usecase.PrimaryActor;
+import com.morkim.tectonic.usecase.UseCase;
 import com.morkim.usecase.app.AppTrigger;
 import com.morkim.usecase.di.AppInjector;
 
@@ -21,7 +21,7 @@ public class MainUseCase extends UseCase<AppTrigger.Event, String> {
     Authenticator authenticator;
 
     @Inject
-    User user;
+    UI ui;
 
     @Override
     protected void onCreate() {
@@ -39,7 +39,7 @@ public class MainUseCase extends UseCase<AppTrigger.Event, String> {
             for (int i = 0; i < 100 / STEP; i++) {
                 SystemClock.sleep(50);
 
-                user.updateResult("" + (i + 1) * STEP);
+                ui.updateResult("" + (i + 1) * STEP);
             }
 
             complete("Final result sent by the main use case\n" + someData);
@@ -57,10 +57,10 @@ public class MainUseCase extends UseCase<AppTrigger.Event, String> {
 
     public interface Authenticator {
 
-        Boolean refreshAuthentication() throws InterruptedException;
+        void refreshAuthentication() throws InterruptedException;
     }
 
-    public interface User extends PrimaryActor<AppTrigger.Event, String> {
+    public interface UI extends PrimaryActor<AppTrigger.Event, String> {
 
         void updateResult(String data);
     }

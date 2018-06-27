@@ -1,9 +1,9 @@
 package com.morkim.usecase.app;
 
-import com.morkim.tectonic.simplified.Builder;
-import com.morkim.tectonic.simplified.PreconditionActor;
-import com.morkim.tectonic.simplified.PrimaryActor;
-import com.morkim.tectonic.simplified.Triggers;
+import com.morkim.tectonic.usecase.Builder;
+import com.morkim.tectonic.usecase.PreconditionActor;
+import com.morkim.tectonic.usecase.PrimaryActor;
+import com.morkim.tectonic.usecase.Triggers;
 import com.morkim.usecase.di.AppInjector;
 import com.morkim.usecase.di.uc.login.DaggerLoginUserComponent;
 import com.morkim.usecase.di.uc.login.LoginUserModule;
@@ -11,7 +11,7 @@ import com.morkim.usecase.di.uc.logout.DaggerLogoutUserComponent;
 import com.morkim.usecase.di.uc.logout.LogoutUserModule;
 import com.morkim.usecase.di.uc.main.DaggerMainUseCaseComponent;
 import com.morkim.usecase.di.uc.main.MainUseCaseModule;
-import com.morkim.usecase.uc.LogoutUser;
+import com.morkim.usecase.uc.logout.LogoutUser;
 import com.morkim.usecase.uc.login.LoginUser;
 import com.morkim.usecase.uc.main.MainUseCase;
 

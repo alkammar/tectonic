@@ -9,10 +9,16 @@ import com.morkim.usecase.app.AppTrigger;
 import com.morkim.usecase.contract.Login;
 import com.morkim.usecase.uc.login.LoginUser;
 import com.morkim.usecase.uc.main.MainUseCase;
+import com.morkim.usecase.uc.secondary.SecondaryUseCase;
 
 import javax.inject.Inject;
 
-public class AuthenticationFlow implements MainUseCase.Authenticator, LoginUser.UI, Login.Flow {
+public class AuthenticationFlow
+        implements
+        LoginUser.UI,
+        Login.Flow,
+        MainUseCase.Authenticator,
+        SecondaryUseCase.Authenticator {
 
     private static final int REFRESH = 51;
     private static final int PASSWORD = 1;

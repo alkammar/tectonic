@@ -1,4 +1,4 @@
-package com.morkim.usecase.di.ui;
+package com.morkim.usecase.di.ui.main;
 
 import com.morkim.usecase.di.AppComponent;
 import com.morkim.usecase.di.PerActivity;

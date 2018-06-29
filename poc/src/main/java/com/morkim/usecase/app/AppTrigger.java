@@ -5,15 +5,20 @@ import com.morkim.tectonic.usecase.PreconditionActor;
 import com.morkim.tectonic.usecase.PrimaryActor;
 import com.morkim.tectonic.usecase.Triggers;
 import com.morkim.usecase.di.AppInjector;
+import com.morkim.usecase.di.flow.DaggerSecondaryFlowComponent;
+import com.morkim.usecase.di.flow.SecondaryFlowModule;
 import com.morkim.usecase.di.uc.login.DaggerLoginUserComponent;
 import com.morkim.usecase.di.uc.login.LoginUserModule;
 import com.morkim.usecase.di.uc.logout.DaggerLogoutUserComponent;
 import com.morkim.usecase.di.uc.logout.LogoutUserModule;
 import com.morkim.usecase.di.uc.main.DaggerMainUseCaseComponent;
 import com.morkim.usecase.di.uc.main.MainUseCaseModule;
+import com.morkim.usecase.di.uc.secondary.DaggerSecondaryUseCaseComponent;
+import com.morkim.usecase.di.uc.secondary.SecondaryUseCaseModule;
 import com.morkim.usecase.uc.logout.LogoutUser;
 import com.morkim.usecase.uc.login.LoginUser;
 import com.morkim.usecase.uc.main.MainUseCase;
+import com.morkim.usecase.uc.secondary.SecondaryUseCase;
 
 public class AppTrigger implements Triggers<AppTrigger.Event> {
 
@@ -39,6 +44,7 @@ public class AppTrigger implements Triggers<AppTrigger.Event> {
 
             case LAUNCH_MAIN:
             case REFRESH_MAIN:
+            case PRE_CONDITION_MAIN:
 
                 AppInjector.setMainUseCaseComponent(
                         DaggerMainUseCaseComponent.builder()
@@ -69,6 +75,29 @@ public class AppTrigger implements Triggers<AppTrigger.Event> {
                         .build()
                         .execute(event);
                 break;
+            case DO_SECONDARY_THING:
+
+                AppInjector.setSecondaryFlowComponent(
+                        DaggerSecondaryFlowComponent.builder()
+                                .appComponent(AppInjector.getAppComponent())
+                                .secondaryFlowModule(new SecondaryFlowModule())
+                                .build()
+                );
+
+                AppInjector.setSecondaryUseCaseComponent(
+                        DaggerSecondaryUseCaseComponent.builder()
+                                .appComponent(AppInjector.getAppComponent())
+                                .secondaryUseCaseModule(new SecondaryUseCaseModule(AppInjector.getSecondaryFlowComponent().ui()))
+                                .build());
+
+                new Builder<Event>()
+                        .useCase(SecondaryUseCase.class)
+                        .primaryActor(AppInjector.getSecondaryFlowComponent().ui())
+                        .preconditionActor(preconditionActor)
+                        .build()
+                        .execute(event);
+                break;
+
             case USER_LOGOUT:
 
                 AppInjector.setLogoutUserComponent(
@@ -95,6 +124,7 @@ public class AppTrigger implements Triggers<AppTrigger.Event> {
         REFRESH_MAIN,
         REFRESH_AUTH,
         USER_LOGOUT,
-        PRECONDITION_LOGIN,
+        DO_SECONDARY_THING,
+        PRE_CONDITION_MAIN,
     }
 }

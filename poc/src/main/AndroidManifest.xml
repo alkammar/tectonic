@@ -20,6 +20,9 @@
         <activity android:name=".ui.registration.Registration1Activity"/>
         <activity android:name=".ui.registration.Registration2Activity"/>
         <activity android:name=".ui.login.LoginActivity"/>
+        <activity android:name=".ui.secondary.SecondaryActivity1" />
+        <activity android:name=".ui.secondary.SecondaryActivity2" />
+        <activity android:name=".ui.secondary.SecondaryActivity3" />
     </application>
 
 </manifest>

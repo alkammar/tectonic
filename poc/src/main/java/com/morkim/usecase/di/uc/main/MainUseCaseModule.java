@@ -11,10 +11,10 @@ import dagger.Provides;
 @Module
 public class MainUseCaseModule {
 
-    private MainUseCase.UI UI;
+    private MainUseCase.UI ui;
 
-    public MainUseCaseModule(MainUseCase.UI UI) {
-        this.UI = UI;
+    public MainUseCaseModule(MainUseCase.UI ui) {
+        this.ui = ui;
     }
 
     @Provides
@@ -31,8 +31,8 @@ public class MainUseCaseModule {
 
     @Provides
     @PerUseCase
-    MainUseCase.UI provideUser() {
-        return UI;
+    MainUseCase.UI provideUI() {
+        return ui;
     }
 
 }

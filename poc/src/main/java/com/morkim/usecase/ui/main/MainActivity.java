@@ -14,8 +14,8 @@ import com.morkim.tectonic.usecase.UseCaseHandle;
 import com.morkim.usecase.R;
 import com.morkim.usecase.app.AppTrigger;
 import com.morkim.usecase.di.AppInjector;
-import com.morkim.usecase.di.ui.DaggerMainScreenComponent;
-import com.morkim.usecase.di.ui.MainScreenModule;
+import com.morkim.usecase.di.ui.main.DaggerMainScreenComponent;
+import com.morkim.usecase.di.ui.main.MainScreenModule;
 import com.morkim.usecase.uc.main.MainUseCase;
 
 import javax.inject.Inject;
@@ -69,6 +69,10 @@ public class MainActivity extends AppCompatActivity implements MainUseCase.UI {
         findViewById(R.id.btn_logout).setOnClickListener(v -> {
             label.setText("");
             trigger.trigger(AppTrigger.Event.USER_LOGOUT);
+        });
+
+        findViewById(R.id.btn_secondary).setOnClickListener(v -> {
+            trigger.trigger(AppTrigger.Event.DO_SECONDARY_THING);
         });
     }
 

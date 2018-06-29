@@ -159,8 +159,8 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
         }
     }
 
-    public static void clear(int key) {
-        cache.remove(key);
+    public static void clear(int... keys) {
+        for (int key : keys) cache.remove(key);
     }
 
     public UseCase<E, R> setPrimaryActor(PrimaryActor<E, R> primaryActor) {

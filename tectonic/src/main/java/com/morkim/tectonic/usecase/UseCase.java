@@ -28,6 +28,7 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
     private Triggers<E> triggers;
     private E event;
     private volatile Set<E> preconditions = new HashSet<>();
+    private ResultActor<E, R> resultActor;
 
     public synchronized static <U extends UseCase> U fetch(Class<U> useCaseClass) {
 
@@ -77,6 +78,7 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
                 public void stop() {
                     if (running) {
                         if (preconditionActor != null) preconditionActor.onAbort(event);
+                        if (resultActor != null) resultActor.onAbort(event);
                         if (preconditionActor != primaryActor)
                             if (primaryActor != null) primaryActor.onAbort(event);
                         running = false;
@@ -88,7 +90,7 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
 
     private void waitForPreconditions() {
         onAddPreconditions(preconditions);
-        for (E event : preconditions) triggers.trigger(event, preconditionActor);
+        for (E event : preconditions) triggers.trigger(event, this);
         //noinspection StatementWithEmptyBody
         while (preconditions.size() > 0) ;
     }
@@ -163,22 +165,21 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
         for (int key : keys) cache.remove(key);
     }
 
-    public UseCase<E, R> setPrimaryActor(PrimaryActor<E, R> primaryActor) {
+    public void setPrimaryActor(PrimaryActor<E, R> primaryActor) {
         this.primaryActor = primaryActor;
 
-        return this;
     }
 
-    public UseCase<E, R> setPreconditionActor(PreconditionActor<E> preconditionActor) {
+    public void setPreconditionActor(PreconditionActor<E> preconditionActor) {
         this.preconditionActor = preconditionActor;
-
-        return this;
     }
 
-    public UseCase<E, R> setTriggers(Triggers<E> triggers) {
-        this.triggers = triggers;
+    public void setResultActor(ResultActor<E, R> resultActor) {
+        this.resultActor = resultActor;
+    }
 
-        return this;
+    public void setTriggers(Triggers<E> triggers) {
+        this.triggers = triggers;
     }
 
     public Builder builder() {
@@ -195,7 +196,8 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
 
     protected void complete(R result) {
         if (running && preconditionActor != null) preconditionActor.onComplete(event);
-        if (preconditionActor != primaryActor)
+        if (running && resultActor != null) resultActor.onComplete(event, result);
+        if (preconditionActor != primaryActor && resultActor != primaryActor)
             if (running && primaryActor != null) primaryActor.onComplete(event, result);
         running = false;
         created.remove(getClass());

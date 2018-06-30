@@ -5,7 +5,7 @@ import android.content.Context;
 import com.morkim.tectonic.flow.StepFactory;
 import com.morkim.tectonic.usecase.Triggers;
 import com.morkim.usecase.app.PoC;
-import com.morkim.usecase.app.AppTrigger;
+import com.morkim.usecase.app.UseCaseExecutor;
 import com.morkim.usecase.app.StepFactoryImpl;
 import com.morkim.usecase.auth.AuthenticationFlow;
 
@@ -37,8 +37,8 @@ public class AppModule {
 
     @Singleton
     @Provides
-    Triggers<AppTrigger.Event> provideTriggers() {
-        return new AppTrigger();
+    Triggers<UseCaseExecutor.Event> provideTriggers() {
+        return new UseCaseExecutor();
     }
 
     @Singleton
@@ -49,7 +49,7 @@ public class AppModule {
 
     @Provides
     @Singleton
-    AuthenticationFlow provideAuthentication(StepFactory stepFactory, Triggers<AppTrigger.Event> triggers) {
+    AuthenticationFlow provideAuthentication(StepFactory stepFactory, Triggers<UseCaseExecutor.Event> triggers) {
         return new AuthenticationFlow(stepFactory, triggers);
     }
 }

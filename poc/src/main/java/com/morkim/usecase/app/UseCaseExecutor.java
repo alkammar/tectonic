@@ -15,12 +15,9 @@ import com.morkim.usecase.di.uc.main.DaggerMainUseCaseComponent;
 import com.morkim.usecase.di.uc.main.MainUseCaseModule;
 import com.morkim.usecase.di.uc.secondary.DaggerSecondaryUseCaseComponent;
 import com.morkim.usecase.di.uc.secondary.SecondaryUseCaseModule;
-import com.morkim.usecase.uc.logout.LogoutUser;
-import com.morkim.usecase.uc.login.LoginUser;
 import com.morkim.usecase.uc.main.MainUseCase;
-import com.morkim.usecase.uc.secondary.SecondaryUseCase;
 
-public class AppTrigger implements Triggers<AppTrigger.Event> {
+public class UseCaseExecutor implements Triggers<UseCaseExecutor.Event> {
 
     @Override
     public Event trigger(Event event) {
@@ -49,16 +46,11 @@ public class AppTrigger implements Triggers<AppTrigger.Event> {
                 AppInjector.setMainUseCaseComponent(
                         DaggerMainUseCaseComponent.builder()
                                 .appComponent(AppInjector.getAppComponent())
-                                .mainUseCaseModule(new MainUseCaseModule(AppInjector.getMainScreenComponent().user()))
+                                .mainUseCaseModule(new MainUseCaseModule(AppInjector.getMainScreenComponent().ui()))
                                 .build()
                 );
 
-                new Builder<Event>()
-                        .useCase(MainUseCase.class)
-                        .primaryActor(primaryActor)
-                        .preconditionActor(preconditionActor)
-                        .build()
-                        .execute(event);
+                execute(event, preconditionActor, AppInjector.getMainScreenComponent().ui());
                 break;
             case REFRESH_AUTH:
 
@@ -68,12 +60,7 @@ public class AppTrigger implements Triggers<AppTrigger.Event> {
                                 .loginUserModule(new LoginUserModule())
                                 .build());
 
-                new Builder<Event>()
-                        .useCase(LoginUser.class)
-                        .primaryActor(primaryActor)
-                        .preconditionActor(preconditionActor)
-                        .build()
-                        .execute(event);
+                execute(event, preconditionActor, primaryActor);
                 break;
             case DO_SECONDARY_THING:
 
@@ -90,12 +77,7 @@ public class AppTrigger implements Triggers<AppTrigger.Event> {
                                 .secondaryUseCaseModule(new SecondaryUseCaseModule(AppInjector.getSecondaryFlowComponent().ui()))
                                 .build());
 
-                new Builder<Event>()
-                        .useCase(SecondaryUseCase.class)
-                        .primaryActor(AppInjector.getSecondaryFlowComponent().ui())
-                        .preconditionActor(preconditionActor)
-                        .build()
-                        .execute(event);
+                execute(event, preconditionActor, AppInjector.getSecondaryFlowComponent().ui());
                 break;
 
             case USER_LOGOUT:
@@ -106,17 +88,22 @@ public class AppTrigger implements Triggers<AppTrigger.Event> {
                                 .logoutUserModule(new LogoutUserModule())
                                 .build());
 
-                new Builder<Event>()
-                        .useCase(LogoutUser.class)
-                        .primaryActor(primaryActor)
-                        .preconditionActor(preconditionActor)
-                        .build()
-                        .execute(event);
+                execute(event, preconditionActor, primaryActor);
 
                 break;
         }
 
         return event;
+    }
+
+    private void execute(Event event, PreconditionActor<Event> preconditionActor, PrimaryActor<Event, ?> primaryActor) {
+        new Builder<Event>()
+                .useCase(MainUseCase.class)
+                .primaryActor(primaryActor)
+                .preconditionActor(preconditionActor)
+                .triggers(this)
+                .build()
+                .execute(event);
     }
 
     public enum Event {

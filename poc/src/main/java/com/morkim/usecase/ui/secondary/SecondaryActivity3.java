@@ -12,7 +12,7 @@ import com.morkim.usecase.contract.Secondary;
 import com.morkim.usecase.di.AppInjector;
 import com.morkim.usecase.di.ui.secondary.DaggerSecondaryScreen3Component;
 import com.morkim.usecase.di.ui.secondary.SecondaryScreen3Module;
-import com.morkim.usecase.uc.secondary.NoAmountException;
+import com.morkim.usecase.uc.secondary.InvalidValueExeption;
 import com.morkim.usecase.uc.secondary.SpecificBackendError;
 
 import javax.inject.Inject;
@@ -80,7 +80,7 @@ public class SecondaryActivity3 extends AppCompatActivity implements Secondary.S
 
     @Override
     public void showError(Exception e) {
-        if (e instanceof NoAmountException)
+        if (e instanceof InvalidValueExeption)
             runOnUiThread(() -> data3.setError("Must enter value > 0"));
         else  if (e instanceof SpecificBackendError)
             runOnUiThread(() -> data3.setError("Value is less than needed!"));

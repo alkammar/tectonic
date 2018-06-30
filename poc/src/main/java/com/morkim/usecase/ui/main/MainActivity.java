@@ -9,10 +9,11 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.morkim.tectonic.flow.Step;
+import com.morkim.tectonic.flow.StepFactory;
 import com.morkim.tectonic.usecase.Triggers;
 import com.morkim.tectonic.usecase.UseCaseHandle;
 import com.morkim.usecase.R;
-import com.morkim.usecase.app.AppTrigger;
+import com.morkim.usecase.app.UseCaseExecutor;
 import com.morkim.usecase.di.AppInjector;
 import com.morkim.usecase.di.ui.main.DaggerMainScreenComponent;
 import com.morkim.usecase.di.ui.main.MainScreenModule;
@@ -24,7 +25,10 @@ import javax.inject.Inject;
 public class MainActivity extends AppCompatActivity implements MainUseCase.UI {
 
     @Inject
-    Triggers<AppTrigger.Event> trigger;
+    Triggers<UseCaseExecutor.Event> trigger;
+
+    @Inject
+    StepFactory stepFactory;
 
     private Button refresh;
     private Button abort;
@@ -46,6 +50,8 @@ public class MainActivity extends AppCompatActivity implements MainUseCase.UI {
 
         AppInjector.getMainScreenComponent().inject(this);
 
+        stepFactory.onCreated(this);
+
         setContentView(R.layout.screen_main);
 
         //noinspection ConstantConditions
@@ -59,20 +65,20 @@ public class MainActivity extends AppCompatActivity implements MainUseCase.UI {
 
         // While refreshing you need the use case to overwrite its cached result, so here we use
         // non-cached execution
-        refresh.setOnClickListener(v -> trigger.trigger(AppTrigger.Event.REFRESH_MAIN, this));
+        refresh.setOnClickListener(v -> trigger.trigger(UseCaseExecutor.Event.REFRESH_MAIN, this));
 
 
-        trigger.trigger(AppTrigger.Event.LAUNCH_MAIN, this);
+        trigger.trigger(UseCaseExecutor.Event.LAUNCH_MAIN, this);
 //
         abort.setOnClickListener(v -> handle.abort());
 
         findViewById(R.id.btn_logout).setOnClickListener(v -> {
             label.setText("");
-            trigger.trigger(AppTrigger.Event.USER_LOGOUT);
+            trigger.trigger(UseCaseExecutor.Event.USER_LOGOUT);
         });
 
         findViewById(R.id.btn_secondary).setOnClickListener(v -> {
-            trigger.trigger(AppTrigger.Event.DO_SECONDARY_THING);
+            trigger.trigger(UseCaseExecutor.Event.DO_SECONDARY_THING);
         });
     }
 
@@ -104,7 +110,7 @@ public class MainActivity extends AppCompatActivity implements MainUseCase.UI {
     }
 
     @Override
-    public void onComplete(AppTrigger.Event event, String result) {
+    public void onComplete(UseCaseExecutor.Event event, String result) {
 
         runOnUiThread(() -> {
             // use case has completed
@@ -122,7 +128,7 @@ public class MainActivity extends AppCompatActivity implements MainUseCase.UI {
     }
 
     @Override
-    public void onAbort(AppTrigger.Event event) {
+    public void onAbort(UseCaseExecutor.Event event) {
         runOnUiThread(() -> {
             // use case was cancelled
             label.setText(R.string.cancelled);

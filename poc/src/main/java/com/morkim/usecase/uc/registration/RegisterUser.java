@@ -2,9 +2,7 @@ package com.morkim.usecase.uc.registration;
 
 import com.morkim.tectonic.usecase.PrimaryActor;
 import com.morkim.tectonic.usecase.UseCase;
-import com.morkim.usecase.app.AppTrigger;
-import com.morkim.usecase.di.AppInjector;
-import com.morkim.usecase.model.Profile;
+import com.morkim.usecase.app.UseCaseExecutor;
 
 import javax.inject.Inject;
 
@@ -57,7 +55,7 @@ public class RegisterUser extends UseCase {
         return email;
     }
 
-    public interface User extends PrimaryActor<AppTrigger.Event, Void> {
+    public interface User extends PrimaryActor<UseCaseExecutor.Event, Void> {
 
         String askToEnterEmail() throws InterruptedException;
 

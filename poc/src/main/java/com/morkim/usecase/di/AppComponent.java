@@ -4,10 +4,9 @@ import android.content.Context;
 
 import com.morkim.tectonic.flow.StepFactory;
 import com.morkim.tectonic.usecase.Triggers;
-import com.morkim.usecase.app.AppTrigger;
+import com.morkim.usecase.app.UseCaseExecutor;
 import com.morkim.usecase.app.PoC;
 import com.morkim.usecase.auth.AuthenticationFlow;
-import com.morkim.usecase.model.Profile;
 
 import javax.inject.Singleton;
 
@@ -24,7 +23,7 @@ public interface AppComponent {
 
     AuthenticationFlow authentication();
 
-    Triggers<AppTrigger.Event> triggers();
+    Triggers<UseCaseExecutor.Event> triggers();
 
     StepFactory stepFactory();
 }

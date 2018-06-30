@@ -5,7 +5,7 @@ import com.morkim.tectonic.flow.StepFactory;
 import com.morkim.tectonic.usecase.Triggers;
 import com.morkim.tectonic.usecase.UseCase;
 import com.morkim.tectonic.usecase.UseCaseHandle;
-import com.morkim.usecase.app.AppTrigger;
+import com.morkim.usecase.app.UseCaseExecutor;
 import com.morkim.usecase.contract.Login;
 import com.morkim.usecase.uc.login.LoginUser;
 import com.morkim.usecase.uc.main.MainUseCase;
@@ -26,10 +26,10 @@ public class AuthenticationFlow
     private final StepFactory stepFactory;
     private Login.Screen login;
 
-    private Triggers<AppTrigger.Event> triggers;
+    private Triggers<UseCaseExecutor.Event> triggers;
 
     @Inject
-    public AuthenticationFlow(StepFactory stepFactory, Triggers<AppTrigger.Event> triggers) {
+    public AuthenticationFlow(StepFactory stepFactory, Triggers<UseCaseExecutor.Event> triggers) {
         this.stepFactory = stepFactory;
         this.triggers = triggers;
     }
@@ -37,7 +37,7 @@ public class AuthenticationFlow
     @Override
     public void refreshAuthentication() throws InterruptedException {
 
-        triggers.trigger(AppTrigger.Event.REFRESH_AUTH, this);
+        triggers.trigger(UseCaseExecutor.Event.REFRESH_AUTH, this);
 
         UseCase.waitFor(REFRESH);
     }
@@ -65,7 +65,7 @@ public class AuthenticationFlow
     }
 
     @Override
-    public void onComplete(AppTrigger.Event event, Void result) {
+    public void onComplete(UseCaseExecutor.Event event, Void result) {
         switch (event) {
             case REFRESH_AUTH:
                 login.terminate();
@@ -83,7 +83,7 @@ public class AuthenticationFlow
     }
 
     @Override
-    public void onAbort(AppTrigger.Event event) {
+    public void onAbort(UseCaseExecutor.Event event) {
 
     }
 }

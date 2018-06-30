@@ -2,7 +2,7 @@ package com.morkim.usecase.uc.login;
 
 import com.morkim.tectonic.usecase.PrimaryActor;
 import com.morkim.tectonic.usecase.UseCase;
-import com.morkim.usecase.app.AppTrigger;
+import com.morkim.usecase.app.UseCaseExecutor;
 import com.morkim.usecase.di.AppInjector;
 
 import java.util.Set;
@@ -10,7 +10,7 @@ import java.util.Set;
 import javax.inject.Inject;
 
 
-public class LoginUser extends UseCase<AppTrigger.Event, Void> {
+public class LoginUser extends UseCase<UseCaseExecutor.Event, Void> {
 
     @Inject
     Authenticator authenticator;
@@ -26,7 +26,7 @@ public class LoginUser extends UseCase<AppTrigger.Event, Void> {
     }
 
     @Override
-    protected void onAddPreconditions(Set<AppTrigger.Event> events) {
+    protected void onAddPreconditions(Set<UseCaseExecutor.Event> events) {
 
     }
 
@@ -49,7 +49,7 @@ public class LoginUser extends UseCase<AppTrigger.Event, Void> {
         void validateCredentials(String password) throws InvalidLogin;
     }
 
-    public interface UI extends PrimaryActor<AppTrigger.Event, Void> {
+    public interface UI extends PrimaryActor<UseCaseExecutor.Event, Void> {
 
         String askForPassword() throws InterruptedException;
 

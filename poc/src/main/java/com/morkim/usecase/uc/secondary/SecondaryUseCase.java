@@ -2,7 +2,7 @@ package com.morkim.usecase.uc.secondary;
 
 import com.morkim.tectonic.usecase.PrimaryActor;
 import com.morkim.tectonic.usecase.UseCase;
-import com.morkim.usecase.app.AppTrigger;
+import com.morkim.usecase.app.UseCaseExecutor;
 import com.morkim.usecase.di.AppInjector;
 import com.morkim.usecase.model.SecondaryModel;
 import com.morkim.usecase.uc.main.ExpiredCredentials;
@@ -12,7 +12,7 @@ import java.util.Set;
 import javax.inject.Inject;
 
 
-public class SecondaryUseCase extends UseCase<AppTrigger.Event, SecondaryModel> {
+public class SecondaryUseCase extends UseCase<UseCaseExecutor.Event, SecondaryModel> {
 
     @Inject
     Backend backend;
@@ -31,10 +31,10 @@ public class SecondaryUseCase extends UseCase<AppTrigger.Event, SecondaryModel> 
     }
 
     @Override
-    protected void onAddPreconditions(Set<AppTrigger.Event> events) {
+    protected void onAddPreconditions(Set<UseCaseExecutor.Event> events) {
         super.onAddPreconditions(events);
 
-//        events.add(AppTrigger.Event.PRE_CONDITION_MAIN);
+        events.add(UseCaseExecutor.Event.PRE_CONDITION_MAIN);
     }
 
     @Override
@@ -56,7 +56,7 @@ public class SecondaryUseCase extends UseCase<AppTrigger.Event, SecondaryModel> 
 
             complete(result);
 
-        } catch (NoAmountException e) {
+        } catch (InvalidValueExeption e) {
             ui.showError(e);
             restart();
         } catch (ExpiredCredentials e) {
@@ -67,11 +67,11 @@ public class SecondaryUseCase extends UseCase<AppTrigger.Event, SecondaryModel> 
         }
     }
 
-    private void validateData3(double data3) throws NoAmountException {
-        if (data3 == 0) throw new NoAmountException();
+    private void validateData3(double data3) throws InvalidValueExeption {
+        if (data3 == 0) throw new InvalidValueExeption();
     }
 
-    public interface UI extends PrimaryActor<AppTrigger.Event, SecondaryModel> {
+    public interface UI extends PrimaryActor<UseCaseExecutor.Event, SecondaryModel> {
 
         String askForData1() throws InterruptedException;
 

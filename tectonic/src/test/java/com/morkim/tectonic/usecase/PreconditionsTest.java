@@ -4,7 +4,6 @@ import com.morkim.tectonic.usecase.entities.CompletedPreconditionsUseCase;
 import com.morkim.tectonic.usecase.entities.CompletedUseCase;
 import com.morkim.tectonic.usecase.entities.FailingPreconditionsUseCase;
 import com.morkim.tectonic.usecase.entities.SimpleTriggers;
-import com.morkim.tectonic.usecase.entities.SimpleUseCase;
 
 import org.junit.Test;
 

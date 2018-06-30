@@ -4,7 +4,7 @@ import com.morkim.tectonic.flow.Step;
 import com.morkim.tectonic.flow.StepFactory;
 import com.morkim.tectonic.usecase.UseCase;
 import com.morkim.tectonic.usecase.UseCaseHandle;
-import com.morkim.usecase.app.AppTrigger;
+import com.morkim.usecase.app.UseCaseExecutor;
 import com.morkim.usecase.contract.Registration;
 import com.morkim.usecase.uc.registration.RegisterUser;
 
@@ -30,7 +30,7 @@ public class RegistrationFlowImpl implements Registration.Flow, RegisterUser.Use
     }
 
     @Override
-    public void onComplete(AppTrigger.Event event, Void result) {
+    public void onComplete(UseCaseExecutor.Event event, Void result) {
 
     }
 
@@ -85,7 +85,7 @@ public class RegistrationFlowImpl implements Registration.Flow, RegisterUser.Use
     }
 
     @Override
-    public void onAbort(AppTrigger.Event event) {
+    public void onAbort(UseCaseExecutor.Event event) {
         step2.terminate();
         step1.terminate();
     }

@@ -4,10 +4,10 @@ import com.morkim.tectonic.flow.Step;
 import com.morkim.tectonic.flow.StepFactory;
 import com.morkim.tectonic.usecase.UseCase;
 import com.morkim.tectonic.usecase.UseCaseHandle;
-import com.morkim.usecase.app.AppTrigger;
+import com.morkim.usecase.app.UseCaseExecutor;
 import com.morkim.usecase.contract.Secondary;
 import com.morkim.usecase.model.SecondaryModel;
-import com.morkim.usecase.uc.secondary.NoAmountException;
+import com.morkim.usecase.uc.secondary.InvalidValueExeption;
 import com.morkim.usecase.uc.secondary.SecondaryUseCase;
 import com.morkim.usecase.uc.secondary.SpecificBackendError;
 
@@ -64,7 +64,7 @@ public class SecondaryFlowImpl implements Secondary.Flow, SecondaryUseCase.UI {
 
     @Override
     public void showError(Exception e) {
-        if (e instanceof NoAmountException) {
+        if (e instanceof InvalidValueExeption) {
             UseCase.clear(DATA3);
             screen3.showError(e);
         } else if (e instanceof SpecificBackendError) {
@@ -105,12 +105,12 @@ public class SecondaryFlowImpl implements Secondary.Flow, SecondaryUseCase.UI {
     }
 
     @Override
-    public void onComplete(AppTrigger.Event event, SecondaryModel result) {
+    public void onComplete(UseCaseExecutor.Event event, SecondaryModel result) {
         screen1.terminate();
         screen2.terminate();
         screen3.terminate();
 
-        UseCase.clear(DATA1, DATA2, DATA3); 
+        UseCase.clear(DATA1, DATA2, DATA3);
     }
 
     @Override
@@ -121,7 +121,7 @@ public class SecondaryFlowImpl implements Secondary.Flow, SecondaryUseCase.UI {
     }
 
     @Override
-    public void onAbort(AppTrigger.Event event) {
+    public void onAbort(UseCaseExecutor.Event event) {
 
     }
 }

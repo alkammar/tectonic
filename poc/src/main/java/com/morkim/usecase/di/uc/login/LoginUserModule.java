@@ -1,7 +1,7 @@
 package com.morkim.usecase.di.uc.login;
 
 import com.morkim.tectonic.usecase.PrimaryActor;
-import com.morkim.usecase.app.AppTrigger;
+import com.morkim.usecase.app.UseCaseExecutor;
 import com.morkim.usecase.auth.AuthenticationFlow;
 import com.morkim.usecase.contract.Login;
 import com.morkim.usecase.di.PerUseCase;
@@ -16,7 +16,7 @@ public class LoginUserModule {
 
     @Provides
     @PerUseCase
-    PrimaryActor<AppTrigger.Event, Void> provideUI(AuthenticationFlow authenticationFlow) {
+    PrimaryActor<UseCaseExecutor.Event, Void> provideUI(AuthenticationFlow authenticationFlow) {
         return authenticationFlow;
     }
 

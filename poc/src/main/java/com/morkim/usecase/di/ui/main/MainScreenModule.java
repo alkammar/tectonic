@@ -18,7 +18,7 @@ public class MainScreenModule {
 
     @Provides
     @PerActivity
-    MainUseCase.UI provideUser() {
+    MainUseCase.UI provideUI() {
         return activity;
     }
 }

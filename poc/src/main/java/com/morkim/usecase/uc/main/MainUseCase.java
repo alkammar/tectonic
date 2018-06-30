@@ -1,16 +1,14 @@
 package com.morkim.usecase.uc.main;
 
-import android.os.SystemClock;
-
 import com.morkim.tectonic.usecase.PrimaryActor;
 import com.morkim.tectonic.usecase.UseCase;
-import com.morkim.usecase.app.AppTrigger;
+import com.morkim.usecase.app.UseCaseExecutor;
 import com.morkim.usecase.di.AppInjector;
 
 import javax.inject.Inject;
 
 
-public class MainUseCase extends UseCase<AppTrigger.Event, String> {
+public class MainUseCase extends UseCase<UseCaseExecutor.Event, String> {
 
     private static final int STEP = 1;
 
@@ -60,7 +58,7 @@ public class MainUseCase extends UseCase<AppTrigger.Event, String> {
         void refreshAuthentication() throws InterruptedException;
     }
 
-    public interface UI extends PrimaryActor<AppTrigger.Event, String> {
+    public interface UI extends PrimaryActor<UseCaseExecutor.Event, String> {
 
         void updateResult(String data);
     }

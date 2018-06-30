@@ -1,11 +1,10 @@
-package com.morkim.usecase.uc.secondary;
+package com.morkim.usecase.uc;
 
 import com.morkim.tectonic.usecase.PrimaryActor;
 import com.morkim.tectonic.usecase.UseCase;
 import com.morkim.usecase.app.UseCaseExecutor;
 import com.morkim.usecase.di.AppInjector;
 import com.morkim.usecase.model.SecondaryModel;
-import com.morkim.usecase.uc.main.ExpiredCredentials;
 
 import java.util.Set;
 
@@ -56,7 +55,7 @@ public class SecondaryUseCase extends UseCase<UseCaseExecutor.Event, SecondaryMo
 
             complete(result);
 
-        } catch (InvalidValueExeption e) {
+        } catch (InvalidValueException e) {
             ui.showError(e);
             restart();
         } catch (ExpiredCredentials e) {
@@ -67,8 +66,8 @@ public class SecondaryUseCase extends UseCase<UseCaseExecutor.Event, SecondaryMo
         }
     }
 
-    private void validateData3(double data3) throws InvalidValueExeption {
-        if (data3 == 0) throw new InvalidValueExeption();
+    private void validateData3(double data3) throws InvalidValueException {
+        if (data3 == 0) throw new InvalidValueException();
     }
 
     public interface UI extends PrimaryActor<UseCaseExecutor.Event, SecondaryModel> {

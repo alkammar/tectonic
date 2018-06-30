@@ -7,9 +7,9 @@ import com.morkim.tectonic.usecase.UseCase;
 import com.morkim.tectonic.usecase.UseCaseHandle;
 import com.morkim.usecase.app.UseCaseExecutor;
 import com.morkim.usecase.contract.Login;
-import com.morkim.usecase.uc.login.LoginUser;
-import com.morkim.usecase.uc.main.MainUseCase;
-import com.morkim.usecase.uc.secondary.SecondaryUseCase;
+import com.morkim.usecase.uc.LoginUser;
+import com.morkim.usecase.uc.MainUseCase;
+import com.morkim.usecase.uc.SecondaryUseCase;
 
 import javax.inject.Inject;
 

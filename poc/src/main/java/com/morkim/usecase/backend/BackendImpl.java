@@ -3,12 +3,12 @@ package com.morkim.usecase.backend;
 import android.os.SystemClock;
 
 import com.morkim.usecase.model.SecondaryModel;
-import com.morkim.usecase.uc.logout.LogoutUser;
-import com.morkim.usecase.uc.main.ExpiredCredentials;
-import com.morkim.usecase.uc.main.MainUseCase;
-import com.morkim.usecase.uc.secondary.GeneralBackendError;
-import com.morkim.usecase.uc.secondary.SecondaryUseCase;
-import com.morkim.usecase.uc.secondary.SpecificBackendError;
+import com.morkim.usecase.uc.ExpiredCredentials;
+import com.morkim.usecase.uc.GeneralBackendError;
+import com.morkim.usecase.uc.LogoutUser;
+import com.morkim.usecase.uc.MainUseCase;
+import com.morkim.usecase.uc.SecondaryUseCase;
+import com.morkim.usecase.uc.SpecificBackendError;
 
 public class BackendImpl implements MainUseCase.Backend, LogoutUser.Backend, SecondaryUseCase.Backend {
 

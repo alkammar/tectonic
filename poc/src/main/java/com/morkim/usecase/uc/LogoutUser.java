@@ -1,4 +1,4 @@
-package com.morkim.usecase.uc.logout;
+package com.morkim.usecase.uc;
 
 import com.morkim.tectonic.usecase.UseCase;
 import com.morkim.usecase.di.AppInjector;

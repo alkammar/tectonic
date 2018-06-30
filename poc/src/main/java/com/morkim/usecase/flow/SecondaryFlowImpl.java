@@ -7,9 +7,9 @@ import com.morkim.tectonic.usecase.UseCaseHandle;
 import com.morkim.usecase.app.UseCaseExecutor;
 import com.morkim.usecase.contract.Secondary;
 import com.morkim.usecase.model.SecondaryModel;
-import com.morkim.usecase.uc.secondary.InvalidValueExeption;
-import com.morkim.usecase.uc.secondary.SecondaryUseCase;
-import com.morkim.usecase.uc.secondary.SpecificBackendError;
+import com.morkim.usecase.uc.InvalidValueException;
+import com.morkim.usecase.uc.SecondaryUseCase;
+import com.morkim.usecase.uc.SpecificBackendError;
 
 import javax.inject.Inject;
 
@@ -64,7 +64,7 @@ public class SecondaryFlowImpl implements Secondary.Flow, SecondaryUseCase.UI {
 
     @Override
     public void showError(Exception e) {
-        if (e instanceof InvalidValueExeption) {
+        if (e instanceof InvalidValueException) {
             UseCase.clear(DATA3);
             screen3.showError(e);
         } else if (e instanceof SpecificBackendError) {

@@ -2,7 +2,7 @@ package com.morkim.usecase.di.uc.logout;
 
 import com.morkim.usecase.di.AppComponent;
 import com.morkim.usecase.di.PerUseCase;
-import com.morkim.usecase.uc.logout.LogoutUser;
+import com.morkim.usecase.uc.LogoutUser;
 
 import dagger.Component;
 

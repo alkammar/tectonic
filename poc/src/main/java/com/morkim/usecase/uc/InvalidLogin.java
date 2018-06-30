@@ -1,4 +1,4 @@
-package com.morkim.usecase.uc.login;
+package com.morkim.usecase.uc;
 
 public class InvalidLogin extends Exception {
 

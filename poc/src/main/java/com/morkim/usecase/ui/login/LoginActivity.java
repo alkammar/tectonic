@@ -11,7 +11,7 @@ import com.morkim.usecase.contract.Login;
 import com.morkim.usecase.di.AppInjector;
 import com.morkim.usecase.di.ui.login.DaggerLoginScreenComponent;
 import com.morkim.usecase.di.ui.login.LoginScreenModule;
-import com.morkim.usecase.uc.login.InvalidLogin;
+import com.morkim.usecase.uc.InvalidLogin;
 
 import javax.inject.Inject;
 

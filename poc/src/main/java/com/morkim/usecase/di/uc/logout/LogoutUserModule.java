@@ -4,7 +4,7 @@ import com.morkim.tectonic.flow.StepFactory;
 import com.morkim.usecase.backend.BackendImpl;
 import com.morkim.usecase.di.PerUseCase;
 import com.morkim.usecase.flow.LogoutFlowImpl;
-import com.morkim.usecase.uc.logout.LogoutUser;
+import com.morkim.usecase.uc.LogoutUser;
 
 import dagger.Module;
 import dagger.Provides;

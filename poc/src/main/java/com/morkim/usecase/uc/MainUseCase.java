@@ -1,4 +1,4 @@
-package com.morkim.usecase.uc.main;
+package com.morkim.usecase.uc;
 
 import com.morkim.tectonic.usecase.PrimaryActor;
 import com.morkim.tectonic.usecase.UseCase;

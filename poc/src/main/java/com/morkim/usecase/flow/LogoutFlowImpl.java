@@ -2,7 +2,7 @@ package com.morkim.usecase.flow;
 
 import com.morkim.tectonic.flow.StepFactory;
 import com.morkim.usecase.contract.Logout;
-import com.morkim.usecase.uc.logout.LogoutUser;
+import com.morkim.usecase.uc.LogoutUser;
 
 import javax.inject.Inject;
 

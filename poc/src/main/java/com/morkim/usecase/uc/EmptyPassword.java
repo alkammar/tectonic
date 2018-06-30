@@ -1,4 +1,4 @@
-package com.morkim.usecase.uc.registration;
+package com.morkim.usecase.uc;
 
 public class EmptyPassword extends Exception {
 }

@@ -1,4 +1,4 @@
-package com.morkim.usecase.uc.main;
+package com.morkim.usecase.uc;
 
 public class ExpiredCredentials extends Exception {
 }

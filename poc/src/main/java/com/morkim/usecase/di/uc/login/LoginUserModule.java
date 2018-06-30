@@ -5,8 +5,8 @@ import com.morkim.usecase.app.UseCaseExecutor;
 import com.morkim.usecase.auth.AuthenticationFlow;
 import com.morkim.usecase.contract.Login;
 import com.morkim.usecase.di.PerUseCase;
-import com.morkim.usecase.uc.login.InvalidLogin;
-import com.morkim.usecase.uc.login.LoginUser;
+import com.morkim.usecase.uc.InvalidLogin;
+import com.morkim.usecase.uc.LoginUser;
 
 import dagger.Module;
 import dagger.Provides;

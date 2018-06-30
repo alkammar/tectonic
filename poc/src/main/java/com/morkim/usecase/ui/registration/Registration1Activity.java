@@ -6,9 +6,9 @@ import android.widget.EditText;
 
 import com.morkim.usecase.R;
 import com.morkim.usecase.contract.Registration;
-import com.morkim.usecase.uc.registration.EmptyEmail;
-import com.morkim.usecase.uc.registration.EmptyPassword;
-import com.morkim.usecase.uc.registration.InvalidEmail;
+import com.morkim.usecase.uc.EmptyEmail;
+import com.morkim.usecase.uc.EmptyPassword;
+import com.morkim.usecase.uc.InvalidEmail;
 
 import javax.inject.Inject;
 

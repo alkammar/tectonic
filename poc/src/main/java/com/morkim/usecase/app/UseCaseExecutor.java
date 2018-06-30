@@ -15,7 +15,7 @@ import com.morkim.usecase.di.uc.main.DaggerMainUseCaseComponent;
 import com.morkim.usecase.di.uc.main.MainUseCaseModule;
 import com.morkim.usecase.di.uc.secondary.DaggerSecondaryUseCaseComponent;
 import com.morkim.usecase.di.uc.secondary.SecondaryUseCaseModule;
-import com.morkim.usecase.uc.main.MainUseCase;
+import com.morkim.usecase.uc.MainUseCase;
 
 public class UseCaseExecutor implements Triggers<UseCaseExecutor.Event> {
 

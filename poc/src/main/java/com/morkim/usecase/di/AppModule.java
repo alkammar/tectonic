@@ -5,8 +5,8 @@ import android.content.Context;
 import com.morkim.tectonic.flow.StepFactory;
 import com.morkim.tectonic.usecase.Triggers;
 import com.morkim.usecase.app.PoC;
-import com.morkim.usecase.app.UseCaseExecutor;
 import com.morkim.usecase.app.StepFactoryImpl;
+import com.morkim.usecase.app.UseCaseExecutor;
 import com.morkim.usecase.auth.AuthenticationFlow;
 
 import javax.inject.Singleton;

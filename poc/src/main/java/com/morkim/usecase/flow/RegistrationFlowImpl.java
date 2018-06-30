@@ -6,7 +6,7 @@ import com.morkim.tectonic.usecase.UseCase;
 import com.morkim.tectonic.usecase.UseCaseHandle;
 import com.morkim.usecase.app.UseCaseExecutor;
 import com.morkim.usecase.contract.Registration;
-import com.morkim.usecase.uc.registration.RegisterUser;
+import com.morkim.usecase.uc.RegisterUser;
 
 import javax.inject.Inject;
 

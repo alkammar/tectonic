@@ -17,7 +17,7 @@ import com.morkim.usecase.app.UseCaseExecutor;
 import com.morkim.usecase.di.AppInjector;
 import com.morkim.usecase.di.ui.main.DaggerMainScreenComponent;
 import com.morkim.usecase.di.ui.main.MainScreenModule;
-import com.morkim.usecase.uc.main.MainUseCase;
+import com.morkim.usecase.uc.MainUseCase;
 
 import javax.inject.Inject;
 

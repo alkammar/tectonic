@@ -2,7 +2,7 @@ package com.morkim.usecase.di.uc.secondary;
 
 import com.morkim.usecase.di.AppComponent;
 import com.morkim.usecase.di.PerUseCase;
-import com.morkim.usecase.uc.secondary.SecondaryUseCase;
+import com.morkim.usecase.uc.SecondaryUseCase;
 
 import dagger.Component;
 

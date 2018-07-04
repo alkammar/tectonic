@@ -1,6 +1,8 @@
 package com.morkim.usecase.di.uc.logout;
 
 import com.morkim.tectonic.flow.StepFactory;
+import com.morkim.tectonic.usecase.Triggers;
+import com.morkim.usecase.app.UseCaseExecutor;
 import com.morkim.usecase.backend.BackendImpl;
 import com.morkim.usecase.di.PerUseCase;
 import com.morkim.usecase.flow.LogoutFlowImpl;
@@ -14,8 +16,8 @@ public class LogoutUserModule {
 
     @Provides
     @PerUseCase
-    LogoutUser.Backend provideBackend() {
-        return new BackendImpl();
+    LogoutUser.Backend provideBackend(Triggers<UseCaseExecutor.Event> triggers) {
+        return new BackendImpl(triggers);
     }
 
     @Provides

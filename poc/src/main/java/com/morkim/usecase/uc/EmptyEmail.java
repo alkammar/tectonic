@@ -1,4 +1,4 @@
 package com.morkim.usecase.uc;
 
-public class EmptyEmail extends Exception {
+public class EmptyEmail extends ValidationException {
 }

@@ -1,4 +1,4 @@
-package com.morkim.usecase.di.uc.login;
+package com.morkim.usecase.di.uc.regsitration;
 
 import com.morkim.tectonic.usecase.PrimaryActor;
 import com.morkim.tectonic.usecase.Triggers;
@@ -7,30 +7,31 @@ import com.morkim.usecase.auth.AuthenticationFlow;
 import com.morkim.usecase.backend.BackendImpl;
 import com.morkim.usecase.contract.Login;
 import com.morkim.usecase.di.PerUseCase;
-import com.morkim.usecase.uc.LoginUser;
+import com.morkim.usecase.uc.RegisterUser;
+import com.morkim.usecase.uc.SecondaryUseCase;
 
 import dagger.Module;
 import dagger.Provides;
 
 @Module
-public class LoginUserModule {
+public class RegisterUserModule {
 
-    @Provides
-    @PerUseCase
-    LoginUser.UI provideUi(AuthenticationFlow authenticationFlow) {
-        return authenticationFlow;
+    private final RegisterUser.UI ui;
+
+    public RegisterUserModule(RegisterUser.UI ui) {
+        this.ui = ui;
     }
 
     @Provides
     @PerUseCase
-    LoginUser.Backend provideAuthenticator(Triggers<UseCaseExecutor.Event> triggers) {
+    RegisterUser.Backend provideBackend(Triggers<UseCaseExecutor.Event> triggers) {
         return new BackendImpl(triggers);
     }
 
     @Provides
     @PerUseCase
-    Login.Flow provideFlow(AuthenticationFlow authenticationFlow) {
-        return authenticationFlow;
+    RegisterUser.UI provideUi() {
+        return ui;
     }
 
 }

@@ -3,9 +3,13 @@ package com.morkim.usecase.app;
 import com.morkim.tectonic.usecase.Builder;
 import com.morkim.tectonic.usecase.PreconditionActor;
 import com.morkim.tectonic.usecase.PrimaryActor;
+import com.morkim.tectonic.usecase.ResultActor;
 import com.morkim.tectonic.usecase.Triggers;
+import com.morkim.tectonic.usecase.UseCase;
 import com.morkim.usecase.di.AppInjector;
+import com.morkim.usecase.di.flow.DaggerRegistrationFlowComponent;
 import com.morkim.usecase.di.flow.DaggerSecondaryFlowComponent;
+import com.morkim.usecase.di.flow.RegistrationFlowModule;
 import com.morkim.usecase.di.flow.SecondaryFlowModule;
 import com.morkim.usecase.di.uc.login.DaggerLoginUserComponent;
 import com.morkim.usecase.di.uc.login.LoginUserModule;
@@ -13,29 +17,40 @@ import com.morkim.usecase.di.uc.logout.DaggerLogoutUserComponent;
 import com.morkim.usecase.di.uc.logout.LogoutUserModule;
 import com.morkim.usecase.di.uc.main.DaggerMainUseCaseComponent;
 import com.morkim.usecase.di.uc.main.MainUseCaseModule;
+import com.morkim.usecase.di.uc.regsitration.DaggerRegisterUserComponent;
+import com.morkim.usecase.di.uc.regsitration.RegisterUserModule;
 import com.morkim.usecase.di.uc.secondary.DaggerSecondaryUseCaseComponent;
 import com.morkim.usecase.di.uc.secondary.SecondaryUseCaseModule;
+import com.morkim.usecase.uc.LoginUser;
+import com.morkim.usecase.uc.LogoutUser;
 import com.morkim.usecase.uc.MainUseCase;
+import com.morkim.usecase.uc.RegisterUser;
+import com.morkim.usecase.uc.SecondaryUseCase;
 
 public class UseCaseExecutor implements Triggers<UseCaseExecutor.Event> {
 
     @Override
     public Event trigger(Event event) {
-        return trigger(event, null, null);
+        return trigger(event, null, null, null);
     }
 
     @Override
     public Event trigger(Event event, PrimaryActor<Event, ?> primaryActor) {
-        return trigger(event, null, primaryActor);
+        return trigger(event, null, primaryActor, null);
+    }
+
+    @Override
+    public Event trigger(Event event, ResultActor<Event, ?> resultActor) {
+        return trigger(event, null, null, resultActor);
     }
 
     @Override
     public Event trigger(Event event, PreconditionActor<Event> preconditionActor) {
-        return trigger(event, preconditionActor, null);
+        return trigger(event, preconditionActor, null, null);
     }
 
     @Override
-    public Event trigger(Event event, PreconditionActor<Event> preconditionActor, PrimaryActor<Event, ?> primaryActor) {
+    public Event trigger(Event event, PreconditionActor<Event> preconditionActor, PrimaryActor<Event, ?> primaryActor, ResultActor<Event, ?> resultActor) {
 
         switch (event) {
 
@@ -50,7 +65,7 @@ public class UseCaseExecutor implements Triggers<UseCaseExecutor.Event> {
                                 .build()
                 );
 
-                execute(event, preconditionActor, AppInjector.getMainScreenComponent().ui());
+                execute(MainUseCase.class, event, preconditionActor, AppInjector.getMainScreenComponent().ui(), resultActor);
                 break;
             case REFRESH_AUTH:
 
@@ -60,7 +75,7 @@ public class UseCaseExecutor implements Triggers<UseCaseExecutor.Event> {
                                 .loginUserModule(new LoginUserModule())
                                 .build());
 
-                execute(event, preconditionActor, primaryActor);
+                execute(LoginUser.class, event, preconditionActor, primaryActor, resultActor);
                 break;
             case DO_SECONDARY_THING:
 
@@ -77,7 +92,7 @@ public class UseCaseExecutor implements Triggers<UseCaseExecutor.Event> {
                                 .secondaryUseCaseModule(new SecondaryUseCaseModule(AppInjector.getSecondaryFlowComponent().ui()))
                                 .build());
 
-                execute(event, preconditionActor, AppInjector.getSecondaryFlowComponent().ui());
+                execute(SecondaryUseCase.class, event, preconditionActor, AppInjector.getSecondaryFlowComponent().ui(), resultActor);
                 break;
 
             case USER_LOGOUT:
@@ -88,7 +103,25 @@ public class UseCaseExecutor implements Triggers<UseCaseExecutor.Event> {
                                 .logoutUserModule(new LogoutUserModule())
                                 .build());
 
-                execute(event, preconditionActor, primaryActor);
+                execute(LogoutUser.class, event, preconditionActor, primaryActor, resultActor);
+
+                break;
+            case REGISTER:
+
+                AppInjector.setRegistrationFlowComponent(
+                        DaggerRegistrationFlowComponent.builder()
+                                .appComponent(AppInjector.getAppComponent())
+                                .registrationFlowModule(new RegistrationFlowModule())
+                                .build()
+                );
+
+                AppInjector.setRegisterUserComponent(
+                        DaggerRegisterUserComponent.builder()
+                                .appComponent(AppInjector.getAppComponent())
+                                .registerUserModule(new RegisterUserModule(AppInjector.getRegistrationFlowComponent().ui()))
+                                .build());
+
+                execute(RegisterUser.class, event, preconditionActor, AppInjector.getRegistrationFlowComponent().ui(), resultActor);
 
                 break;
         }
@@ -96,10 +129,11 @@ public class UseCaseExecutor implements Triggers<UseCaseExecutor.Event> {
         return event;
     }
 
-    private void execute(Event event, PreconditionActor<Event> preconditionActor, PrimaryActor<Event, ?> primaryActor) {
+    private void execute(Class<? extends UseCase> cls, Event event, PreconditionActor<Event> preconditionActor, PrimaryActor<Event, ?> primaryActor, ResultActor<Event, ?> resultActor) {
         new Builder<Event>()
-                .useCase(MainUseCase.class)
+                .useCase(cls)
                 .primaryActor(primaryActor)
+                .resultActor(resultActor)
                 .preconditionActor(preconditionActor)
                 .triggers(this)
                 .build()
@@ -113,5 +147,6 @@ public class UseCaseExecutor implements Triggers<UseCaseExecutor.Event> {
         USER_LOGOUT,
         DO_SECONDARY_THING,
         PRE_CONDITION_MAIN,
+        REGISTER,
     }
 }

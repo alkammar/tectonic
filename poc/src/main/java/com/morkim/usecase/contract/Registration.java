@@ -6,7 +6,9 @@ public interface Registration {
 
     interface Flow {
 
-        void submit(String email, String password);
+        void submitPassword(String password);
+
+        void next(String email, String password, String passwordConfirm);
 
         void submit(String mobile);
 
@@ -15,10 +17,17 @@ public interface Registration {
 
     interface Step1 extends Step {
 
-        void handle(Exception e);
+        void showError(int e);
+
+        void updatePasswordStrength(int strength);
+
+        void showError(Exception e);
     }
 
     interface Step2 extends Step {
 
+        void showError(int e);
+
+        void showError(Exception e);
     }
 }

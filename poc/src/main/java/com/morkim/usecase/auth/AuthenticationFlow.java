@@ -2,6 +2,7 @@ package com.morkim.usecase.auth;
 
 import com.morkim.tectonic.flow.Step;
 import com.morkim.tectonic.flow.StepFactory;
+import com.morkim.tectonic.usecase.UnexpectedStep;
 import com.morkim.tectonic.usecase.Triggers;
 import com.morkim.tectonic.usecase.UseCase;
 import com.morkim.tectonic.usecase.UseCaseHandle;
@@ -10,6 +11,7 @@ import com.morkim.usecase.contract.Login;
 import com.morkim.usecase.uc.LoginUser;
 import com.morkim.usecase.uc.MainUseCase;
 import com.morkim.usecase.uc.SecondaryUseCase;
+import com.morkim.usecase.uc.UserWantsToRegister;
 
 import javax.inject.Inject;
 
@@ -21,7 +23,7 @@ public class AuthenticationFlow
         SecondaryUseCase.Authenticator {
 
     private static final int REFRESH = 51;
-    private static final int PASSWORD = 1;
+    private static final int PASSWORD = 52;
 
     private final StepFactory stepFactory;
     private Login.Screen login;
@@ -48,14 +50,15 @@ public class AuthenticationFlow
     }
 
     @Override
-    public String askForPassword() throws InterruptedException {
+    public String askForPassword() throws InterruptedException, UnexpectedStep {
         if (login == null) login = stepFactory.create(Login.Screen.class);
-        return UseCase.waitFor(PASSWORD);
+        return UseCase.waitFor(PASSWORD, UserWantsToRegister.class);
     }
 
     @Override
     public void submit(String password) {
-        UseCase.replyWith(PASSWORD, password);
+        UseCase.replyWith(PASSWORD, new UserWantsToRegister());
+//        UseCase.replyWith(PASSWORD, password);
     }
 
     @Override

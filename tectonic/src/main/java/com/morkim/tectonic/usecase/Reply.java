@@ -2,8 +2,6 @@ package com.morkim.tectonic.usecase;
 
 import com.google.common.util.concurrent.SettableFuture;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 public class Reply<D> {
@@ -21,5 +19,9 @@ public class Reply<D> {
 
     public void set(D data) {
         future.set(data);
+    }
+
+    public void setException(Exception e) {
+        future.setException(e);
     }
 }

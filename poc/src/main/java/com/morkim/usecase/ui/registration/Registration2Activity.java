@@ -4,22 +4,41 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.EditText;
 
+import com.morkim.tectonic.flow.StepFactory;
 import com.morkim.usecase.R;
 import com.morkim.usecase.contract.Registration;
+import com.morkim.usecase.di.AppInjector;
+import com.morkim.usecase.di.ui.registration.DaggerRegistration2ActivityComponent;
+import com.morkim.usecase.di.ui.registration.Registration2ActivityModule;
+import com.morkim.usecase.uc.EmptyMobile;
+import com.morkim.usecase.uc.RegisterUser;
 
 import javax.inject.Inject;
 
 
 public class Registration2Activity extends AppCompatActivity implements Registration.Step2 {
 
-    private EditText mobile;
+    @Inject
+    StepFactory stepFactory;
 
     @Inject
     Registration.Flow flow;
 
+    private EditText mobile;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        AppInjector.setRegistration2ActivityComponent(
+                DaggerRegistration2ActivityComponent.builder()
+                        .appComponent(AppInjector.getAppComponent())
+                        .registration2ActivityModule(new Registration2ActivityModule(AppInjector.getRegistrationFlowComponent().flow()))
+                        .build());
+
+        AppInjector.getRegistration2ActivityComponent().inject(this);
+
+        stepFactory.onCreated(this);
 
         setContentView(R.layout.screen_registration_2);
 
@@ -30,6 +49,24 @@ public class Registration2Activity extends AppCompatActivity implements Registra
 
         findViewById(R.id.btn_submit).setOnClickListener(v ->
                 flow.submit(mobile.getText().toString()));
+    }
+
+    @Override
+    public void showError(Exception e) {
+        runOnUiThread(() -> {
+            if (e instanceof EmptyMobile) mobile.setError("Please enter your mobile number");
+        });
+    }
+
+    @Override
+    public void showError(int e) {
+        runOnUiThread(() -> {
+            switch (e) {
+                case RegisterUser.UI.ERROR_EMPTY_MOBILE:
+                    mobile.setError("Please enter your mobile number");
+                    break;
+            }
+        });
     }
 
     @Override

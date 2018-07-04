@@ -5,6 +5,7 @@ public class Builder<E> {
     private UseCase<E, ?> useCase;
     private PreconditionActor preconditionActor;
     private PrimaryActor primaryActor;
+    private ResultActor resultActor;
     private Triggers<E> triggers;
 
     public Builder<E> useCase(Class<? extends UseCase> aClass) {
@@ -25,6 +26,12 @@ public class Builder<E> {
         return this;
     }
 
+    public Builder<E> resultActor(ResultActor<E, ?> resultActor) {
+        this.resultActor = resultActor;
+
+        return this;
+    }
+
     public Builder<E> triggers(Triggers<E> triggers) {
         this.triggers = triggers;
 
@@ -34,6 +41,7 @@ public class Builder<E> {
     public UseCase<E, ?> build() {
         useCase.setPreconditionActor(preconditionActor);
         useCase.setPrimaryActor(primaryActor);
+        useCase.setResultActor(resultActor);
         useCase.setTriggers(triggers);
         return useCase;
     }

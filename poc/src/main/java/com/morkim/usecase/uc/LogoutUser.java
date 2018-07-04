@@ -22,7 +22,7 @@ public class LogoutUser extends UseCase {
     }
 
     @Override
-    protected void onExecute() {
+    protected void onExecute() throws InterruptedException {
 
         backend.logout();
         ui.showLogin();

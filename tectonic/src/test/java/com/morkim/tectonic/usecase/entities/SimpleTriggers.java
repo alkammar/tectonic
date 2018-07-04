@@ -2,26 +2,32 @@ package com.morkim.tectonic.usecase.entities;
 
 import com.morkim.tectonic.usecase.PreconditionActor;
 import com.morkim.tectonic.usecase.PrimaryActor;
+import com.morkim.tectonic.usecase.ResultActor;
 import com.morkim.tectonic.usecase.Triggers;
 
 public class SimpleTriggers implements Triggers<Integer> {
     @Override
-    public Integer trigger(Integer event, PreconditionActor<Integer> preconditionActor, PrimaryActor<Integer, ?> primaryActor) {
+    public Integer trigger(Integer event, PreconditionActor<Integer> preconditionActor, PrimaryActor<Integer, ?> primaryActor, ResultActor<Integer, ?> resultActor) {
         return null;
     }
 
     @Override
     public Integer trigger(Integer event, PrimaryActor<Integer, ?> primaryActor) {
-        return trigger(event, null, primaryActor);
+        return trigger(event, null, primaryActor, null);
+    }
+
+    @Override
+    public Integer trigger(Integer event, ResultActor<Integer, ?> resultActor) {
+        return trigger(event, null, null, resultActor);
     }
 
     @Override
     public Integer trigger(Integer event, PreconditionActor<Integer> preconditionActor) {
-        return trigger(event, preconditionActor, null);
+        return trigger(event, preconditionActor, null, null);
     }
 
     @Override
     public Integer trigger(Integer event) {
-        return trigger(event, null, null);
+        return trigger(event, null, null, null);
     }
 }

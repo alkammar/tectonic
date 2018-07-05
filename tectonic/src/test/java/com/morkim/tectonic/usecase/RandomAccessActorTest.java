@@ -7,7 +7,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class RandomAccessActorTest extends ConcurrentTectonicTest {
@@ -37,21 +36,21 @@ public class RandomAccessActorTest extends ConcurrentTectonicTest {
         RandomActionsUseCase.Actor actor = new RandomActionsUseCase.Actor() {
 
             @Override
-            public Random<StepData> requestData1() throws InterruptedException {
+            public Random<StepData> requestData1() {
                 count++;
-                return UseCase.waitForRandom(ACTION_DATA_KEY_1, new StepData());
+                return UseCase.waitForRandom(ACTION_DATA_KEY_1);
             }
 
             @Override
-            public Random<StepData> requestData2() throws InterruptedException {
+            public Random<StepData> requestData2() {
                 count++;
-                return UseCase.waitForRandom(ACTION_DATA_KEY_2, new StepData());
+                return UseCase.waitForRandom(ACTION_DATA_KEY_2);
             }
 
             @Override
-            public Random<StepData> requestData3() throws InterruptedException {
+            public Random<StepData> requestData3() {
                 count++;
-                return UseCase.waitForRandom(ACTION_DATA_KEY_3, new StepData());
+                return UseCase.waitForRandom(ACTION_DATA_KEY_3);
             }
 
             @Override

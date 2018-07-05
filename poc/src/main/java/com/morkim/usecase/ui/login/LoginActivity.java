@@ -30,8 +30,8 @@ public class LoginActivity extends AppCompatActivity implements Login.Screen {
 
         AppInjector.setLoginScreenComponent(
                 DaggerLoginScreenComponent.builder()
-                .loginUserComponent(AppInjector.getLoginUserComponent())
-                .build()
+                        .loginUserComponent(AppInjector.getLoginUserComponent())
+                        .build()
         );
 
         AppInjector.getLoginScreenComponent().inject(this);
@@ -44,11 +44,9 @@ public class LoginActivity extends AppCompatActivity implements Login.Screen {
         getSupportActionBar().setTitle("Login");
 
         password = findViewById(R.id.ti_password);
-        findViewById(R.id.btn_submit)
-                .setOnClickListener(v -> flow.submit(password.getText().toString()));
+        findViewById(R.id.btn_submit).setOnClickListener(v -> flow.submit(password.getText().toString()));
 
-        findViewById(R.id.btn_register)
-                .setOnClickListener(v -> flow.notRegistered());
+        findViewById(R.id.btn_register).setOnClickListener(v -> flow.notRegistered());
     }
 
     @Override
@@ -58,8 +56,7 @@ public class LoginActivity extends AppCompatActivity implements Login.Screen {
 
     @Override
     public void handle(Exception e) {
-        if (e instanceof InvalidLogin)
-            runOnUiThread(() -> password.setError("Wrong password!"));
+        if (e instanceof InvalidLogin) runOnUiThread(() -> password.setError("Wrong password!"));
     }
 
     @Override

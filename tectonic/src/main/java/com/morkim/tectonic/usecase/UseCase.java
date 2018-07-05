@@ -130,19 +130,10 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
         return data;
     }
 
-    public static <D> Random<D> waitForRandom(int key, D defaultValue) throws InterruptedException {
+    public static <D> Random<D> waitForRandom(int key) {
         if (cache.containsKey(key))
             return (Random<D>) cache.get(key);
         else {
-////            lastAction = new RandomAction<>(key, new Random<>(defaultValue));
-//            lastAction = new RandomAction<>(key, new Random<>());
-//            try {
-//                return (Random<D>) lastAction.get();
-//            } catch (ExecutionException e) {
-//                if (e.getCause() instanceof InterruptedException)
-//                    throw (InterruptedException) e.getCause();
-//                throw new RuntimeException();
-//            }
             return new Random<>();
         }
     }

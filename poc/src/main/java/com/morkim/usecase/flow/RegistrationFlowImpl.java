@@ -44,17 +44,17 @@ public class RegistrationFlowImpl implements Registration.Flow, RegisterUser.UI 
     @Override
     public Random<String> askForEmail() throws InterruptedException {
         if (step1 == null) step1 = stepFactory.create(Registration.Step1.class);
-        return UseCase.waitForRandom(EMAIL, "");
+        return UseCase.waitForRandom(EMAIL);
     }
 
     @Override
     public Random<String> askForPassword() throws InterruptedException {
-        return UseCase.waitForRandom(PASSWORD, "");
+        return UseCase.waitForRandom(PASSWORD);
     }
 
     @Override
     public Random<String> askForPasswordConfirmation() throws InterruptedException {
-        return UseCase.waitForRandom(PASSWORD_CONFIRM, "");
+        return UseCase.waitForRandom(PASSWORD_CONFIRM);
     }
 
     @Override
@@ -78,7 +78,7 @@ public class RegistrationFlowImpl implements Registration.Flow, RegisterUser.UI 
 
         if (validStep1) {
             if (step2 == null) step2 = stepFactory.create(Registration.Step2.class);
-            return UseCase.waitForRandom(MOBILE, "");
+            return UseCase.waitForRandom(MOBILE);
         } else {
             return new Random<>("");
         }

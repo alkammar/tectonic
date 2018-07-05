@@ -13,10 +13,6 @@ import com.morkim.usecase.contract.Registration;
 import com.morkim.usecase.di.AppInjector;
 import com.morkim.usecase.di.ui.registration.DaggerRegistration1ActivityComponent;
 import com.morkim.usecase.di.ui.registration.Registration1ActivityModule;
-import com.morkim.usecase.uc.EmptyEmail;
-import com.morkim.usecase.uc.EmptyPassword;
-import com.morkim.usecase.uc.InvalidEmail;
-import com.morkim.usecase.uc.NonMatchingPasswords;
 import com.morkim.usecase.uc.RegisterUser;
 
 import javax.inject.Inject;
@@ -87,16 +83,6 @@ public class Registration1Activity extends AppCompatActivity implements Registra
         StringBuilder text = new StringBuilder();
         for (int i = 0; i < strength; i++) text.append("-");
         runOnUiThread(() -> this.strength.setText(text.toString()));
-    }
-
-    @Override
-    public void showError(Exception e) {
-        runOnUiThread(() -> {
-            if (e instanceof EmptyEmail)                email.setError("Please enter your email");
-            else if (e instanceof InvalidEmail)         email.setError("Please enter a valid email");
-            else if (e instanceof EmptyPassword)        password.setError("Please enter your password");
-            else if (e instanceof NonMatchingPasswords) passwordConfirm.setError("Passwords not matching");
-        });
     }
 
     @Override

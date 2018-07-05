@@ -21,13 +21,11 @@ public interface Registration {
 
         void updatePasswordStrength(int strength);
 
-        void showError(Exception e);
     }
 
     interface Step2 extends Step {
 
         void showError(int e);
 
-        void showError(Exception e);
     }
 }

@@ -32,17 +32,15 @@ public class RegisterUser extends UseCase {
         try {
 
             Random<String> email = ui.askForEmail();
-            validateEmail(email);
-
             Random<String> password = ui.askForPassword();
-            validatePassword(password);
+            Random<String> passwordConfirmation = ui.askForPasswordConfirmation();
+            Random<String> mobile = ui.askForMobile();
+
             ui.indicatePasswordStrength(strength(password.value()));
 
-            Random<String> passwordConfirmation = ui.askForPasswordConfirmation();
-            validatePasswordConfirmation(password, passwordConfirmation);
+            ui.askForConfirmation();
 
-            Random<String> mobile = ui.askForMobile();
-            validateMobile(mobile);
+            validate(email, password, passwordConfirmation, mobile);
 
             backend.register(email.value(), password.value(), mobile.value());
 
@@ -51,43 +49,60 @@ public class RegisterUser extends UseCase {
         } catch (ValidationException e) {
             ui.showError(e);
             restart();
+        } catch (UserAlreadyRegistered e) {
+            ui.confirmRegistrationError();
         }
     }
 
+    private void validate(Random<String> email, Random<String> password, Random<String> passwordConfirmation, Random<String> mobile) throws ValidationException {
+        int error = UI.OK;
+        error += validateEmail(email);
+        error += validatePassword(password);
+        error += validatePasswordConfirmation(password, passwordConfirmation);
+        error += validateMobile(mobile);
+
+        if (error != UI.OK) throw new ValidationException(error);
+    }
+
     private int strength(String password) {
-        return password != null ? password.length() : 0;
+        return password != null ? password.length() : UI.OK;
     }
 
-    private void validateEmail(Random<String> email) throws EmptyEmail, InvalidEmail {
-        if (!email.isSet()) return;
-        if (email.value().isEmpty()) throw new EmptyEmail();
-        if (!email.value().contains("@")) throw new InvalidEmail();
+    private int validateEmail(Random<String> email) {
+        if (!email.isSet()) return UI.OK;
+        if (email.value().isEmpty()) return UI.ERROR_EMPTY_EMAIL;
+        if (!email.value().contains("@")) return UI.ERROR_INVALID_EMAIL;
+        return UI.OK;
     }
 
-    private void validatePassword(Random<String> password) throws EmptyPassword {
-        if (!password.isSet()) return;
-        if (password.value().isEmpty()) throw new EmptyPassword();
+    private int validatePassword(Random<String> password) {
+        if (!password.isSet()) return UI.OK;
+        if (password.value().isEmpty()) return UI.ERROR_EMPTY_PASSWORD;
+        return UI.OK;
     }
 
-    private void validatePasswordConfirmation(Random<String> password, Random<String> passwordConfirmation) throws NonMatchingPasswords {
-        if (!passwordConfirmation.isSet()) return;
-        if (password.value() == null) return;
-        if (!Objects.equals(password.value(), passwordConfirmation.value()))
-            throw new NonMatchingPasswords();
+    private int validatePasswordConfirmation(Random<String> password, Random<String> passwordConfirmation) {
+        if (!passwordConfirmation.isSet()) return UI.OK;
+        if (password.value() == null) return UI.OK;
+        if (!Objects.equals(password.value(), passwordConfirmation.value())) return UI.ERROR_NON_MATCHING_PASSWORDS;
+        return UI.OK;
     }
 
-    private void validateMobile(Random<String> mobile) throws EmptyMobile {
-        if (!mobile.isSet()) return;
-        if (mobile.value().isEmpty()) throw new EmptyMobile();
+    private int validateMobile(Random<String> mobile) {
+        if (!mobile.isSet()) return UI.OK;
+        if (mobile.value().isEmpty()) return UI.ERROR_EMPTY_MOBILE;
+        return UI.OK;
     }
 
     public interface UI extends PrimaryActor<UseCaseExecutor.Event, Void> {
 
-        int ERROR_EMPTY_EMAIL = -1;
-        int ERROR_INVALID_EMAIL = -2;
-        int ERROR_EMPTY_PASSWORD = -3;
-        int ERROR_NON_MATCHING_PASSWORDS = -4;
-        int ERROR_EMPTY_MOBILE = -5;
+        int OK = 0;
+        int ERROR_EMPTY_EMAIL = 1;
+        int ERROR_INVALID_EMAIL = 1 << 1;
+        int ERROR_EMPTY_PASSWORD = 1 << 2;
+        int ERROR_NON_MATCHING_PASSWORDS = 1 << 3;
+        int ERROR_EMPTY_MOBILE = 1 << 4;
+        int ERROR_MISSING_INPUT = 1 << 5;
 
         Random<String> askForEmail() throws InterruptedException;
 
@@ -99,11 +114,15 @@ public class RegisterUser extends UseCase {
 
         Random<String> askForMobile() throws InterruptedException;
 
-        void showError(Exception e);
+        void showError(ValidationException e);
+
+        void askForConfirmation() throws InterruptedException;
+
+        void confirmRegistrationError();
     }
 
     public interface Backend {
 
-        void register(String email, String password, String mobile);
+        void register(String email, String password, String mobile) throws UserAlreadyRegistered;
     }
 }

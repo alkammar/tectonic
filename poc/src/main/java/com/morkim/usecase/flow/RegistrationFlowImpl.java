@@ -7,11 +7,6 @@ import com.morkim.tectonic.usecase.UseCase;
 import com.morkim.tectonic.usecase.UseCaseHandle;
 import com.morkim.usecase.app.UseCaseExecutor;
 import com.morkim.usecase.contract.Registration;
-import com.morkim.usecase.uc.EmptyEmail;
-import com.morkim.usecase.uc.EmptyMobile;
-import com.morkim.usecase.uc.EmptyPassword;
-import com.morkim.usecase.uc.InvalidEmail;
-import com.morkim.usecase.uc.NonMatchingPasswords;
 import com.morkim.usecase.uc.RegisterUser;
 import com.morkim.usecase.uc.ValidationException;
 
@@ -49,18 +44,28 @@ public class RegistrationFlowImpl implements Registration.Flow, RegisterUser.UI 
     @Override
     public Random<String> askForEmail() throws InterruptedException {
         if (step1 == null) step1 = stepFactory.create(Registration.Step1.class);
-        UseCase.waitFor(NEXT);
-        return UseCase.waitForRandom(EMAIL, new Random<>(""));
+        return UseCase.waitForRandom(EMAIL, "");
     }
 
     @Override
     public Random<String> askForPassword() throws InterruptedException {
-        return UseCase.waitFor(PASSWORD);
+        return UseCase.waitForRandom(PASSWORD, "");
     }
 
     @Override
     public Random<String> askForPasswordConfirmation() throws InterruptedException {
-        return UseCase.waitForRandom(PASSWORD_CONFIRM, new Random<>(""));
+        return UseCase.waitForRandom(PASSWORD_CONFIRM, "");
+    }
+
+    @Override
+    public void askForConfirmation() throws InterruptedException {
+        if (!validStep1) UseCase.waitFor(NEXT);
+        else UseCase.waitFor(CONFIRM);
+    }
+
+    @Override
+    public void confirmRegistrationError() {
+
     }
 
     @Override
@@ -73,19 +78,15 @@ public class RegistrationFlowImpl implements Registration.Flow, RegisterUser.UI 
 
         if (validStep1) {
             if (step2 == null) step2 = stepFactory.create(Registration.Step2.class);
-            UseCase.clear(CONFIRM);
-            UseCase.waitFor(CONFIRM);
-            return UseCase.waitForRandom(MOBILE, new Random<>(""));
+            return UseCase.waitForRandom(MOBILE, "");
         } else {
-            UseCase.clear(NEXT);
-            validStep1 = true;
-            throw new InterruptedException();
+            return new Random<>("");
         }
     }
 
     @Override
     public void submitPassword(String password) {
-        UseCase.replyWith(PASSWORD, new Random<>(password));
+        UseCase.replyWithRandom(PASSWORD, new Random<>(password));
     }
 
     @Override
@@ -93,36 +94,40 @@ public class RegistrationFlowImpl implements Registration.Flow, RegisterUser.UI 
         UseCase.replyWith(EMAIL, new Random<>(email));
         UseCase.replyWith(PASSWORD, new Random<>(password));
         UseCase.replyWith(PASSWORD_CONFIRM, new Random<>(passwordConfirm));
-        UseCase.replyWith(NEXT);
+        UseCase.replyWithRandom(NEXT);
     }
 
     @Override
     public void submit(String mobile) {
         UseCase.replyWith(MOBILE, new Random<>(mobile));
-        UseCase.replyWith(CONFIRM);
+        UseCase.replyWithRandom(CONFIRM);
     }
 
     @Override
-    public void showError(Exception e) {
+    public void showError(ValidationException e) {
 
-        if (e instanceof EmptyEmail || e instanceof InvalidEmail) {
-            validStep1 = false;
-            step1.showError(e);
-            UseCase.clear(EMAIL);
-        } else if (e instanceof EmptyPassword) {
-            validStep1 = false;
-            step1.showError(e);
-            UseCase.clear(PASSWORD);
-        } else if (e instanceof NonMatchingPasswords) {
-            validStep1 = false;
-            step1.showError(e);
-            UseCase.clear(PASSWORD_CONFIRM);
-        } else if (e instanceof EmptyMobile) {
-            if (step2 != null) step2.showError(e);
-            UseCase.clear(MOBILE);
-        } else if (e instanceof ValidationException) {
-            UseCase.clear(CONFIRM);
-        }
+        int error = e.getError();
+
+        int e1 = error & RegisterUser.UI.ERROR_MISSING_INPUT;
+        int e2 = error & RegisterUser.UI.ERROR_EMPTY_EMAIL;
+        int e3 = error & RegisterUser.UI.ERROR_INVALID_EMAIL;
+        int e4 = error & RegisterUser.UI.ERROR_EMPTY_PASSWORD;
+        int e5 = error & RegisterUser.UI.ERROR_NON_MATCHING_PASSWORDS;
+
+        if (e2 != RegisterUser.UI.OK) { step1.showError(e2); }
+        if (e3 != RegisterUser.UI.OK) { step1.showError(e3); }
+        if (e4 != RegisterUser.UI.OK) { step1.showError(e4); }
+        if (e5 != RegisterUser.UI.OK) { step1.showError(e5); }
+
+        validStep1 = (e1 | e2 | e3 | e4 | e5) == RegisterUser.UI.OK;
+        if (!validStep1) UseCase.clear(NEXT);
+
+        int e6 = error & RegisterUser.UI.ERROR_EMPTY_MOBILE;
+
+        if (validStep1 && step2 != null) if (e6 != RegisterUser.UI.OK) { step2.showError(e6); }
+
+        boolean validStep2 = e6 == RegisterUser.UI.OK;
+        if (!validStep2) UseCase.clear(CONFIRM);
     }
 
     @Override
@@ -137,7 +142,7 @@ public class RegistrationFlowImpl implements Registration.Flow, RegisterUser.UI 
         step2.terminate();
         step1.terminate();
 
-        UseCase.clear(EMAIL, PASSWORD, PASSWORD_CONFIRM, MOBILE);
+        UseCase.clear(EMAIL, PASSWORD, PASSWORD_CONFIRM, NEXT, MOBILE, CONFIRM);
     }
 
     @Override
@@ -153,6 +158,6 @@ public class RegistrationFlowImpl implements Registration.Flow, RegisterUser.UI 
         step2.terminate();
         step1.terminate();
 
-        UseCase.clear(EMAIL, PASSWORD, PASSWORD_CONFIRM, MOBILE);
+        UseCase.clear(EMAIL, PASSWORD, PASSWORD_CONFIRM, NEXT, MOBILE, CONFIRM);
     }
 }

@@ -39,19 +39,19 @@ public class RandomAccessActorTest extends ConcurrentTectonicTest {
             @Override
             public Random<StepData> requestData1() throws InterruptedException {
                 count++;
-                return UseCase.waitForRandom(ACTION_DATA_KEY_1, new Random<>(new StepData()));
+                return UseCase.waitForRandom(ACTION_DATA_KEY_1, new StepData());
             }
 
             @Override
             public Random<StepData> requestData2() throws InterruptedException {
                 count++;
-                return UseCase.waitForRandom(ACTION_DATA_KEY_2, new Random<>(new StepData()));
+                return UseCase.waitForRandom(ACTION_DATA_KEY_2, new StepData());
             }
 
             @Override
             public Random<StepData> requestData3() throws InterruptedException {
                 count++;
-                return UseCase.waitForRandom(ACTION_DATA_KEY_3, new Random<>(new StepData()));
+                return UseCase.waitForRandom(ACTION_DATA_KEY_3, new StepData());
             }
 
             @Override
@@ -72,7 +72,7 @@ public class RandomAccessActorTest extends ConcurrentTectonicTest {
                 UseCase.replyWith(ACTION_DATA_KEY_1, new Random<>(data1));
                 UseCase.replyWith(ACTION_DATA_KEY_2, new Random<>(data2));
                 UseCase.replyWith(ACTION_DATA_KEY_3, new Random<>(data3));
-                UseCase.replyWith(CONFIRM);
+                UseCase.replyWithRandom(CONFIRM);
             }
         });
         thread.start();

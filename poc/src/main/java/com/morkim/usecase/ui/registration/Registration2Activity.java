@@ -10,7 +10,6 @@ import com.morkim.usecase.contract.Registration;
 import com.morkim.usecase.di.AppInjector;
 import com.morkim.usecase.di.ui.registration.DaggerRegistration2ActivityComponent;
 import com.morkim.usecase.di.ui.registration.Registration2ActivityModule;
-import com.morkim.usecase.uc.EmptyMobile;
 import com.morkim.usecase.uc.RegisterUser;
 
 import javax.inject.Inject;
@@ -49,13 +48,6 @@ public class Registration2Activity extends AppCompatActivity implements Registra
 
         findViewById(R.id.btn_submit).setOnClickListener(v ->
                 flow.submit(mobile.getText().toString()));
-    }
-
-    @Override
-    public void showError(Exception e) {
-        runOnUiThread(() -> {
-            if (e instanceof EmptyMobile) mobile.setError("Please enter your mobile number");
-        });
     }
 
     @Override

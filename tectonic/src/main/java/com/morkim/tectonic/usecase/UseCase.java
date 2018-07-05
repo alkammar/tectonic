@@ -16,9 +16,9 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
     private static Map<Class<? extends UseCase>, UseCase> created = new HashMap<>();
     private static Map<Thread, ThreadManager> waitingUndo = new HashMap<>();
     private static ThreadManager defaultThreadManager;
-    private static Map<Integer, Reply> replies = new HashMap<>();
+    private static Map<Integer, Action> actions = new HashMap<>();
     private static Map<Integer, Object> cache = new HashMap<>();
-    private static Reply latestRandom;
+    private static Action lastAction;
     private static boolean waitingToRestart;
     private boolean running;
     private Map<Integer, Object> steps;
@@ -130,39 +130,32 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
         return data;
     }
 
-//    public static <D> Random<D> waitForRandom(int key) throws InterruptedException {
-//        if (cache.containsKey(key))
-//            return (Random<D>) cache.get(key);
-//        else {
-//            Reply<Random<D>> reply = new Reply<>();
-//            if (waitingToRestart) {
-//                waitingToRestart = false;
-//                throw new InterruptedException();
-//            }
-//            latestRandom = reply;
-//            replies.put(key, reply);
+    public static <D> Random<D> waitForRandom(int key, D defaultValue) throws InterruptedException {
+        if (cache.containsKey(key))
+            return (Random<D>) cache.get(key);
+        else {
+////            lastAction = new RandomAction<>(key, new Random<>(defaultValue));
+//            lastAction = new RandomAction<>(key, new Random<>());
 //            try {
-//                return reply.get();
+//                return (Random<D>) lastAction.get();
 //            } catch (ExecutionException e) {
+//                if (e.getCause() instanceof InterruptedException)
+//                    throw (InterruptedException) e.getCause();
 //                throw new RuntimeException();
 //            }
-//        }
-//    }
-
-    public static <D> Random<D> waitForRandom(int key, Random<D> defaultValue) throws InterruptedException {
-        if (cache.get(key) != null) return (Random<D>) cache.get(key);
-        return new Random<>();
+            return new Random<>();
+        }
     }
 
     public static <D> D waitFor(int key) throws InterruptedException {
         if (cache.containsKey(key))
             return (D) cache.get(key);
         else {
-            Reply<D> reply = new Reply<>();
-//            latestRandom = reply;
-            replies.put(key, reply);
+            Action<D> action = new Action<>();
+            actions.put(key, action);
+            lastAction = action;
             try {
-                return reply.get();
+                return action.get();
             } catch (ExecutionException e) {
                 if (e.getCause() instanceof InterruptedException)
                     throw (InterruptedException) e.getCause();
@@ -177,10 +170,10 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
         if (cache.containsKey(key))
             return (D) cache.get(key);
         else {
-            Reply<D> reply = new Reply<>();
-            replies.put(key, reply);
+            Action<D> action = new Action<>();
+            actions.put(key, action);
             try {
-                return reply.get();
+                return action.get();
             } catch (ExecutionException e) {
                 for (Class<? extends Exception> ex : exs)
                     if (e.getCause().getClass() == ex) //noinspection unchecked
@@ -196,37 +189,32 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
     }
 
     public static <D> void replyWith(int key, D data) {
-        Reply reply = replies.get(key);
+        Action action = actions.get(key);
         Object cachedData = cache.get(key);
 
-        if (data instanceof Random) {
-            if (reply == null) {
-                reply = new Reply<>();
-                cache.put(key, data);
-                replies.put(key, reply);
-//                latestRandom.setException(new InterruptedException());
-            } else {
-                cache.put(key, data);
-            }
-        } else if (reply != null && cachedData != null) {
+        if (action != null && cachedData != null) {
             cache.put(key, data);
-            reply.interrupt();
+            action.interrupt();
         } else if (data instanceof Exception) {
-            if (reply != null) reply.setException((Exception) data);
-//        }
-//        else if (data instanceof Random) {
-//            if (reply == null && latestRandom != null) {
-//                cache.put(key, data);
-//                waitingToRestart = true;
-//                latestRandom.set(new Random<D>());
-//            } else {
-//                cache.put(key, data);
-//                latestRandom = null;
-//                if (reply != null) reply.set(data);
-//            }
+            if (action != null) action.setException((Exception) data);
         } else {
             cache.put(key, data);
-            if (reply != null) reply.set(data);
+            if (action != null) action.set(data);
+        }
+    }
+
+    public static <D> void replyWithRandom(int key) {
+        replyWithRandom(key, null);
+    }
+
+    public static <D> void replyWithRandom(int key, D data) {
+
+        if (lastAction != null) {
+            cache.put(key, data);
+            lastAction.interrupt();
+            lastAction = null;
+        } else {
+            replyWith(key, data);
         }
     }
 
@@ -282,7 +270,7 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
     public static void clearAll() {
         created.clear();
         cache.clear();
-        replies.clear();
+        actions.clear();
     }
 
     public void restart() {

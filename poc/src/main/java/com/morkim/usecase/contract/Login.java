@@ -7,6 +7,8 @@ public interface Login {
     interface Flow {
 
         void submit(String password);
+
+        void notRegistered();
     }
 
     interface Screen extends Step {

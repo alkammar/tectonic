@@ -57,8 +57,12 @@ public class AuthenticationFlow
 
     @Override
     public void submit(String password) {
+        UseCase.replyWith(PASSWORD, password);
+    }
+
+    @Override
+    public void notRegistered() {
         UseCase.replyWith(PASSWORD, new UserWantsToRegister());
-//        UseCase.replyWith(PASSWORD, password);
     }
 
     @Override

@@ -46,6 +46,9 @@ public class LoginActivity extends AppCompatActivity implements Login.Screen {
         password = findViewById(R.id.ti_password);
         findViewById(R.id.btn_submit)
                 .setOnClickListener(v -> flow.submit(password.getText().toString()));
+
+        findViewById(R.id.btn_register)
+                .setOnClickListener(v -> flow.notRegistered());
     }
 
     @Override

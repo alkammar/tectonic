@@ -13,6 +13,8 @@ import com.morkim.usecase.uc.MainUseCase;
 import com.morkim.usecase.uc.SecondaryUseCase;
 import com.morkim.usecase.uc.UserWantsToRegister;
 
+import java.util.UUID;
+
 import javax.inject.Inject;
 
 public class AuthenticationFlow
@@ -22,8 +24,8 @@ public class AuthenticationFlow
         MainUseCase.Authenticator,
         SecondaryUseCase.Authenticator {
 
-    private static final int REFRESH = 51;
-    private static final int PASSWORD = 52;
+    private static final UUID REFRESH = UUID.randomUUID();
+    private static final UUID PASSWORD = UUID.randomUUID();
 
     private final StepFactory stepFactory;
     private Login.Screen login;

@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
 @SuppressLint("UseSparseArrays")
@@ -18,8 +19,8 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
     private static Map<Class<? extends UseCase>, UseCase> created = new HashMap<>();
     private static Map<Thread, ThreadManager> waitingUndo = new HashMap<>();
     private static ThreadManager defaultThreadManager;
-    private static Map<Integer, Action> actions = new HashMap<>();
-    private static Map<Integer, Object> cache = new HashMap<>();
+    private static Map<UUID, Action> actions = new HashMap<>();
+    private static Map<UUID, Object> cache = new HashMap<>();
     private static Action lastAction;
     private static boolean waitingToRestart;
     private boolean running;
@@ -135,7 +136,7 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
         return data;
     }
 
-    public static <D> Random<D> waitForRandom(int key) {
+    public static <D> Random<D> waitForRandom(UUID key) {
         if (cache.containsKey(key))
             return (Random<D>) cache.get(key);
         else {
@@ -143,7 +144,7 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
         }
     }
 
-    public static <D> D waitFor(int key) throws InterruptedException {
+    public static <D> D waitFor(UUID key) throws InterruptedException {
         if (cache.containsKey(key))
             return (D) cache.get(key);
         else {
@@ -161,7 +162,7 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
     }
 
     @SafeVarargs
-    public static <D> D waitFor(int key, Class<? extends Exception>... exs) throws InterruptedException, UnexpectedStep {
+    public static <D> D waitFor(UUID key, Class<? extends Exception>... exs) throws InterruptedException, UnexpectedStep {
 
         if (cache.containsKey(key))
             return (D) cache.get(key);
@@ -180,11 +181,11 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
         return null;
     }
 
-    public static void replyWith(int key) {
+    public static void replyWith(UUID key) {
         replyWith(key, null);
     }
 
-    public static <D> void replyWith(int key, D data) {
+    public static <D> void replyWith(UUID key, D data) {
         Action action = actions.get(key);
         Object cachedData = cache.get(key);
 
@@ -199,11 +200,11 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
         }
     }
 
-    public static <D> void replyWithRandom(int key) {
+    public static <D> void replyWithRandom(UUID key) {
         replyWithRandom(key, null);
     }
 
-    public static <D> void replyWithRandom(int key, D data) {
+    public static <D> void replyWithRandom(UUID key, D data) {
 
         if (lastAction != null) {
             cache.put(key, data);
@@ -214,8 +215,8 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
         }
     }
 
-    public static void clear(int... keys) {
-        for (int key : keys) cache.remove(key);
+    public static void clear(UUID... keys) {
+        for (UUID key : keys) cache.remove(key);
     }
 
     public void setPrimaryActor(PrimaryActor<E, R> primaryActor) {
@@ -275,10 +276,10 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
     }
 
     @Override
-    public void undo(Step step, int... actions) {
+    public void undo(Step step, UUID... actions) {
         ThreadManager threadManager = getThreadManager();
         waitingUndo.put(Thread.currentThread(), threadManager);
-        for (int action : actions) cache.remove(action);
+        for (UUID action : actions) cache.remove(action);
         threadManager.restart();
 
         if (running && primaryActor != null) primaryActor.onUndo(step);

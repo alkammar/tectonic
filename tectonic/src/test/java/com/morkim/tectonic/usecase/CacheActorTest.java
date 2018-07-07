@@ -7,12 +7,14 @@ import com.morkim.tectonic.usecase.entities.StepData;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.UUID;
+
 import static org.junit.Assert.assertEquals;
 
 public class CacheActorTest extends ConcurrentTectonicTest {
 
-    private int ACTION_DATA_KEY_1 = 1;
-    private int ACTION_DATA_KEY_2 = 2;
+    private UUID ACTION_DATA_KEY_1 = UUID.randomUUID();
+    private UUID ACTION_DATA_KEY_2 = UUID.randomUUID();
 
     private int count;
 

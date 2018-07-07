@@ -11,14 +11,16 @@ import com.morkim.usecase.uc.InvalidValueException;
 import com.morkim.usecase.uc.SecondaryUseCase;
 import com.morkim.usecase.uc.SpecificBackendError;
 
+import java.util.UUID;
+
 import javax.inject.Inject;
 
 public class SecondaryFlowImpl implements Secondary.Flow, SecondaryUseCase.UI {
 
-    private static final int DATA1 = 61;
-    private static final int DATA2 = 62;
-    private static final int DATA3 = 63;
-    private static final int CONFIRM = 64;
+    private static final UUID DATA1 = UUID.randomUUID();
+    private static final UUID DATA2 = UUID.randomUUID();
+    private static final UUID DATA3 = UUID.randomUUID();
+    private static final UUID CONFIRM = UUID.randomUUID();
 
     private final StepFactory stepFactory;
 

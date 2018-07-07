@@ -1,5 +1,6 @@
 package com.morkim.usecase.app;
 
+import com.morkim.tectonic.usecase.AbortedUseCase;
 import com.morkim.tectonic.usecase.Builder;
 import com.morkim.tectonic.usecase.PreconditionActor;
 import com.morkim.tectonic.usecase.PrimaryActor;
@@ -32,6 +33,11 @@ public class UseCaseExecutor implements Triggers<UseCaseExecutor.Event> {
     @Override
     public Event trigger(Event event) {
         return trigger(event, null, null, null);
+    }
+
+    @Override
+    public <R> R trigger(Class<? extends UseCase<Event, R>> cls) throws InterruptedException, AbortedUseCase {
+        return null;
     }
 
     @Override

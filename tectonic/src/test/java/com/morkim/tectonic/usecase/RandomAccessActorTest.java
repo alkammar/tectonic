@@ -6,15 +6,17 @@ import com.morkim.tectonic.usecase.entities.StepData;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.UUID;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class RandomAccessActorTest extends ConcurrentTectonicTest {
 
-    private int ACTION_DATA_KEY_1 = 1;
-    private int ACTION_DATA_KEY_2 = 2;
-    private int ACTION_DATA_KEY_3 = 3;
-    private int CONFIRM = 4;
+    private UUID ACTION_DATA_KEY_1 = UUID.randomUUID();
+    private UUID ACTION_DATA_KEY_2 = UUID.randomUUID();
+    private UUID ACTION_DATA_KEY_3 = UUID.randomUUID();
+    private UUID CONFIRM = UUID.randomUUID();
 
     private int count;
 

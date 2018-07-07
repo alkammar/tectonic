@@ -1,11 +1,13 @@
 package com.morkim.tectonic.usecase;
 
+import java.util.UUID;
+
 public class ResultUseCaseActor<E, R> implements ResultActor<E, R> {
 
     private Class<? extends UseCase<E, R>> cls;
-    private int key;
+    private UUID key;
 
-    public ResultUseCaseActor(Class<? extends UseCase<E, R>> cls, int key) {
+    public ResultUseCaseActor(Class<? extends UseCase<E, R>> cls, UUID key) {
         this.cls = cls;
         this.key = key;
     }

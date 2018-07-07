@@ -2,8 +2,8 @@ package com.morkim.usecase.app;
 
 import android.content.Intent;
 
+import com.morkim.tectonic.flow.StepCoordinator;
 import com.morkim.tectonic.flow.StepFactory;
-import com.morkim.tectonic.usecase.UseCase;
 import com.morkim.usecase.contract.Login;
 import com.morkim.usecase.contract.Logout;
 import com.morkim.usecase.contract.Registration;
@@ -16,8 +16,11 @@ import com.morkim.usecase.ui.secondary.SecondaryActivity1;
 import com.morkim.usecase.ui.secondary.SecondaryActivity2;
 import com.morkim.usecase.ui.secondary.SecondaryActivity3;
 
+import java.util.HashMap;
+
 public class StepFactoryImpl implements StepFactory {
 
+    private static HashMap<Integer, Object> cache;
     private final PoC application;
 
     public StepFactoryImpl(PoC poC) {
@@ -46,19 +49,17 @@ public class StepFactoryImpl implements StepFactory {
         return null;
     }
 
-    @Override
-    public <S> void onCreated(S step) {
-        UseCase.replyWith(step.getClass().hashCode(), step);
-        UseCase.clear(step.getClass().hashCode());
-    }
-
     private <S> S createActivity(Class<?> cls) throws InterruptedException {
         return createActivity(cls, 0);
     }
 
     private <S> S createActivity(Class<?> cls, int flags) throws InterruptedException {
-        application.startActivity(new Intent(application, cls)
-                .setFlags(flags));
-        return UseCase.waitFor(cls.hashCode());
+        application.startActivity(new Intent(application, cls).setFlags(flags));
+        return StepCoordinator.waitFor(cls.hashCode());
+    }
+
+    @Override
+    public <S> void onCreated(S step) {
+        StepCoordinator.replyWith(step.getClass().hashCode(), step);
     }
 }

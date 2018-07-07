@@ -10,17 +10,19 @@ import com.morkim.usecase.contract.Registration;
 import com.morkim.usecase.uc.RegisterUser;
 import com.morkim.usecase.uc.ValidationException;
 
+import java.util.UUID;
+
 import javax.inject.Inject;
 
 public class RegistrationFlowImpl implements Registration.Flow, RegisterUser.UI {
 
-    private static final int EMAIL = 81;
-    private static final int PASSWORD = 82;
-    private static final int PASSWORD_CONFIRM = 83;
-    private static final int NEXT = 84;
+    private static final UUID EMAIL = UUID.randomUUID();
+    private static final UUID PASSWORD = UUID.randomUUID();
+    private static final UUID PASSWORD_CONFIRM = UUID.randomUUID();
+    private static final UUID NEXT = UUID.randomUUID();
 
-    private static final int MOBILE = 85;
-    private static final int CONFIRM = 86;
+    private static final UUID MOBILE = UUID.randomUUID();
+    private static final UUID CONFIRM = UUID.randomUUID();
 
     private StepFactory stepFactory;
 

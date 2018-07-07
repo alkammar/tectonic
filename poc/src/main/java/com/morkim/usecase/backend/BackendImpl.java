@@ -17,11 +17,13 @@ import com.morkim.usecase.uc.RegisterUser;
 import com.morkim.usecase.uc.SecondaryUseCase;
 import com.morkim.usecase.uc.SpecificBackendError;
 
+import java.util.UUID;
+
 import javax.inject.Inject;
 
 public class BackendImpl implements MainUseCase.Backend, LogoutUser.Backend, SecondaryUseCase.Backend, LoginUser.Backend, ResultActor<UseCaseExecutor.Event, Void>,RegisterUser.Backend {
 
-    private static final int REGISTRATION = 71;
+    private static final UUID REGISTRATION = UUID.randomUUID();
     private static boolean isExpired = true;
     private Triggers<UseCaseExecutor.Event> triggers;
 

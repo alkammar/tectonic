@@ -1,12 +1,13 @@
 package com.morkim.usecase.uc;
 
 import com.morkim.tectonic.usecase.UseCase;
+import com.morkim.usecase.app.UseCaseExecutor;
 import com.morkim.usecase.di.AppInjector;
 
 import javax.inject.Inject;
 
 
-public class LogoutUser extends UseCase {
+public class LogoutUser extends UseCase<UseCaseExecutor.Event, Void> {
 
     @Inject
     Backend backend;

@@ -3,7 +3,7 @@ package com.morkim.tectonic.usecase;
 public class AbortedUseCase extends Exception {
     private Class<? extends UseCase> useCaseClass;
 
-    public <R> AbortedUseCase(Class<? extends UseCase> cls) {
+    public AbortedUseCase(Class<? extends UseCase> cls) {
         useCaseClass = cls;
     }
 

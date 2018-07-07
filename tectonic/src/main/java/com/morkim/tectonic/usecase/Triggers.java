@@ -12,5 +12,5 @@ public interface Triggers<E> {
 
     E trigger(E event);
 
-    <R> R trigger(Class<? extends UseCase<?, R>> cls) throws InterruptedException, AbortedUseCase;
+    <R> R trigger(Class<? extends UseCase<E, R>> cls) throws InterruptedException, AbortedUseCase;
 }

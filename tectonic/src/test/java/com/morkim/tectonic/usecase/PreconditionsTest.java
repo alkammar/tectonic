@@ -27,7 +27,7 @@ public class PreconditionsTest extends ConcurrentTectonicTest {
 	public void preconditions_fail__onExecute_not_called() {
 
 		FailingPreconditionsUseCase useCase = UseCase.fetch(FailingPreconditionsUseCase.class);
-		useCase.setTriggers(new SimpleTriggers());
+		useCase.setExecutor(new SimpleTriggers());
 		useCase.execute();
 
 		assertFalse(useCase.isOnExecuteCalled());
@@ -37,7 +37,7 @@ public class PreconditionsTest extends ConcurrentTectonicTest {
 	public void preconditions_complete__onExecute_called() throws InterruptedException {
 
 		final CompletedPreconditionsUseCase useCase = UseCase.fetch(CompletedPreconditionsUseCase.class);
-		useCase.setTriggers(new SimpleTriggers());
+		useCase.setExecutor(new SimpleTriggers());
 		useCase.execute();
 
 		Thread thread = new Thread(new Runnable() {

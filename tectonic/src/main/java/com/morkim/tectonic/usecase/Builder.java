@@ -42,7 +42,7 @@ public class Builder<E> {
         useCase.setPreconditionActor(preconditionActor);
         useCase.setPrimaryActor(primaryActor);
         useCase.setResultActor(resultActor);
-        useCase.setTriggers(triggers);
+        useCase.setExecutor(triggers);
         return useCase;
     }
 }

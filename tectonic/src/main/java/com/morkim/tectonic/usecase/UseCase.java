@@ -13,6 +13,8 @@ import java.util.concurrent.ExecutionException;
 @SuppressLint("UseSparseArrays")
 public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHandle {
 
+    protected Triggers<E> executor;
+
     private static Map<Class<? extends UseCase>, UseCase> created = new HashMap<>();
     private static Map<Thread, ThreadManager> waitingUndo = new HashMap<>();
     private static ThreadManager defaultThreadManager;
@@ -28,7 +30,6 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
     private ResultActor<E, R> resultActor;
     private PreconditionActor<E> preconditionActor;
 
-    private Triggers<E> triggers;
     private E event;
     private volatile Set<E> preconditions = new HashSet<>();
 
@@ -93,7 +94,7 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
 
     private void waitForPreconditions() {
         onAddPreconditions(preconditions);
-        for (E event : preconditions) triggers.trigger(event, this);
+        for (E event : preconditions) executor.trigger(event, this);
         //noinspection StatementWithEmptyBody
         while (preconditions.size() > 0) ;
     }
@@ -226,8 +227,8 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
         this.resultActor = resultActor;
     }
 
-    public void setTriggers(Triggers<E> triggers) {
-        this.triggers = triggers;
+    public void setExecutor(Triggers<E> executor) {
+        this.executor = executor;
     }
 
     public Builder builder() {

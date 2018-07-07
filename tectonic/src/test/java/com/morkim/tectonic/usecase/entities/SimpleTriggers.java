@@ -1,9 +1,11 @@
 package com.morkim.tectonic.usecase.entities;
 
+import com.morkim.tectonic.usecase.AbortedUseCase;
 import com.morkim.tectonic.usecase.PreconditionActor;
 import com.morkim.tectonic.usecase.PrimaryActor;
 import com.morkim.tectonic.usecase.ResultActor;
 import com.morkim.tectonic.usecase.Triggers;
+import com.morkim.tectonic.usecase.UseCase;
 
 public class SimpleTriggers implements Triggers<Integer> {
     @Override
@@ -29,5 +31,10 @@ public class SimpleTriggers implements Triggers<Integer> {
     @Override
     public Integer trigger(Integer event) {
         return trigger(event, null, null, null);
+    }
+
+    @Override
+    public <R> R trigger(Class<? extends UseCase> cls) throws InterruptedException, AbortedUseCase {
+        return null;
     }
 }

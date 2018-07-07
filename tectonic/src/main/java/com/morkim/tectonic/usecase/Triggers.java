@@ -11,4 +11,6 @@ public interface Triggers<E> {
     E trigger(E event, PreconditionActor<E> preconditionActor);
 
     E trigger(E event);
+
+    <R> R trigger(Class<? extends UseCase> cls) throws InterruptedException, AbortedUseCase;
 }

@@ -13,7 +13,7 @@ import java.util.concurrent.ExecutionException;
 @SuppressLint("UseSparseArrays")
 public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHandle {
 
-    protected Triggers<E> executor;
+    private Triggers<E> executor;
 
     private static Map<Class<? extends UseCase>, UseCase> created = new HashMap<>();
     private static Map<Thread, ThreadManager> waitingUndo = new HashMap<>();
@@ -61,7 +61,7 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
     }
 
     public void execute() {
-        execute(null);
+        execute((E) null);
     }
 
     public void execute(final E event) {
@@ -90,6 +90,10 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
                 }
             });
         }
+    }
+
+    protected <r> r execute(Class<? extends UseCase<E, r>> cls) throws AbortedUseCase, InterruptedException {
+        return executor.trigger(cls);
     }
 
     private void waitForPreconditions() {

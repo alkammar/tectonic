@@ -34,7 +34,7 @@ public class SimpleTriggers implements Triggers<Integer> {
     }
 
     @Override
-    public <R> R trigger(Class<? extends UseCase<Integer, R>> cls) throws InterruptedException, AbortedUseCase {
+    public <R> R trigger(Class<? extends UseCase<Integer, R>> cls, Integer contextEvent) throws InterruptedException, AbortedUseCase {
         return null;
     }
 }

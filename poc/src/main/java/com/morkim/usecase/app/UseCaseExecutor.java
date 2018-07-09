@@ -36,7 +36,7 @@ public class UseCaseExecutor implements Triggers<UseCaseExecutor.Event> {
     }
 
     @Override
-    public <R> R trigger(Class<? extends UseCase<Event, R>> cls) throws InterruptedException, AbortedUseCase {
+    public <R> R trigger(Class<? extends UseCase<Event, R>> cls, Event contextEvent) throws InterruptedException, AbortedUseCase {
         return null;
     }
 

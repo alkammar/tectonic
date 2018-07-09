@@ -32,7 +32,7 @@ public class UseCaseExecutor implements Triggers<UseCaseExecutor.Event> {
 
     @Override
     public Event trigger(Event event) {
-        return trigger(event, null, null, null);
+        return trigger(event, null, null, null, null);
     }
 
     @Override
@@ -42,21 +42,21 @@ public class UseCaseExecutor implements Triggers<UseCaseExecutor.Event> {
 
     @Override
     public Event trigger(Event event, PrimaryActor<Event, ?> primaryActor) {
-        return trigger(event, null, primaryActor, null);
+        return trigger(event, null, primaryActor, null, null);
     }
 
     @Override
     public Event trigger(Event event, ResultActor<Event, ?> resultActor) {
-        return trigger(event, null, null, resultActor);
+        return trigger(event, null, null, resultActor, null);
     }
 
     @Override
     public Event trigger(Event event, PreconditionActor<Event> preconditionActor) {
-        return trigger(event, preconditionActor, null, null);
+        return trigger(event, preconditionActor, null, null, null);
     }
 
     @Override
-    public Event trigger(Event event, PreconditionActor<Event> preconditionActor, PrimaryActor<Event, ?> primaryActor, ResultActor<Event, ?> resultActor) {
+    public Event trigger(Event event, PreconditionActor<Event> preconditionActor, PrimaryActor<Event, ?> primaryActor, ResultActor<Event, ?> resultActor, Event contextEvent) {
 
         switch (event) {
 

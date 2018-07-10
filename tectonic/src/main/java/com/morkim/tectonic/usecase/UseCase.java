@@ -15,6 +15,7 @@ import java.util.concurrent.ExecutionException;
 @SuppressLint("UseSparseArrays")
 public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHandle {
 
+    private static boolean waitingForRandoms;
     private Triggers<E> executor;
 
     private static Map<Class<? extends UseCase>, UseCase> created = new HashMap<>();
@@ -144,6 +145,7 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
     }
 
     public static <D> Random<D> waitForRandom(UUID key) {
+        waitingForRandoms = true;
         if (cache.containsKey(key))
             return (Random<D>) cache.get(key);
         else {
@@ -157,7 +159,10 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
         else {
             Action<D> action = new Action<>();
             actions.put(key, action);
-            lastActions.push(action);
+            if (waitingForRandoms) {
+                lastActions.push(action);
+                waitingForRandoms = false;
+            }
             try {
                 return action.get();
             } catch (ExecutionException e) {

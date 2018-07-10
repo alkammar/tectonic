@@ -221,6 +221,7 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
         if (!lastActions.isEmpty()) {
             cache.put(key, data);
             Action lastAction = lastActions.pop();
+            waitingForRandoms = false;
             lastAction.interrupt();
         } else {
             replyWith(key, data);

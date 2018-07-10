@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.Stack;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
@@ -21,7 +22,7 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
     private static ThreadManager defaultThreadManager;
     private static Map<UUID, Action> actions = new HashMap<>();
     private static Map<UUID, Object> cache = new HashMap<>();
-    private static Action lastAction;
+    private static Stack<Action> lastActions = new Stack<>();
     private static boolean waitingToRestart;
     private boolean running;
     private Map<Integer, Object> steps;
@@ -156,7 +157,7 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
         else {
             Action<D> action = new Action<>();
             actions.put(key, action);
-            lastAction = action;
+            lastActions.push(action);
             try {
                 return action.get();
             } catch (ExecutionException e) {
@@ -212,10 +213,10 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
 
     public static <D> void replyWithRandom(UUID key, D data) {
 
-        if (lastAction != null) {
+        if (!lastActions.isEmpty()) {
             cache.put(key, data);
+            Action lastAction = lastActions.pop();
             lastAction.interrupt();
-            lastAction = null;
         } else {
             replyWith(key, data);
         }

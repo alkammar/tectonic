@@ -93,9 +93,13 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
         }
     }
 
+    protected <r> r execute(Class<? extends UseCase<E, r>> cls) throws AbortedUseCase, InterruptedException {
+        return execute(null, cls);
+    }
+
     protected <r> r execute(UUID key, Class<? extends UseCase<E, r>> cls) throws AbortedUseCase, InterruptedException {
-        r result = executor.trigger(cls, event);
-        cache.put(key, result);
+        r result = (cache.containsKey(key)) ? (r) cache.get(key) : executor.trigger(cls, event);
+        if (key != null) cache.put(key, result);
         return result;
     }
 

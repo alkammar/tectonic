@@ -145,10 +145,10 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
     }
 
     public static <D> Random<D> waitForRandom(UUID key) {
-        waitingForRandoms = true;
         if (cache.containsKey(key))
             return (Random<D>) cache.get(key);
         else {
+            waitingForRandoms = true;
             return new Random<>();
         }
     }
@@ -221,7 +221,6 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
         if (!lastActions.isEmpty()) {
             cache.put(key, data);
             Action lastAction = lastActions.pop();
-            waitingForRandoms = false;
             lastAction.interrupt();
         } else {
             replyWith(key, data);

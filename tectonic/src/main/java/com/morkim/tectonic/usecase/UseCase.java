@@ -93,8 +93,10 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
         }
     }
 
-    protected <r> r execute(Class<? extends UseCase<E, r>> cls) throws AbortedUseCase, InterruptedException {
-        return executor.trigger(cls, event);
+    protected <r> r execute(UUID key, Class<? extends UseCase<E, r>> cls) throws AbortedUseCase, InterruptedException {
+        r result = executor.trigger(cls, event);
+        cache.put(key, result);
+        return result;
     }
 
     private void waitForPreconditions() {

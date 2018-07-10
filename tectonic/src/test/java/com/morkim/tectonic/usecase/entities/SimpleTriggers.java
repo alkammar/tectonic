@@ -15,22 +15,22 @@ public class SimpleTriggers implements Triggers<Integer> {
 
     @Override
     public Integer trigger(Integer event, PrimaryActor<Integer, ?> primaryActor) {
-        return trigger(event, null, primaryActor, null, );
+        return trigger(event, null, primaryActor, null, null);
     }
 
     @Override
     public Integer trigger(Integer event, ResultActor<Integer, ?> resultActor) {
-        return trigger(event, null, null, resultActor, );
+        return trigger(event, null, null, resultActor, null);
     }
 
     @Override
     public Integer trigger(Integer event, PreconditionActor<Integer> preconditionActor) {
-        return trigger(event, preconditionActor, null, null, );
+        return trigger(event, preconditionActor, null, null, null);
     }
 
     @Override
     public Integer trigger(Integer event) {
-        return trigger(event, null, null, null, );
+        return trigger(event, null, null, null, null);
     }
 
     @Override

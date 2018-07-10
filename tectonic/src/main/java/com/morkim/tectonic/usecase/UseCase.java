@@ -8,23 +8,23 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.Stack;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
 @SuppressLint("UseSparseArrays")
 public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHandle {
 
-    private static boolean waitingForRandoms;
     private Triggers<E> executor;
 
     private static Map<Class<? extends UseCase>, UseCase> created = new HashMap<>();
     private static Map<Thread, ThreadManager> waitingUndo = new HashMap<>();
     private static ThreadManager defaultThreadManager;
-    private static Map<UUID, Action> actions = new HashMap<>();
+    private Map<UUID, Action> actions = new HashMap<>();
+    private static Map<UUID, Thread> keyThreadMap = new HashMap<>();
+    private static Map<Thread, UseCase> threadUseCaseMap = new HashMap<>();
     private static Map<UUID, Object> cache = new HashMap<>();
-    private static Stack<Action> lastActions = new Stack<>();
     private static boolean waitingToRestart;
+    private Action<?> blockingAction;
     private boolean running;
     private Map<Integer, Object> steps;
 
@@ -75,7 +75,7 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
             getThreadManager().start(new ThreadManager.UseCaseExecution() {
                 @Override
                 public void run() throws InterruptedException {
-
+                    threadUseCaseMap.put(Thread.currentThread(), UseCase.this);
                     waitForPreconditions();
                     if (primaryActor != null) primaryActor.onStart(UseCase.this);
                     onExecute();
@@ -90,6 +90,15 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
                             if (primaryActor != null) primaryActor.onAbort(event);
                         running = false;
                     }
+                }
+
+                @Override
+                public void terminate() {
+                    threadUseCaseMap.remove(Thread.currentThread());
+                    for (UUID key : actions.keySet()) {
+                        keyThreadMap.remove(key);
+                    }
+                    actions.clear();
                 }
             });
         }
@@ -148,7 +157,6 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
         if (cache.containsKey(key))
             return (Random<D>) cache.get(key);
         else {
-            waitingForRandoms = true;
             return new Random<>();
         }
     }
@@ -158,11 +166,10 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
             return (D) cache.get(key);
         else {
             Action<D> action = new Action<>();
-            actions.put(key, action);
-            if (waitingForRandoms) {
-                lastActions.push(action);
-                waitingForRandoms = false;
-            }
+            UseCase useCase = threadUseCaseMap.get(Thread.currentThread());
+            useCase.actions.put(key, action);
+            keyThreadMap.put(key, Thread.currentThread());
+            useCase.blockingAction = action;
             try {
                 return action.get();
             } catch (ExecutionException e) {
@@ -180,7 +187,10 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
             return (D) cache.get(key);
         else {
             Action<D> action = new Action<>();
-            actions.put(key, action);
+            UseCase useCase = threadUseCaseMap.get(Thread.currentThread());
+            useCase.actions.put(key, action);
+            keyThreadMap.put(key, Thread.currentThread());
+            useCase.blockingAction = action;
             try {
                 return action.get();
             } catch (ExecutionException e) {
@@ -198,7 +208,8 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
     }
 
     public static <D> void replyWith(UUID key, D data) {
-        Action action = actions.get(key);
+        Thread thread = keyThreadMap.get(key);
+        Action action = thread == null ? null : (Action) threadUseCaseMap.get(thread).actions.get(key);
         Object cachedData = cache.get(key);
 
         if (action != null && cachedData != null) {
@@ -212,16 +223,18 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
         }
     }
 
-    public static <D> void replyWithRandom(UUID key) {
+    public static void replyWithRandom(UUID key) {
         replyWithRandom(key, null);
     }
 
     public static <D> void replyWithRandom(UUID key, D data) {
 
-        if (!lastActions.isEmpty()) {
+        UseCase useCase = threadUseCaseMap.get(keyThreadMap.get(key));
+        Action action = (Action) useCase.actions.get(key);
+        if (action == useCase.blockingAction) {
             cache.put(key, data);
-            Action lastAction = lastActions.pop();
-            lastAction.interrupt();
+            useCase.blockingAction.interrupt();
+            useCase.blockingAction = null;
         } else {
             replyWith(key, data);
         }
@@ -279,7 +292,7 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
     public static void clearAll() {
         created.clear();
         cache.clear();
-        actions.clear();
+//        actions.clear();
     }
 
     public void restart() {

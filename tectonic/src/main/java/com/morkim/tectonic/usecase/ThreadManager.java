@@ -11,6 +11,8 @@ public interface ThreadManager {
         void run() throws InterruptedException;
 
         void stop();
+
+        void terminate();
     }
 
     void start(UseCaseExecution execution);

@@ -34,6 +34,8 @@ public class ThreadManagerImpl implements ThreadManager {
                             }
                         }
                     }
+
+                    execution.terminate();
                 }
             });
 

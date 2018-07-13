@@ -41,7 +41,7 @@ public class CacheTest extends TectonicTest {
 		useCase.setActor(actor);
 		useCase.execute();
 
-		useCase.restart();
+		useCase.retry();
 
 		assertEquals(1, data1.getAccessCount());
 		assertEquals(1, data2.getAccessCount());
@@ -66,7 +66,7 @@ public class CacheTest extends TectonicTest {
 		useCase.setActor(actor);
 		useCase.execute();
 
-		useCase.restart();
+		useCase.retry();
 
 		assertEquals(2, data1.getAccessCount());
 		assertEquals(0, data2.getAccessCount());
@@ -98,7 +98,7 @@ public class CacheTest extends TectonicTest {
 		useCase.execute();
 
 		try {
-			useCase.restart();
+			useCase.retry();
 		} catch (ClassCastException e) {
 			classCastException = true;
 		}

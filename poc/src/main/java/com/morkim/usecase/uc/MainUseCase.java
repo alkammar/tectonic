@@ -44,7 +44,7 @@ public class MainUseCase extends UseCase<UseCaseExecutor.Event, String> {
 
         } catch (ExpiredCredentials e) {
             authenticator.refreshAuthentication();
-            restart();
+            retry();
         }
     }
 

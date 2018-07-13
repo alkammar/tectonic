@@ -58,7 +58,7 @@ public class RandomAccessActorTest extends ConcurrentTectonicTest {
             @Override
             public void confirm() throws InterruptedException {
                 count++;
-                UseCase.waitFor(CONFIRM);
+                UseCase.waitForSafe(CONFIRM);
             }
         };
 

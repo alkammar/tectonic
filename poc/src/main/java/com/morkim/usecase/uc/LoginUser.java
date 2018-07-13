@@ -42,7 +42,7 @@ public class LoginUser extends UseCase<UseCaseExecutor.Event, Void> {
 
         } catch (InvalidLogin e) {
             ui.show(e);
-            restart();
+            retry();
         } catch (UnexpectedStep e) {
             if (e.getCause() instanceof UserWantsToRegister) {
                 backend.register();

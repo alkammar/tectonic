@@ -57,10 +57,10 @@ public class SecondaryUseCase extends UseCase<UseCaseExecutor.Event, SecondaryMo
 
         } catch (InvalidValueException e) {
             ui.showError(e);
-            restart();
+            retry();
         } catch (ExpiredCredentials e) {
             authenticator.refreshAuthentication();
-            restart();
+            retry();
         } catch (SpecificBackendError | GeneralBackendError e) {
             ui.showError(e);
         }

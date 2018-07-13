@@ -144,19 +144,19 @@ public class UndoTest extends ConcurrentTectonicTest {
             @Override
             public StepData requestData() throws InterruptedException {
                 count++;
-                return UseCase.waitFor(ACTION_DATA_KEY_1);
+                return UseCase.waitForSafe(ACTION_DATA_KEY_1);
             }
 
             @Override
             public StepData requestOtherData() throws InterruptedException {
                 count++;
-                return UseCase.waitFor(ACTION_DATA_KEY_2);
+                return UseCase.waitForSafe(ACTION_DATA_KEY_2);
             }
 
             @Override
             public StepData requestAnotherData() throws InterruptedException {
                 count++;
-                return UseCase.waitFor(ACTION_DATA_KEY_3);
+                return UseCase.waitForSafe(ACTION_DATA_KEY_3);
             }
         };
         useCase.setPrimaryActor(actor);

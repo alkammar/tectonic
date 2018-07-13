@@ -48,7 +48,7 @@ public class RegisterUser extends UseCase {
 
         } catch (ValidationException e) {
             ui.showError(e);
-            restart();
+            retry();
         } catch (UserAlreadyRegistered e) {
             ui.confirmRegistrationError();
         }

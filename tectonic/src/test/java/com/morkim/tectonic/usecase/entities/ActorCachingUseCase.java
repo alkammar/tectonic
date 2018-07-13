@@ -16,8 +16,8 @@ public class ActorCachingUseCase extends SimpleUseCase {
     }
 
     @Override
-    public void restart() {
-        super.restart();
+    public void retry() {
+        super.retry();
 
         canFinish = true;
     }

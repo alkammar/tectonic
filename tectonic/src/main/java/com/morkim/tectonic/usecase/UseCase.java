@@ -161,7 +161,7 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
         }
     }
 
-    public static <D> D waitFor(UUID key) throws InterruptedException {
+    public static <D> D waitFor(UUID key) throws InterruptedException, ExecutionException {
         if (cache.containsKey(key))
             return (D) cache.get(key);
         else {
@@ -173,11 +173,20 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
             try {
                 return action.get();
             } catch (ExecutionException e) {
-                if (e.getCause() instanceof InterruptedException)
-                    throw (InterruptedException) e.getCause();
-                throw new RuntimeException();
+                if (e.getCause() instanceof InterruptedException) throw (InterruptedException) e.getCause();
+                throw e;
             }
         }
+    }
+
+    public static <D> D waitForSafe(UUID key) throws InterruptedException {
+        try {
+            return waitFor(key);
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+
+        return null;
     }
 
     @SafeVarargs
@@ -295,7 +304,7 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
 //        actions.clear();
     }
 
-    public void restart() {
+    public void retry() {
         running = false;
         execute(event);
     }

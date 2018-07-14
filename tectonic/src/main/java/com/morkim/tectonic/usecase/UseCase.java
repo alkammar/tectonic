@@ -37,6 +37,7 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
     private E event;
     private volatile Set<E> preconditions = new HashSet<>();
     private boolean preconditionsExecuted;
+    private volatile boolean aborted;
 
     public synchronized static <U extends UseCase> U fetch(Class<U> useCaseClass) {
 
@@ -120,8 +121,9 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
         if (!preconditionsExecuted) onAddPreconditions(preconditions);
         for (E event : preconditions) executor.trigger(event, this);
         //noinspection StatementWithEmptyBody
-        while (preconditions.size() > 0) ;
+        while (preconditions.size() > 0 && !aborted);
         preconditionsExecuted = true;
+        if (aborted) abort();
     }
 
     protected void onAddPreconditions(Set<E> events) {
@@ -329,8 +331,12 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
 
     @Override
     public void abort() {
-        created.remove(getClass());
-        getThreadManager().stop();
+        if (preconditionsExecuted) {
+            created.remove(getClass());
+            getThreadManager().stop();
+        } else {
+            aborted = true;
+        }
     }
 
     @Override

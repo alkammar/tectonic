@@ -117,13 +117,16 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
         return result;
     }
 
-    private void waitForPreconditions() {
+    private void waitForPreconditions() throws InterruptedException {
         if (!preconditionsExecuted) onAddPreconditions(preconditions);
         for (E event : preconditions) executor.trigger(event, this);
         //noinspection StatementWithEmptyBody
         while (preconditions.size() > 0 && !aborted);
         preconditionsExecuted = true;
-        if (aborted) abort();
+        if (aborted) {
+            abort();
+            UseCase.waitForSafe(UUID.randomUUID());
+        }
     }
 
     protected void onAddPreconditions(Set<E> events) {

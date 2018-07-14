@@ -28,6 +28,7 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
     private boolean running;
     private Map<Integer, Object> steps;
 
+
     private ThreadManager threadManager = new ThreadManagerImpl();
     private PrimaryActor<E, R> primaryActor;
     private ResultActor<E, R> resultActor;
@@ -35,6 +36,7 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
 
     private E event;
     private volatile Set<E> preconditions = new HashSet<>();
+    private boolean preconditionsExecuted;
 
     public synchronized static <U extends UseCase> U fetch(Class<U> useCaseClass) {
 
@@ -115,10 +117,11 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
     }
 
     private void waitForPreconditions() {
-        onAddPreconditions(preconditions);
+        if (!preconditionsExecuted) onAddPreconditions(preconditions);
         for (E event : preconditions) executor.trigger(event, this);
         //noinspection StatementWithEmptyBody
         while (preconditions.size() > 0) ;
+        preconditionsExecuted = true;
     }
 
     protected void onAddPreconditions(Set<E> events) {

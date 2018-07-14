@@ -308,7 +308,12 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
     }
 
     public void retry() {
+        retry(false);
+    }
+
+    public void retry(boolean withPreconditions) {
         running = false;
+        preconditionsExecuted = !withPreconditions;
         execute(event);
     }
 

@@ -11,6 +11,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
+import javax.annotation.Nonnull;
+
 @SuppressLint("UseSparseArrays")
 public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHandle {
 
@@ -170,9 +172,41 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
     }
 
     public static <D> D waitFor(UUID key) throws InterruptedException, ExecutionException {
-        if (cache.containsKey(key))
-            return (D) cache.get(key);
+        if (cache.containsKey(key)) {
+            D d = (D) cache.get(key);
+            if (d instanceof Exception) {
+                cache.remove(key);
+                throw new ExecutionException((Throwable) d);
+            }
+            return d;
+        } else {
+            Action<D> action = new Action<>();
+            UseCase useCase = threadUseCaseMap.get(Thread.currentThread());
+            useCase.actions.put(key, action);
+            keyThreadMap.put(key, Thread.currentThread());
+            useCase.blockingAction = action;
+            try {
+                return action.get();
+            } catch (ExecutionException e) {
+                if (e.getCause() instanceof InterruptedException) throw (InterruptedException) e.getCause();
+                throw e;
+            }
+        }
+    }
+
+    public static <D> D waitFor(UUID key, @Nonnull Runnable runnable) throws InterruptedException, ExecutionException {
+        if (cache.containsKey(key)) {
+            D d = (D) cache.get(key);
+            if (d instanceof Exception) {
+                cache.remove(key);
+                throw new ExecutionException((Throwable) d);
+            }
+            return d;
+        }
         else {
+
+            runnable.run();
+
             Action<D> action = new Action<>();
             UseCase useCase = threadUseCaseMap.get(Thread.currentThread());
             useCase.actions.put(key, action);
@@ -200,9 +234,9 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
     @SafeVarargs
     public static <D> D waitFor(UUID key, Class<? extends Exception>... exs) throws InterruptedException, UnexpectedStep {
 
-        if (cache.containsKey(key))
+        if (cache.containsKey(key)) {
             return (D) cache.get(key);
-        else {
+        } else {
             Action<D> action = new Action<>();
             UseCase useCase = threadUseCaseMap.get(Thread.currentThread());
             useCase.actions.put(key, action);
@@ -234,6 +268,7 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
             action.interrupt();
         } else if (data instanceof Exception) {
             if (action != null) action.setException((Exception) data);
+            else cache.put(key, data);
         } else {
             cache.put(key, data);
             if (action != null) action.set(data);

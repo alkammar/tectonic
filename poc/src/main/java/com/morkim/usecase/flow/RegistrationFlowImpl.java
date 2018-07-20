@@ -39,7 +39,7 @@ public class RegistrationFlowImpl implements Registration.Flow, RegisterUser.UI 
     }
 
     @Override
-    public void onStart(UseCaseHandle handle) {
+    public void onStart(UseCaseExecutor.Event event, UseCaseHandle handle) {
         this.handle = handle;
     }
 
@@ -61,8 +61,8 @@ public class RegistrationFlowImpl implements Registration.Flow, RegisterUser.UI 
 
     @Override
     public void askForConfirmation() throws InterruptedException {
-        if (!validStep1) UseCase.waitFor(NEXT);
-        else UseCase.waitFor(CONFIRM);
+        if (!validStep1) UseCase.waitForSafe(NEXT);
+        else UseCase.waitForSafe(CONFIRM);
     }
 
     @Override

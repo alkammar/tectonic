@@ -37,26 +37,26 @@ public class SecondaryFlowImpl implements Secondary.Flow, SecondaryUseCase.UI {
     }
 
     @Override
-    public void onStart(UseCaseHandle handle) {
+    public void onStart(UseCaseExecutor.Event event, UseCaseHandle handle) {
         this.handle = handle;
     }
 
     @Override
     public String askForData1() throws InterruptedException {
         if (screen1 == null) screen1 = stepFactory.create(Secondary.Screen1.class);
-        return UseCase.waitFor(DATA1);
+        return UseCase.waitForSafe(DATA1);
     }
 
     @Override
     public String askForData2() throws InterruptedException {
         if (screen2 == null) screen2 = stepFactory.create(Secondary.Screen2.class);
-        return UseCase.waitFor(DATA2);
+        return UseCase.waitForSafe(DATA2);
     }
 
     @Override
     public Double askForData3() throws InterruptedException {
         if (screen3 == null) screen3 = stepFactory.create(Secondary.Screen3.class);
-        return UseCase.waitFor(DATA3);
+        return UseCase.waitForSafe(DATA3);
     }
 
     @Override

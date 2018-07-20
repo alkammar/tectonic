@@ -35,7 +35,7 @@ public class AbortTest extends ConcurrentTectonicTest {
 		useCase.setPrimaryActor(new SimpleUseCase.Actor() {
 
 			@Override
-			public void onStart(UseCaseHandle handle) {
+			public void onStart(Integer event, UseCaseHandle handle) {
 
 			}
 
@@ -65,7 +65,7 @@ public class AbortTest extends ConcurrentTectonicTest {
 		useCase.setPrimaryActor(new SimpleUseCase.Actor() {
 
 			@Override
-			public void onStart(UseCaseHandle handle) {
+			public void onStart(Integer event, UseCaseHandle handle) {
 				AbortTest.this.handle = handle;
 			}
 
@@ -202,7 +202,7 @@ public class AbortTest extends ConcurrentTectonicTest {
 		useCase.setPrimaryActor(new CompletedUseCase.Actor() {
 
 			@Override
-			public void onStart(UseCaseHandle handle) {
+			public void onStart(Integer event, UseCaseHandle handle) {
 				AbortTest.this.handle = handle;
 			}
 

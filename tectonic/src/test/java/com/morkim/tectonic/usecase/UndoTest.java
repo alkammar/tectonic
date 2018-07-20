@@ -53,7 +53,7 @@ public class UndoTest extends ConcurrentTectonicTest {
         UndoUseCase.Actor actor = new UndoUseCase.Actor() {
 
             @Override
-            public void onStart(UseCaseHandle handle) {
+            public void onStart(Integer event, UseCaseHandle handle) {
                 UndoTest.this.handle = handle;
             }
 
@@ -122,7 +122,7 @@ public class UndoTest extends ConcurrentTectonicTest {
         UndoUseCase.Actor actor = new UndoUseCase.Actor() {
 
             @Override
-            public void onStart(UseCaseHandle handle) {
+            public void onStart(Integer event, UseCaseHandle handle) {
                 UndoTest.this.handle = handle;
             }
 

@@ -43,11 +43,11 @@ public class AuthenticationFlow
 
         triggers.trigger(UseCaseExecutor.Event.REFRESH_AUTH, this);
 
-        UseCase.waitFor(REFRESH);
+        UseCase.waitForSafe(REFRESH);
     }
 
     @Override
-    public void onStart(UseCaseHandle handle) {
+    public void onStart(UseCaseExecutor.Event event, UseCaseHandle handle) {
 
     }
 

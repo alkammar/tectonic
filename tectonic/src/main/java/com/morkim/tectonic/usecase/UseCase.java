@@ -11,7 +11,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
-import javax.annotation.Nonnull;
 
 @SuppressLint("UseSparseArrays")
 public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHandle {
@@ -82,7 +81,7 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
                 public void run() throws InterruptedException {
                     threadUseCaseMap.put(Thread.currentThread(), UseCase.this);
                     waitForPreconditions();
-                    if (primaryActor != null) primaryActor.onStart(UseCase.this);
+                    if (primaryActor != null) primaryActor.onStart(event, UseCase.this);
                     onExecute();
                 }
 
@@ -194,7 +193,7 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
         }
     }
 
-    public static <D> D waitFor(UUID key, @Nonnull Runnable runnable) throws InterruptedException, ExecutionException {
+    public static <D> D waitFor(UUID key, Runnable runnable) throws InterruptedException, ExecutionException {
         if (cache.containsKey(key)) {
             D d = (D) cache.get(key);
             if (d instanceof Exception) {

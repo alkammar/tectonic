@@ -32,7 +32,7 @@ public class PrimaryActorTest extends TectonicTest {
 		useCase.setActor(new CompletedUseCase.Actor() {
 
 			@Override
-			public void onStart(UseCaseHandle handle) {
+			public void onStart(Integer event, UseCaseHandle handle) {
 				onStartCalled = true;
 			}
 
@@ -69,7 +69,7 @@ public class PrimaryActorTest extends TectonicTest {
 		CompletedUseCase.Actor actor = new CompletedUseCase.Actor() {
 
 			@Override
-			public void onStart(UseCaseHandle handle) {
+			public void onStart(Integer event, UseCaseHandle handle) {
 				PrimaryActorTest.this.handle = handle;
 				onStartCalled = true;
 			}

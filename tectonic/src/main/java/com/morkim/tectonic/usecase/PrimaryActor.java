@@ -4,7 +4,7 @@ import com.morkim.tectonic.flow.Step;
 
 public interface PrimaryActor<E, R> extends ResultActor<E, R> {
 
-    void onStart(UseCaseHandle handle);
+    void onStart(E event, UseCaseHandle handle);
 
     void onUndo(Step step);
 }

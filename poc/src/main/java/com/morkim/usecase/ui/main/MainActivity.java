@@ -98,7 +98,7 @@ public class MainActivity extends AppCompatActivity implements MainUseCase.UI {
     }
 
     @Override
-    public void onStart(UseCaseHandle handle) {
+    public void onStart(UseCaseExecutor.Event event, UseCaseHandle handle) {
         this.handle = handle;
 
         runOnUiThread(() -> {

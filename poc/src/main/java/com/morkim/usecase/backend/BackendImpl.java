@@ -73,7 +73,7 @@ public class BackendImpl implements MainUseCase.Backend, LogoutUser.Backend, Sec
     @Override
     public void register() throws InterruptedException {
         triggers.trigger(UseCaseExecutor.Event.REGISTER, this);
-        UseCase.waitFor(REGISTRATION);
+        UseCase.waitForSafe(REGISTRATION);
     }
 
     @Override

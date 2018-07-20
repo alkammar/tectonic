@@ -80,8 +80,9 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
                 @Override
                 public void run() throws InterruptedException {
                     threadUseCaseMap.put(Thread.currentThread(), UseCase.this);
+                    boolean executeOnStart = !preconditionsExecuted;
                     waitForPreconditions();
-                    if (primaryActor != null) primaryActor.onStart(event, UseCase.this);
+                    if (primaryActor != null && executeOnStart) primaryActor.onStart(event, UseCase.this);
                     onExecute();
                 }
 
@@ -336,6 +337,7 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
         if (preconditionActor != primaryActor && resultActor != primaryActor)
             if (running && primaryActor != null) primaryActor.onComplete(event, result);
         running = false;
+        preconditionsExecuted = false;
         created.remove(getClass());
         getThreadManager().stop();
     }

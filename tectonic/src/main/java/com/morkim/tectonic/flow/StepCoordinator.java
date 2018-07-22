@@ -29,7 +29,7 @@ public class StepCoordinator {
         SettableFuture<T> future = futureMap.get(key);
         if (future != null) {
             future.set(step);
-            futureMap.remove(future);
+            futureMap.remove(key);
         }
     }
 

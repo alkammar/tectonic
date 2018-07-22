@@ -12,7 +12,7 @@ public class StepCoordinator {
 
     public static synchronized <T> T waitFor(int key) throws InterruptedException {
 
-        while (!futureMap.containsKey(key));
+        while (futureMap.containsKey(key));
 
         SettableFuture<T> future = SettableFuture.create();
         futureMap.put(key, future);

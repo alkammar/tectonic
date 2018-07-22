@@ -8,9 +8,11 @@ import java.util.concurrent.ExecutionException;
 
 public class StepCoordinator {
 
-    private static Map<Integer, SettableFuture> futureMap = new HashMap<>();
+    private static volatile Map<Integer, SettableFuture> futureMap = new HashMap<>();
 
-    public static <T> T waitFor(int key) throws InterruptedException {
+    public static synchronized <T> T waitFor(int key) throws InterruptedException {
+
+        while (!futureMap.containsKey(key));
 
         SettableFuture<T> future = SettableFuture.create();
         futureMap.put(key, future);
@@ -25,7 +27,10 @@ public class StepCoordinator {
 
     public static <T> void replyWith(Integer key, T step) {
         SettableFuture<T> future = futureMap.get(key);
-        if (future != null) future.set(step);
+        if (future != null) {
+            future.set(step);
+            futureMap.remove(future);
+        }
     }
 
     public static void clear(Integer key) {

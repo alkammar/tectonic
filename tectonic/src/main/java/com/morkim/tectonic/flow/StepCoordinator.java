@@ -8,14 +8,24 @@ import java.util.concurrent.ExecutionException;
 
 public class StepCoordinator {
 
-    private static volatile Map<Integer, SettableFuture> futureMap = new HashMap<>();
+    private static final Map<Integer, SettableFuture> futureMap = new HashMap<>();
+    private static final Map<Integer, Object> cache = new HashMap<>();
 
     public static synchronized <T> T waitFor(int key) throws InterruptedException {
 
-        while (futureMap.containsKey(key));
+        while (futureMap.containsKey(key)) ;
 
-        SettableFuture<T> future = SettableFuture.create();
-        futureMap.put(key, future);
+        SettableFuture<T> future;
+        synchronized (futureMap) {
+            if (cache.containsKey(key)) {
+                T t = (T) cache.get(key);
+                cache.remove(key);
+                return t;
+            } else {
+                future = SettableFuture.create();
+                futureMap.put(key, future);
+            }
+        }
         try {
             return future.get();
         } catch (ExecutionException e) {
@@ -26,10 +36,14 @@ public class StepCoordinator {
     }
 
     public static <T> void replyWith(Integer key, T step) {
-        SettableFuture<T> future = futureMap.get(key);
-        if (future != null) {
-            future.set(step);
-            futureMap.remove(key);
+        synchronized (futureMap) {
+            SettableFuture<T> future = futureMap.get(key);
+            if (future != null) {
+                future.set(step);
+                futureMap.remove(key);
+            } else {
+                cache.put(key, step);
+            }
         }
     }
 

@@ -69,6 +69,7 @@ public class ThreadManagerTest extends ConcurrentTectonicTest {
             public void terminate() {
 
             }
+
         });
 
         sleep();
@@ -97,6 +98,7 @@ public class ThreadManagerTest extends ConcurrentTectonicTest {
             public void terminate() {
 
             }
+
         });
 
         sleep();
@@ -125,6 +127,7 @@ public class ThreadManagerTest extends ConcurrentTectonicTest {
             public void terminate() {
 
             }
+
         });
 
         sleep();
@@ -154,6 +157,7 @@ public class ThreadManagerTest extends ConcurrentTectonicTest {
             public void terminate() {
 
             }
+
         });
 
         sleep();
@@ -185,6 +189,7 @@ public class ThreadManagerTest extends ConcurrentTectonicTest {
             public void terminate() {
 
             }
+
         });
 
         sleep();
@@ -218,6 +223,7 @@ public class ThreadManagerTest extends ConcurrentTectonicTest {
             public void terminate() {
 
             }
+
         });
 
         sleep();

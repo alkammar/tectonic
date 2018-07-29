@@ -2,8 +2,8 @@ package com.morkim.usecase.auth;
 
 import com.morkim.tectonic.flow.Step;
 import com.morkim.tectonic.flow.StepFactory;
-import com.morkim.tectonic.usecase.UnexpectedStep;
 import com.morkim.tectonic.usecase.Triggers;
+import com.morkim.tectonic.usecase.UnexpectedStep;
 import com.morkim.tectonic.usecase.UseCase;
 import com.morkim.tectonic.usecase.UseCaseHandle;
 import com.morkim.usecase.app.UseCaseExecutor;
@@ -14,6 +14,7 @@ import com.morkim.usecase.uc.SecondaryUseCase;
 import com.morkim.usecase.uc.UserWantsToRegister;
 
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
 
 import javax.inject.Inject;
 
@@ -43,7 +44,11 @@ public class AuthenticationFlow
 
         triggers.trigger(UseCaseExecutor.Event.REFRESH_AUTH, this);
 
-        UseCase.waitForSafe(REFRESH);
+        try {
+            UseCase.waitFor(REFRESH);
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override

@@ -36,74 +36,6 @@ public class UndoTest extends ConcurrentTectonicTest {
     }
 
     @Test
-    public void undo_non_cached__actor_data_accessed() throws InterruptedException {
-
-        final Step step = new Step() {
-            @Override
-            public void terminate() {
-
-            }
-        };
-
-        final StepData data1 = new StepData();
-        final StepData data2 = new StepData();
-        final StepData data3 = new StepData();
-
-        UndoUseCase useCase = UseCase.fetch(UndoUseCase.class);
-        UndoUseCase.Actor actor = new UndoUseCase.Actor() {
-
-            @Override
-            public void onStart(Integer event, UseCaseHandle handle) {
-                UndoTest.this.handle = handle;
-            }
-
-            @Override
-            public void onComplete(Integer event, Void result) {
-
-            }
-
-            @Override
-            public void onUndo(Step step) {
-                onUndoCalled = true;
-            }
-
-            @Override
-            public void onAbort(Integer event) {
-
-            }
-
-            @Override
-            public StepData requestData() throws InterruptedException {
-                count++;
-                return UseCase.immediate(data1);
-            }
-
-            @Override
-            public StepData requestOtherData() throws InterruptedException {
-                count++;
-                return UseCase.immediate(data2);
-            }
-
-            @Override
-            public StepData requestAnotherData() throws InterruptedException {
-                if (count < 3) handle.undo(step, ACTION_DATA_KEY_2);
-                return UseCase.immediate(data3);
-            }
-        };
-
-        useCase.setPrimaryActor(actor);
-        useCase.setActor(actor);
-        useCase.execute();
-
-        useCaseThread.join();
-
-        assertEquals(2, data1.getAccessCount());
-        assertEquals(2, data2.getAccessCount());
-        assertEquals(1, data3.getAccessCount());
-        assertTrue(onUndoCalled);
-    }
-
-    @Test
     public void undo_cached__new_data_accessed_for_undone() throws InterruptedException {
 
         final Step step = new Step() {
@@ -142,19 +74,19 @@ public class UndoTest extends ConcurrentTectonicTest {
             }
 
             @Override
-            public StepData requestData() throws InterruptedException {
+            public StepData requestData() throws InterruptedException, UndoException {
                 count++;
                 return UseCase.waitForSafe(ACTION_DATA_KEY_1);
             }
 
             @Override
-            public StepData requestOtherData() throws InterruptedException {
+            public StepData requestOtherData() throws InterruptedException, UndoException {
                 count++;
                 return UseCase.waitForSafe(ACTION_DATA_KEY_2);
             }
 
             @Override
-            public StepData requestAnotherData() throws InterruptedException {
+            public StepData requestAnotherData() throws InterruptedException, UndoException {
                 count++;
                 return UseCase.waitForSafe(ACTION_DATA_KEY_3);
             }

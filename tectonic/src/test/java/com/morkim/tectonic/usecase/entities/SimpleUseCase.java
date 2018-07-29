@@ -1,6 +1,7 @@
 package com.morkim.tectonic.usecase.entities;
 
 import com.morkim.tectonic.usecase.PrimaryActor;
+import com.morkim.tectonic.usecase.UndoException;
 import com.morkim.tectonic.usecase.UseCase;
 
 import java.util.Set;
@@ -25,7 +26,7 @@ public class SimpleUseCase extends UseCase<Integer, Void> {
     }
 
     @Override
-    protected void onExecute() throws InterruptedException {
+    protected void onExecute() throws InterruptedException, UndoException {
         onExecuteCalledCount++;
     }
 

@@ -64,7 +64,7 @@ public class CacheActorTest extends ConcurrentTectonicTest {
         ActorCachingUseCase.Actor actor = new ActorCachingUseCase.Actor() {
 
             @Override
-            public StepData requestData() throws InterruptedException {
+            public StepData requestData() throws InterruptedException, UndoException {
                 count++;
                 return UseCase.waitForSafe(ACTION_DATA_KEY_1);
             }
@@ -103,13 +103,13 @@ public class CacheActorTest extends ConcurrentTectonicTest {
         MultipleActionUseCase.Actor actor = new MultipleActionUseCase.Actor() {
 
             @Override
-            public StepData requestData1() throws InterruptedException {
+            public StepData requestData1() throws InterruptedException, UndoException {
                 count++;
                 return UseCase.waitForSafe(ACTION_DATA_KEY_1);
             }
 
             @Override
-            public StepData requestData2() throws InterruptedException {
+            public StepData requestData2() throws InterruptedException, UndoException {
                 count++;
                 return UseCase.waitForSafe(ACTION_DATA_KEY_2);
             }
@@ -159,13 +159,13 @@ public class CacheActorTest extends ConcurrentTectonicTest {
         MultipleActionUseCase.Actor actor = new MultipleActionUseCase.Actor() {
 
             @Override
-            public StepData requestData1() throws InterruptedException {
+            public StepData requestData1() throws InterruptedException, UndoException {
                 count++;
                 return UseCase.waitForSafe(ACTION_DATA_KEY_1);
             }
 
             @Override
-            public StepData requestData2() throws InterruptedException {
+            public StepData requestData2() throws InterruptedException, UndoException {
                 count++;
                 return UseCase.waitForSafe(ACTION_DATA_KEY_2);
             }

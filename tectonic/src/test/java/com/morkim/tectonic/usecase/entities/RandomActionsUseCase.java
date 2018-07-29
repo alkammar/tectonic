@@ -1,6 +1,7 @@
 package com.morkim.tectonic.usecase.entities;
 
 import com.morkim.tectonic.usecase.Random;
+import com.morkim.tectonic.usecase.UndoException;
 
 public class RandomActionsUseCase extends SimpleUseCase {
 
@@ -11,7 +12,7 @@ public class RandomActionsUseCase extends SimpleUseCase {
     private boolean data3Validated;
 
     @Override
-    protected void onExecute() throws InterruptedException {
+    protected void onExecute() throws InterruptedException, UndoException {
         super.onExecute();
 
         System.out.println("request 1");
@@ -77,6 +78,6 @@ public class RandomActionsUseCase extends SimpleUseCase {
 
         Random<StepData> requestData3() throws InterruptedException;
 
-        void confirm() throws InterruptedException;
+        void confirm() throws InterruptedException, UndoException;
     }
 }

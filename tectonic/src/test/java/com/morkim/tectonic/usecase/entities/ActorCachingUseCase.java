@@ -1,12 +1,14 @@
 package com.morkim.tectonic.usecase.entities;
 
+import com.morkim.tectonic.usecase.UndoException;
+
 public class ActorCachingUseCase extends SimpleUseCase {
 
     private Actor actor;
     private boolean canFinish;
 
     @Override
-    protected void onExecute() throws InterruptedException {
+    protected void onExecute() throws InterruptedException, UndoException {
         super.onExecute();
 
         StepData data = actor.requestData();
@@ -28,6 +30,6 @@ public class ActorCachingUseCase extends SimpleUseCase {
 
     public interface Actor {
 
-        StepData requestData() throws InterruptedException;
+        StepData requestData() throws InterruptedException, UndoException;
     }
 }

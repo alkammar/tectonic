@@ -1,11 +1,13 @@
 package com.morkim.tectonic.usecase.entities;
 
+import com.morkim.tectonic.usecase.UndoException;
+
 public class CachingUseCase extends SimpleUseCase {
 
     protected Actor actor;
 
     @Override
-    protected void onExecute() throws InterruptedException {
+    protected void onExecute() throws InterruptedException, UndoException {
         super.onExecute();
 
         StepData data = step(Actor.STEP_DATA_KEY_1, new CacheDataListener<StepData>() {

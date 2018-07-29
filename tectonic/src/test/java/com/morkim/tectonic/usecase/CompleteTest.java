@@ -39,6 +39,8 @@ public class CompleteTest extends TectonicTest {
 					execution.run();
 				} catch (InterruptedException e) {
 					e.printStackTrace();
+				} catch (UndoException e) {
+					e.printStackTrace();
 				}
 			}
 

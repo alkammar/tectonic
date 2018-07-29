@@ -31,6 +31,8 @@ public class ThreadManagerImpl implements ThreadManager {
                                     execution.stop();
                                     break;
                                 }
+                            } catch (UndoException e) {
+                                // catch this to allow re-executing the use case
                             }
                         }
                     }

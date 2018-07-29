@@ -78,12 +78,17 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
             running = true;
             getThreadManager().start(new ThreadManager.UseCaseExecution() {
                 @Override
-                public void run() throws InterruptedException {
+                public void run() throws InterruptedException, UndoException {
                     threadUseCaseMap.put(Thread.currentThread(), UseCase.this);
                     boolean executeOnStart = !preconditionsExecuted;
                     waitForPreconditions();
                     if (primaryActor != null && executeOnStart) primaryActor.onStart(event, UseCase.this);
-                    onExecute();
+                    try {
+                        onExecute();
+                    } catch (UndoException e) {
+                        if (running && primaryActor != null) primaryActor.onUndo(e.getStep());
+                        throw e;
+                    }
                 }
 
                 @Override
@@ -105,6 +110,7 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
                     }
                     actions.clear();
                 }
+
             });
         }
     }
@@ -119,7 +125,7 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
         return result;
     }
 
-    private void waitForPreconditions() throws InterruptedException {
+    private void waitForPreconditions() throws InterruptedException, UndoException {
         if (!preconditionsExecuted) onAddPreconditions(preconditions);
         for (E event : preconditions) executor.trigger(event, this);
         //noinspection StatementWithEmptyBody
@@ -139,7 +145,7 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
         return defaultThreadManager == null ? threadManager : defaultThreadManager;
     }
 
-    protected abstract void onExecute() throws InterruptedException;
+    protected abstract void onExecute() throws InterruptedException, UndoException;
 
     protected <D> D step(int key, CacheDataListener<D> listener) {
         if (steps.containsKey(key)) return (D) steps.get(key);
@@ -152,14 +158,7 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
         defaultThreadManager = threadManager;
     }
 
-    public static <D> D immediate(D data) throws InterruptedException {
-        Thread currentThread = Thread.currentThread();
-        if (waitingUndo.containsKey(currentThread)) {
-            ThreadManager threadManager = waitingUndo.get(currentThread);
-            waitingUndo.remove(currentThread);
-            threadManager.release();
-        }
-
+    public static <D> D immediate(D data) {
         return data;
     }
 
@@ -221,10 +220,12 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
         }
     }
 
-    public static <D> D waitForSafe(UUID key) throws InterruptedException {
+    public static <D> D waitForSafe(UUID key) throws InterruptedException, UndoException {
         try {
             return waitFor(key);
         } catch (ExecutionException e) {
+            if (UndoException.class.equals(e.getCause().getClass()))
+                throw (UndoException) e.getCause();
             e.printStackTrace();
         }
 
@@ -360,12 +361,9 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
 
     @Override
     public void undo(Step step, UUID... actions) {
-        ThreadManager threadManager = getThreadManager();
-        waitingUndo.put(Thread.currentThread(), threadManager);
         for (UUID action : actions) cache.remove(action);
-        threadManager.restart();
 
-        if (running && primaryActor != null) primaryActor.onUndo(step);
+        if (blockingAction != null) blockingAction.setException(new UndoException(step));
     }
 
     @Override

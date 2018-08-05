@@ -95,7 +95,7 @@ public class AbortTest extends ConcurrentTectonicTest {
 				onAbortCalledCount++;
 			}
 		});
-		useCase.setResultActor(new ResultActor<Integer, Void>() {
+		useCase.addResultActor(new ResultActor<Integer, Void>() {
 
 			@Override
 			public void onComplete(Integer event, Void result) {
@@ -167,7 +167,7 @@ public class AbortTest extends ConcurrentTectonicTest {
 				onAbortCalledCount++;
 			}
 		});
-//		useCase.setResultActor(new ResultActor<Integer, Void>() {
+//		useCase.addResultActor(new ResultActor<Integer, Void>() {
 //
 //			@Override
 //			public void onComplete(Integer event, Void result) {
@@ -237,7 +237,7 @@ public class AbortTest extends ConcurrentTectonicTest {
 				onAbortCalledCount++;
 			}
 		});
-		useCase.setResultActor(new ResultActor<Integer, Void>() {
+		useCase.addResultActor(new ResultActor<Integer, Void>() {
 
 			@Override
 			public void onComplete(Integer event, Void result) {

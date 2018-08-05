@@ -98,11 +98,74 @@ public class ResultActorTest extends TectonicTest {
 				onAbortCalled = true;
 			}
 		};
-		useCase.setResultActor(actor);
+		useCase.addResultActor(actor);
 		useCase.setActor(actor);
 		useCase.execute();
 
 		assertTrue(onCompleteCalled);
 		assertEquals(1, onCompleteCalledCount);
+	}
+
+	@Test
+	public void multiple_result_actors__all_actors_receive_complete_callback() {
+
+		CompletedUseCase useCase = UseCase.fetch(CompletedUseCase.class);
+		CompletedUseCase.Actor actor1 = new CompletedUseCase.Actor() {
+
+			@Override
+			public void onStart(Integer event, UseCaseHandle handle) {
+			}
+
+			@Override
+			public void onComplete(Integer event, Void result) {
+				onCompleteCalledCount++;
+			}
+
+			@Override
+			public void onComplete(Integer event) {
+				onCompleteCalledCount++;
+			}
+
+			@Override
+			public void onUndo(Step step) {
+
+			}
+
+			@Override
+			public void onAbort(Integer event) {
+				onAbortCalled = true;
+			}
+		};
+		CompletedUseCase.Actor actor2 = new CompletedUseCase.Actor() {
+
+			@Override
+			public void onStart(Integer event, UseCaseHandle handle) {
+			}
+
+			@Override
+			public void onComplete(Integer event, Void result) {
+				onCompleteCalledCount++;
+			}
+
+			@Override
+			public void onComplete(Integer event) {
+				onCompleteCalledCount++;
+			}
+
+			@Override
+			public void onUndo(Step step) {
+
+			}
+
+			@Override
+			public void onAbort(Integer event) {
+				onAbortCalled = true;
+			}
+		};
+		useCase.addResultActor(actor1);
+		useCase.addResultActor(actor2);
+		useCase.execute();
+
+		assertEquals(2, onCompleteCalledCount);
 	}
 }

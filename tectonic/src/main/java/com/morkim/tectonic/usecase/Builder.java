@@ -41,7 +41,7 @@ public class Builder<E> {
     public UseCase<E, ?> build() {
         useCase.setPreconditionActor(preconditionActor);
         useCase.setPrimaryActor(primaryActor);
-        useCase.setResultActor(resultActor);
+        useCase.addResultActor(resultActor);
         useCase.setExecutor(triggers);
         return useCase;
     }

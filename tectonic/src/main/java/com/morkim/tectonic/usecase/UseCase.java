@@ -32,7 +32,7 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
 
     private ThreadManager threadManager = new ThreadManagerImpl();
     private PrimaryActor<E, R> primaryActor;
-    private ResultActor<E, R> resultActor;
+    private Set<ResultActor<E, R>> resultActors = new HashSet<>();
     private PreconditionActor<E> preconditionActor;
 
     private E event;
@@ -82,7 +82,8 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
                     threadUseCaseMap.put(Thread.currentThread(), UseCase.this);
                     boolean executeOnStart = !preconditionsExecuted;
                     waitForPreconditions();
-                    if (primaryActor != null && executeOnStart) primaryActor.onStart(event, UseCase.this);
+                    if (primaryActor != null && executeOnStart)
+                        primaryActor.onStart(event, UseCase.this);
                     try {
                         onExecute();
                     } catch (UndoException e) {
@@ -95,7 +96,9 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
                 public void stop() {
                     if (running) {
                         if (preconditionActor != null) preconditionActor.onAbort(event);
-                        if (resultActor != null) resultActor.onAbort(event);
+
+                        for (ResultActor<E, R> resultActor : resultActors)
+                            if (resultActor != null) resultActor.onAbort(event);
                         if (preconditionActor != primaryActor)
                             if (primaryActor != null) primaryActor.onAbort(event);
                         running = false;
@@ -129,7 +132,7 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
         if (!preconditionsExecuted) onAddPreconditions(preconditions);
         for (E event : preconditions) executor.trigger(event, this);
         //noinspection StatementWithEmptyBody
-        while (preconditions.size() > 0 && !aborted);
+        while (preconditions.size() > 0 && !aborted) ;
         preconditionsExecuted = true;
         if (aborted) {
             abort();
@@ -187,7 +190,8 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
             try {
                 return action.get();
             } catch (ExecutionException e) {
-                if (e.getCause() instanceof InterruptedException) throw (InterruptedException) e.getCause();
+                if (e.getCause() instanceof InterruptedException)
+                    throw (InterruptedException) e.getCause();
                 throw e;
             }
         }
@@ -201,8 +205,7 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
                 throw new ExecutionException((Throwable) d);
             }
             return d;
-        }
-        else {
+        } else {
 
             runnable.run();
 
@@ -214,7 +217,8 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
             try {
                 return action.get();
             } catch (ExecutionException e) {
-                if (e.getCause() instanceof InterruptedException) throw (InterruptedException) e.getCause();
+                if (e.getCause() instanceof InterruptedException)
+                    throw (InterruptedException) e.getCause();
                 throw e;
             }
         }
@@ -306,8 +310,8 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
         this.preconditionActor = preconditionActor;
     }
 
-    public void setResultActor(ResultActor<E, R> resultActor) {
-        this.resultActor = resultActor;
+    public void addResultActor(ResultActor<E, R> resultActor) {
+        this.resultActors.add(resultActor);
     }
 
     public void setExecutor(Triggers<E> executor) {
@@ -334,8 +338,10 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
         }
 
         if (running && preconditionActor != null) preconditionActor.onComplete(event);
-        if (running && resultActor != null) resultActor.onComplete(event, result);
-        if (preconditionActor != primaryActor && resultActor != primaryActor)
+        if (running)
+            for (ResultActor<E, R> resultActor : resultActors)
+                if (resultActor != null) resultActor.onComplete(event, result);
+        if (preconditionActor != primaryActor && resultActors != primaryActor)
             if (running && primaryActor != null) primaryActor.onComplete(event, result);
         running = false;
         preconditionsExecuted = false;

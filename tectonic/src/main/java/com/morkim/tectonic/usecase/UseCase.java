@@ -49,7 +49,9 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
         if (useCase == null) {
             try {
                 useCase = useCaseClass.newInstance();
-                synchronized (ALIVE) { ALIVE.put(useCaseClass, useCase); }
+                synchronized (ALIVE) {
+                    ALIVE.put(useCaseClass, useCase);
+                }
                 useCase.onCreate();
             } catch (Exception e) {
                 e.printStackTrace();
@@ -89,7 +91,8 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
                     boolean executeOnStart = !preconditionsExecuted;
                     waitForPreconditions();
 
-                    if (primaryActor != null && executeOnStart) primaryActor.onStart(event, UseCase.this);
+                    if (primaryActor != null && executeOnStart)
+                        primaryActor.onStart(event, UseCase.this);
 
                     try {
                         onExecute();
@@ -100,7 +103,7 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
                 }
 
                 @Override
-                public void stop() {
+                public void onStop() {
                     if (running) {
                         if (preconditionActor != null) preconditionActor.onAbort(event);
 
@@ -113,14 +116,18 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
                 }
 
                 @Override
-                public void terminate() {
+                public void onComplete() throws InterruptedException {
+                    UseCase.this.complete();
+                }
+
+                @Override
+                public void onDestroy() {
                     threadUseCaseMap.remove(Thread.currentThread());
                     for (UUID key : actions.keySet()) {
                         keyThreadMap.remove(key);
                     }
                     actions.clear();
                 }
-
             });
         }
     }
@@ -355,10 +362,15 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
         ALIVE.remove(getClass());
         getThreadManager().stop();
 
+        completeCompletedBy(this);
+    }
+
+    private void completeCompletedBy(UseCase<E, R> uc) throws InterruptedException {
+
         synchronized (ALIVE) {
             for (UseCase useCase : ALIVE.values()) {
-                if (useCase.completedBy.contains(getClass()))
-                    useCase.complete();
+                if (uc != useCase && useCase.completedBy.contains(uc.getClass()))
+                    useCase.getThreadManager().complete();
             }
         }
     }
@@ -389,7 +401,9 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
     @Override
     public void abort() {
         if (preconditionsExecuted) {
-            synchronized (ALIVE) { ALIVE.remove(getClass()); }
+            synchronized (ALIVE) {
+                ALIVE.remove(getClass());
+            }
             getThreadManager().stop();
         } else {
             aborted = true;

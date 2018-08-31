@@ -61,12 +61,17 @@ public class ThreadManagerTest extends ConcurrentTectonicTest {
             }
 
             @Override
-            public void stop() {
+            public void onStop() {
 
             }
 
             @Override
-            public void terminate() {
+            public void onDestroy() {
+
+            }
+
+            @Override
+            public void onComplete() throws InterruptedException {
 
             }
 
@@ -90,12 +95,17 @@ public class ThreadManagerTest extends ConcurrentTectonicTest {
             }
 
             @Override
-            public void stop() {
+            public void onStop() {
 
             }
 
             @Override
-            public void terminate() {
+            public void onDestroy() {
+
+            }
+
+            @Override
+            public void onComplete() throws InterruptedException {
 
             }
 
@@ -119,12 +129,17 @@ public class ThreadManagerTest extends ConcurrentTectonicTest {
             }
 
             @Override
-            public void stop() {
+            public void onStop() {
 
             }
 
             @Override
-            public void terminate() {
+            public void onDestroy() {
+
+            }
+
+            @Override
+            public void onComplete() throws InterruptedException {
 
             }
 
@@ -149,12 +164,17 @@ public class ThreadManagerTest extends ConcurrentTectonicTest {
             }
 
             @Override
-            public void stop() {
+            public void onStop() {
 
             }
 
             @Override
-            public void terminate() {
+            public void onDestroy() {
+
+            }
+
+            @Override
+            public void onComplete() throws InterruptedException {
 
             }
 
@@ -181,12 +201,17 @@ public class ThreadManagerTest extends ConcurrentTectonicTest {
             }
 
             @Override
-            public void stop() {
+            public void onStop() {
 
             }
 
             @Override
-            public void terminate() {
+            public void onDestroy() {
+
+            }
+
+            @Override
+            public void onComplete() throws InterruptedException {
 
             }
 
@@ -215,12 +240,17 @@ public class ThreadManagerTest extends ConcurrentTectonicTest {
             }
 
             @Override
-            public void stop() {
+            public void onStop() {
 
             }
 
             @Override
-            public void terminate() {
+            public void onDestroy() {
+
+            }
+
+            @Override
+            public void onComplete() throws InterruptedException {
 
             }
 

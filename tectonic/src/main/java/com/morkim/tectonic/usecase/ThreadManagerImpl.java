@@ -6,6 +6,7 @@ public class ThreadManagerImpl implements ThreadManager {
 
     private volatile boolean running;
     private volatile boolean terminated;
+    private volatile boolean completed;
     private final Object terminationLock = new Object();
 
     @Override
@@ -28,8 +29,13 @@ public class ThreadManagerImpl implements ThreadManager {
                                 terminationLock.wait();
                             } catch (InterruptedException e) {
                                 if (terminated) {
-                                    execution.stop();
-                                    break;
+                                    execution.onStop();
+                                } else if (completed) {
+                                    try {
+                                        execution.onComplete();
+                                    } catch (InterruptedException e1) {
+                                        // Do nothing as we are already interrupted
+                                    }
                                 }
                             } catch (UndoException e) {
                                 // catch this to allow re-executing the use case
@@ -37,7 +43,7 @@ public class ThreadManagerImpl implements ThreadManager {
                         }
                     }
 
-                    execution.terminate();
+                    execution.onDestroy();
                 }
             });
 
@@ -58,5 +64,11 @@ public class ThreadManagerImpl implements ThreadManager {
     @Override
     public void release() throws InterruptedException {
         terminationLock.wait();
+    }
+
+    @Override
+    public void complete() {
+        completed = true;
+        thread.interrupt();
     }
 }

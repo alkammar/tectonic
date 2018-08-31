@@ -25,6 +25,11 @@ public abstract class TectonicTest {
             }
 
             @Override
+            public void complete() {
+
+            }
+
+            @Override
             public void start(UseCaseExecution execution) {
                 try {
                     execution.run();

@@ -6,19 +6,22 @@ public interface ThreadManager {
 
     void release() throws InterruptedException;
 
-    interface UseCaseExecution {
-
-        void run() throws InterruptedException, UndoException;
-
-        void stop();
-
-        void terminate();
-
-    }
+    void complete();
 
     void start(UseCaseExecution execution);
 
     void stop();
 
     void restart();
+
+    interface UseCaseExecution {
+
+        void run() throws InterruptedException, UndoException;
+
+        void onStop();
+
+        void onDestroy();
+
+        void onComplete() throws InterruptedException;
+    }
 }

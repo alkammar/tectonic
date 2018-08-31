@@ -17,7 +17,7 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
 
     private Triggers<E> executor;
 
-    private static Map<Class<? extends UseCase>, UseCase> created = new HashMap<>();
+    private static final Map<Class<? extends UseCase>, UseCase> ALIVE = new HashMap<>();
     private static Map<Thread, ThreadManager> waitingUndo = new HashMap<>();
     private static ThreadManager defaultThreadManager;
     private Map<UUID, Action> actions = new HashMap<>();
@@ -25,6 +25,7 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
     private static Map<Thread, UseCase> threadUseCaseMap = new HashMap<>();
     private static Map<UUID, Object> cache = new HashMap<>();
     private static boolean waitingToRestart;
+
     private Action<?> blockingAction;
     private boolean running;
     private Map<Integer, Object> steps;
@@ -44,11 +45,11 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
     public synchronized static <U extends UseCase> U fetch(Class<U> useCaseClass) {
 
         //noinspection unchecked
-        U useCase = (U) created.get(useCaseClass);
+        U useCase = (U) ALIVE.get(useCaseClass);
         if (useCase == null) {
             try {
                 useCase = useCaseClass.newInstance();
-                created.put(useCaseClass, useCase);
+                synchronized (ALIVE) { ALIVE.put(useCaseClass, useCase); }
                 useCase.onCreate();
             } catch (Exception e) {
                 e.printStackTrace();
@@ -75,7 +76,7 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
     public void execute(final E event) {
         this.event = event;
 
-        if (created.containsKey(getClass()) && !running) {
+        if (ALIVE.containsKey(getClass()) && !running) {
 
             running = true;
 
@@ -351,17 +352,19 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
             if (running && primaryActor != null) primaryActor.onComplete(event, result);
         running = false;
         preconditionsExecuted = false;
-        created.remove(getClass());
+        ALIVE.remove(getClass());
         getThreadManager().stop();
 
-        for (UseCase useCase : created.values()) {
-            if (useCase.completedBy.contains(getClass()))
-                useCase.complete();
+        synchronized (ALIVE) {
+            for (UseCase useCase : ALIVE.values()) {
+                if (useCase.completedBy.contains(getClass()))
+                    useCase.complete();
+            }
         }
     }
 
     public static void clearAll() {
-        created.clear();
+        ALIVE.clear();
         cache.clear();
 //        actions.clear();
     }
@@ -386,7 +389,7 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
     @Override
     public void abort() {
         if (preconditionsExecuted) {
-            created.remove(getClass());
+            synchronized (ALIVE) { ALIVE.remove(getClass()); }
             getThreadManager().stop();
         } else {
             aborted = true;

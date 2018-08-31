@@ -34,6 +34,7 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
     private PrimaryActor<E, R> primaryActor;
     private Set<ResultActor<E, R>> resultActors = new HashSet<>();
     private PreconditionActor<E> preconditionActor;
+    private Set<Class<? extends UseCase>> completedBy = new HashSet<>();
 
     private E event;
     private volatile Set<E> preconditions = new HashSet<>();
@@ -75,15 +76,20 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
         this.event = event;
 
         if (created.containsKey(getClass()) && !running) {
+
             running = true;
+
             getThreadManager().start(new ThreadManager.UseCaseExecution() {
                 @Override
                 public void run() throws InterruptedException, UndoException {
+
                     threadUseCaseMap.put(Thread.currentThread(), UseCase.this);
+                    completedBy(completedBy);
                     boolean executeOnStart = !preconditionsExecuted;
                     waitForPreconditions();
-                    if (primaryActor != null && executeOnStart)
-                        primaryActor.onStart(event, UseCase.this);
+
+                    if (primaryActor != null && executeOnStart) primaryActor.onStart(event, UseCase.this);
+
                     try {
                         onExecute();
                     } catch (UndoException e) {
@@ -347,6 +353,11 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
         preconditionsExecuted = false;
         created.remove(getClass());
         getThreadManager().stop();
+
+        for (UseCase useCase : created.values()) {
+            if (useCase.completedBy.contains(getClass()))
+                useCase.complete();
+        }
     }
 
     public static void clearAll() {
@@ -389,6 +400,10 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
 
     @Override
     public void onAbort(E event) {
+
+    }
+
+    protected void completedBy(Set<Class<? extends UseCase>> by) {
 
     }
 }

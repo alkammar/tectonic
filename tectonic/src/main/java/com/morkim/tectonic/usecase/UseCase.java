@@ -378,12 +378,12 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
         }
     }
 
-    private void abortAbortedBy(UseCase<E, R> uc) throws InterruptedException {
+    private void abortAbortedBy(UseCase<E, R> uc) {
 
         synchronized (ALIVE) {
             for (UseCase useCase : ALIVE.values()) {
                 if (uc != useCase && useCase.abortingSet.contains(uc.getClass()))
-                    useCase.getThreadManager().stop();
+                    useCase.abort();
             }
         }
     }

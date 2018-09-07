@@ -1,7 +1,7 @@
 package com.morkim.tectonic.usecase;
 
 import com.morkim.tectonic.flow.Step;
-import com.morkim.tectonic.usecase.entities.CompletableByOtherCompletionUseCase;
+import com.morkim.tectonic.usecase.entities.AbortableByOtherCompletionUseCase;
 import com.morkim.tectonic.usecase.entities.CompletedUseCase;
 import com.morkim.tectonic.usecase.entities.SimpleUseCase;
 
@@ -10,9 +10,9 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertTrue;
 
-public class CompletableByOtherTest {
+public class AbortableByOtherTest {
 
-	private boolean completed;
+	private boolean aborted;
 
 	@Before
 	public void setup() {
@@ -23,7 +23,7 @@ public class CompletableByOtherTest {
 	@Test
 	public void complete_use_case__completes_another_use_case() throws InterruptedException {
 
-		CompletableByOtherCompletionUseCase completableByOther = UseCase.fetch(CompletableByOtherCompletionUseCase.class);
+		AbortableByOtherCompletionUseCase completableByOther = UseCase.fetch(AbortableByOtherCompletionUseCase.class);
 		completableByOther.setPrimaryActor(new SimpleUseCase.Actor() {
 			@Override
 			public void onStart(Integer event, UseCaseHandle handle) {
@@ -37,12 +37,12 @@ public class CompletableByOtherTest {
 
 			@Override
 			public void onComplete(Integer event, Void result) {
-				completed = true;
+
 			}
 
 			@Override
 			public void onAbort(Integer event) {
-
+				aborted = true;
 			}
 		});
 		completableByOther.execute();
@@ -56,6 +56,6 @@ public class CompletableByOtherTest {
 			e.printStackTrace();
 		}
 
-		assertTrue(completed);
+		assertTrue(aborted);
 	}
 }

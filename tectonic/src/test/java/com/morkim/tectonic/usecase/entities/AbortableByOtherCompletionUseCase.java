@@ -5,7 +5,7 @@ import com.morkim.tectonic.usecase.UseCase;
 
 import java.util.Set;
 
-public class CompletableByOtherCompletionUseCase extends SimpleUseCase {
+public class AbortableByOtherCompletionUseCase extends SimpleUseCase {
 
     @Override
     protected void onExecute() throws InterruptedException, UndoException {
@@ -14,8 +14,8 @@ public class CompletableByOtherCompletionUseCase extends SimpleUseCase {
     }
 
     @Override
-    protected void completedBy(Set<Class<? extends UseCase>> by) {
-        super.completedBy(by);
+    protected void abortedBy(Set<Class<? extends UseCase>> by) {
+        super.abortedBy(by);
 
         by.add(CompletedUseCase.class);
     }

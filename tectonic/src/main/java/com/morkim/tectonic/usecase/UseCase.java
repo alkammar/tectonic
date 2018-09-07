@@ -4,8 +4,10 @@ import android.annotation.SuppressLint;
 
 import com.morkim.tectonic.flow.Step;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -371,7 +373,8 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
     private void completeCompletedBy(UseCase<E, R> uc) throws InterruptedException {
 
         synchronized (ALIVE) {
-            for (UseCase useCase : ALIVE.values()) {
+            List<UseCase> useCases = new ArrayList<>(ALIVE.values());
+            for (UseCase useCase : useCases) {
                 if (uc != useCase && useCase.completingSet.contains(uc.getClass()))
                     useCase.getThreadManager().complete();
             }
@@ -381,7 +384,8 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
     private void abortAbortedBy(UseCase<E, R> uc) {
 
         synchronized (ALIVE) {
-            for (UseCase useCase : ALIVE.values()) {
+            List<UseCase> useCases = new ArrayList<>(ALIVE.values());
+            for (UseCase useCase : useCases) {
                 if (uc != useCase && useCase.abortingSet.contains(uc.getClass()))
                     useCase.abort();
             }

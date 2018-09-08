@@ -363,6 +363,7 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
             if (running && primaryActor != null) primaryActor.onComplete(event, result);
         running = false;
         preconditionsExecuted = false;
+        onDestroy();
         ALIVE.remove(getClass());
         getThreadManager().stop();
 
@@ -419,12 +420,17 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
     public void abort() {
         if (preconditionsExecuted) {
             synchronized (ALIVE) {
+                onDestroy();
                 ALIVE.remove(getClass());
             }
             getThreadManager().stop();
         } else {
             aborted = true;
         }
+    }
+
+    protected void onDestroy() {
+
     }
 
     @Override

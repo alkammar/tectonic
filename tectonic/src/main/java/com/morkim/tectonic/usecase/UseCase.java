@@ -19,7 +19,7 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
 
     private Triggers<E> executor;
 
-    private static final Map<Class<? extends UseCase>, UseCase> ALIVE = new HashMap<>();
+    private static volatile Map<Class<? extends UseCase>, UseCase> alive = new HashMap<>();
     private static Map<Thread, ThreadManager> waitingUndo = new HashMap<>();
     private static ThreadManager defaultThreadManager;
     private Map<UUID, Action> actions = new HashMap<>();
@@ -48,12 +48,12 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
     public synchronized static <U extends UseCase> U fetch(Class<U> useCaseClass) {
 
         //noinspection unchecked
-        U useCase = (U) ALIVE.get(useCaseClass);
+        U useCase = (U) alive.get(useCaseClass);
         if (useCase == null) {
             try {
                 useCase = useCaseClass.newInstance();
-                synchronized (ALIVE) {
-                    ALIVE.put(useCaseClass, useCase);
+                synchronized (alive) {
+                    alive.put(useCaseClass, useCase);
                 }
                 useCase.onCreate();
             } catch (Exception e) {
@@ -81,7 +81,7 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
     public void execute(final E event) {
         this.event = event;
 
-        if (ALIVE.containsKey(getClass()) && !running) {
+        if (alive.containsKey(getClass()) && !running) {
 
             running = true;
 
@@ -364,7 +364,7 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
         running = false;
         preconditionsExecuted = false;
         onDestroy();
-        ALIVE.remove(getClass());
+        alive.remove(getClass());
         getThreadManager().stop();
 
         completeCompletedBy(this);
@@ -373,8 +373,8 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
 
     private void completeCompletedBy(UseCase<E, R> uc) throws InterruptedException {
 
-        synchronized (ALIVE) {
-            List<UseCase> useCases = new ArrayList<>(ALIVE.values());
+        synchronized (alive) {
+            List<UseCase> useCases = new ArrayList<>(alive.values());
             for (UseCase useCase : useCases) {
                 if (uc != useCase && useCase.completingSet.contains(uc.getClass()))
                     useCase.getThreadManager().complete();
@@ -384,8 +384,8 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
 
     private void abortAbortedBy(UseCase<E, R> uc) {
 
-        synchronized (ALIVE) {
-            List<UseCase> useCases = new ArrayList<>(ALIVE.values());
+        synchronized (alive) {
+            List<UseCase> useCases = new ArrayList<>(alive.values());
             for (UseCase useCase : useCases) {
                 if (uc != useCase && useCase.abortingSet.contains(uc.getClass()))
                     useCase.abort();
@@ -394,7 +394,7 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
     }
 
     public static void clearAll() {
-        ALIVE.clear();
+        alive.clear();
         cache.clear();
 //        actions.clear();
     }
@@ -419,9 +419,9 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
     @Override
     public void abort() {
         if (preconditionsExecuted) {
-            synchronized (ALIVE) {
+            synchronized (alive) {
                 onDestroy();
-                ALIVE.remove(getClass());
+                alive.remove(getClass());
             }
             getThreadManager().stop();
         } else {

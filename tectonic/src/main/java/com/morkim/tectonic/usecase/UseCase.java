@@ -48,18 +48,19 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
 
     public synchronized static <U extends UseCase> U fetch(Class<U> useCaseClass) {
 
-        //noinspection unchecked
-        U useCase = (U) ALIVE.get(useCaseClass);
-        if (useCase == null) {
-            try {
-                useCase = useCaseClass.newInstance();
-                synchronized (ALIVE) {
+        U useCase;
+        synchronized (ALIVE) {
+            //noinspection unchecked
+            useCase = (U) ALIVE.get(useCaseClass);
+            if (useCase == null) {
+                try {
+                    useCase = useCaseClass.newInstance();
                     ALIVE.put(useCaseClass, useCase);
+                    useCase.onCreate();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    throw new UnableToInstantiateUseCase(e.getCause());
                 }
-                useCase.onCreate();
-            } catch (Exception e) {
-                e.printStackTrace();
-                throw new UnableToInstantiateUseCase(e.getCause());
             }
         }
 

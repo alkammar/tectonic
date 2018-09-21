@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 
 
@@ -19,7 +20,7 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
 
     private Triggers<E> executor;
 
-    private static volatile Map<Class<? extends UseCase>, UseCase> alive = new HashMap<>();
+    private static Map<Class<? extends UseCase>, UseCase> alive = new ConcurrentHashMap<>();
     private static Map<Thread, ThreadManager> waitingUndo = new HashMap<>();
     private static ThreadManager defaultThreadManager;
     private Map<UUID, Action> actions = new HashMap<>();

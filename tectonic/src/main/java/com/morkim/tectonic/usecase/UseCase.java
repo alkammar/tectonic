@@ -38,8 +38,11 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
     private PrimaryActor<E, R> primaryActor;
     private Set<ResultActor<E, R>> resultActors = new HashSet<>();
     private PreconditionActor<E> preconditionActor;
-    private Set<Class<? extends UseCase>> completingSet = new HashSet<>();
-    private Set<Class<? extends UseCase>> abortingSet = new HashSet<>();
+
+    private Set<Class<? extends UseCase>> completingWhenCompletedSet = new HashSet<>();
+    private Set<Class<? extends UseCase>> abortingWhenCompletedSet = new HashSet<>();
+    private Set<Class<? extends UseCase>> completingWhenAbortedSet = new HashSet<>();
+    private Set<Class<? extends UseCase>> abortingWhenAbortedSet = new HashSet<>();
 
     private E event;
     private volatile Set<E> preconditions = new HashSet<>();
@@ -92,8 +95,10 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
                 public void run() throws InterruptedException, UndoException {
 
                     threadUseCaseMap.put(Thread.currentThread(), UseCase.this);
-                    completedBy(completingSet);
-                    abortedBy(abortingSet);
+                    completeWhenCompleted(completingWhenCompletedSet);
+                    abortWhenCompleted(abortingWhenCompletedSet);
+                    completeWhenAborted(completingWhenAbortedSet);
+                    abortWhenAborted(abortingWhenAbortedSet);
                     boolean executeOnStart = !preconditionsExecuted;
                     waitForPreconditions();
 
@@ -118,6 +123,9 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
                         if (preconditionActor != primaryActor)
                             if (primaryActor != null) primaryActor.onAbort(event);
                         running = false;
+
+                        completeWhenAborted(UseCase.this);
+                        abortWhenAborted(UseCase.this);
                     }
                 }
 
@@ -369,27 +377,49 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
         ALIVE.remove(getClass());
         getThreadManager().stop();
 
-        completeCompletedBy(this);
-        abortAbortedBy(this);
+        completeWhenCompleted(this);
+        abortWhenCompleted(this);
     }
 
-    private void completeCompletedBy(UseCase<E, R> uc) throws InterruptedException {
+    private void completeWhenCompleted(UseCase<E, R> uc) {
 
         synchronized (ALIVE) {
             List<UseCase> useCases = new ArrayList<>(ALIVE.values());
             for (UseCase useCase : useCases) {
-                if (uc != useCase && useCase.completingSet.contains(uc.getClass()))
+                if (uc != useCase && useCase.completingWhenCompletedSet.contains(uc.getClass()))
                     useCase.getThreadManager().complete();
             }
         }
     }
 
-    private void abortAbortedBy(UseCase<E, R> uc) {
+    private void abortWhenCompleted(UseCase<E, R> uc) {
 
         synchronized (ALIVE) {
             List<UseCase> useCases = new ArrayList<>(ALIVE.values());
             for (UseCase useCase : useCases) {
-                if (uc != useCase && useCase.abortingSet.contains(uc.getClass()))
+                if (uc != useCase && useCase.abortingWhenCompletedSet.contains(uc.getClass()))
+                    useCase.abort();
+            }
+        }
+    }
+
+    private void completeWhenAborted(UseCase<E, R> uc) {
+
+        synchronized (ALIVE) {
+            List<UseCase> useCases = new ArrayList<>(ALIVE.values());
+            for (UseCase useCase : useCases) {
+                if (uc != useCase && useCase.completingWhenAbortedSet.contains(uc.getClass()))
+                    useCase.getThreadManager().complete();
+            }
+        }
+    }
+
+    private void abortWhenAborted(UseCase<E, R> uc) {
+
+        synchronized (ALIVE) {
+            List<UseCase> useCases = new ArrayList<>(ALIVE.values());
+            for (UseCase useCase : useCases) {
+                if (uc != useCase && useCase.abortingWhenAbortedSet.contains(uc.getClass()))
                     useCase.abort();
             }
         }
@@ -445,11 +475,19 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
 
     }
 
-    protected void completedBy(Set<Class<? extends UseCase>> by) {
+    protected void completeWhenCompleted(Set<Class<? extends UseCase>> by) {
 
     }
 
-    protected void abortedBy(Set<Class<? extends UseCase>> by) {
+    protected void abortWhenCompleted(Set<Class<? extends UseCase>> by) {
+
+    }
+
+    protected void completeWhenAborted(Set<Class<? extends UseCase>> by) {
+
+    }
+
+    protected void abortWhenAborted(Set<Class<? extends UseCase>> by) {
 
     }
 }

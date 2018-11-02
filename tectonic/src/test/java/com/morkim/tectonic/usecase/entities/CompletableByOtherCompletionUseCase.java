@@ -14,8 +14,8 @@ public class CompletableByOtherCompletionUseCase extends SimpleUseCase {
     }
 
     @Override
-    protected void completedBy(Set<Class<? extends UseCase>> by) {
-        super.completedBy(by);
+    protected void completeWhenCompleted(Set<Class<? extends UseCase>> by) {
+        super.completeWhenCompleted(by);
 
         by.add(CompletedUseCase.class);
     }

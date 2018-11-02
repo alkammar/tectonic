@@ -14,8 +14,8 @@ public class AbortableByOtherCompletionUseCase extends SimpleUseCase {
     }
 
     @Override
-    protected void abortedBy(Set<Class<? extends UseCase>> by) {
-        super.abortedBy(by);
+    protected void abortWhenCompleted(Set<Class<? extends UseCase>> by) {
+        super.abortWhenCompleted(by);
 
         by.add(CompletedUseCase.class);
     }

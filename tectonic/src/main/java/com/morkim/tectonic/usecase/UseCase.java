@@ -46,7 +46,7 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
 
     private E event;
     private volatile Set<E> preconditions = new HashSet<>();
-    private boolean preconditionsExecuted;
+    private volatile boolean preconditionsExecuted;
     private volatile boolean aborted;
 
     public synchronized static <U extends UseCase> U fetch(Class<U> useCaseClass) {

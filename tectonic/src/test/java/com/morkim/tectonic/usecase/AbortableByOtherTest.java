@@ -1,6 +1,7 @@
 package com.morkim.tectonic.usecase;
 
 import com.morkim.tectonic.flow.Step;
+import com.morkim.tectonic.usecase.entities.AbortableByOtherAbortionUseCase;
 import com.morkim.tectonic.usecase.entities.AbortableByOtherCompletionUseCase;
 import com.morkim.tectonic.usecase.entities.CompletedUseCase;
 import com.morkim.tectonic.usecase.entities.SimpleUseCase;
@@ -21,10 +22,10 @@ public class AbortableByOtherTest {
 	}
 
 	@Test
-	public void complete_use_case__completes_another_use_case() throws InterruptedException {
+	public void complete_use_case__aborts_another_use_case() throws InterruptedException {
 
-		AbortableByOtherCompletionUseCase completableByOther = UseCase.fetch(AbortableByOtherCompletionUseCase.class);
-		completableByOther.setPrimaryActor(new SimpleUseCase.Actor() {
+		AbortableByOtherCompletionUseCase abortableByOther = UseCase.fetch(AbortableByOtherCompletionUseCase.class);
+		abortableByOther.setPrimaryActor(new SimpleUseCase.Actor() {
 			@Override
 			public void onStart(Integer event, UseCaseHandle handle) {
 
@@ -45,10 +46,57 @@ public class AbortableByOtherTest {
 				aborted = true;
 			}
 		});
-		completableByOther.execute();
+		abortableByOther.execute();
 
-		CompletedUseCase completingOther = UseCase.fetch(CompletedUseCase.class);
-		completingOther.execute();
+		CompletedUseCase abortingOther = UseCase.fetch(CompletedUseCase.class);
+		abortingOther.execute();
+
+		try {
+			Thread.sleep(100);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+
+		assertTrue(aborted);
+	}
+
+	@Test
+	public void abort_use_case__aborts_another_use_case() throws InterruptedException {
+
+		AbortableByOtherAbortionUseCase abortableByOther = UseCase.fetch(AbortableByOtherAbortionUseCase.class);
+		abortableByOther.setPrimaryActor(new SimpleUseCase.Actor() {
+			@Override
+			public void onStart(Integer event, UseCaseHandle handle) {
+
+			}
+
+			@Override
+			public void onUndo(Step step) {
+
+			}
+
+			@Override
+			public void onComplete(Integer event, Void result) {
+
+			}
+
+			@Override
+			public void onAbort(Integer event) {
+				aborted = true;
+			}
+		});
+		abortableByOther.execute();
+
+		SimpleUseCase abortingOther = UseCase.fetch(SimpleUseCase.class);
+		abortingOther.execute();
+
+		try {
+			Thread.sleep(100);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+
+		abortingOther.abort();
 
 		try {
 			Thread.sleep(100);

@@ -7,8 +7,10 @@ import com.morkim.usecase.di.AppInjector;
 
 import javax.inject.Inject;
 
+import lib.morkim.uc.ExpiredCredentials;
 
-public class MainUseCase extends UseCase<UseCaseExecutor.Event, String> {
+
+public class MainUseCase extends UseCase<String> {
 
     private static final int STEP = 1;
 

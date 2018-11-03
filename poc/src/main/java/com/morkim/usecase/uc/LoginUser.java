@@ -1,6 +1,7 @@
 package com.morkim.usecase.uc;
 
 import com.morkim.tectonic.usecase.PrimaryActor;
+import com.morkim.tectonic.usecase.UndoException;
 import com.morkim.tectonic.usecase.UseCase;
 import com.morkim.usecase.app.UseCaseExecutor;
 import com.morkim.tectonic.usecase.UnexpectedStep;
@@ -11,7 +12,7 @@ import java.util.Set;
 import javax.inject.Inject;
 
 
-public class LoginUser extends UseCase<UseCaseExecutor.Event, Void> {
+public class LoginUser extends UseCase<Void> {
 
     @Inject
     Backend backend;
@@ -27,12 +28,12 @@ public class LoginUser extends UseCase<UseCaseExecutor.Event, Void> {
     }
 
     @Override
-    protected void onAddPreconditions(Set<UseCaseExecutor.Event> events) {
-
+    protected void onAddPreconditions(Set<Class<? extends UseCase<?>>> useCases) {
+        super.onAddPreconditions(useCases);
     }
 
     @Override
-    protected void onExecute() throws InterruptedException {
+    protected void onExecute() throws InterruptedException, UndoException {
 
         try {
             String password = ui.askForPassword();
@@ -55,7 +56,7 @@ public class LoginUser extends UseCase<UseCaseExecutor.Event, Void> {
 
         void validateCredentials(String password) throws InvalidLogin;
 
-        void register() throws InterruptedException;
+        void register() throws InterruptedException, UndoException;
     }
 
     public interface UI extends PrimaryActor<UseCaseExecutor.Event, Void> {

@@ -1,17 +1,19 @@
-package com.morkim.usecase.uc;
+package lib.morkim.uc;
 
 import com.morkim.tectonic.usecase.PrimaryActor;
+import com.morkim.tectonic.usecase.TectonicEvent;
+import com.morkim.tectonic.usecase.UndoException;
 import com.morkim.tectonic.usecase.UseCase;
-import com.morkim.usecase.app.UseCaseExecutor;
-import com.morkim.usecase.di.AppInjector;
-import com.morkim.usecase.model.SecondaryModel;
 
 import java.util.Set;
 
 import javax.inject.Inject;
 
+import lib.morkim.di.UseCaseInjector;
+import lib.morkim.model.SecondaryModel;
 
-public class SecondaryUseCase extends UseCase<UseCaseExecutor.Event, SecondaryModel> {
+
+public class SecondaryUseCase extends UseCase<SecondaryModel> {
 
     @Inject
     Backend backend;
@@ -26,18 +28,25 @@ public class SecondaryUseCase extends UseCase<UseCaseExecutor.Event, SecondaryMo
     protected void onCreate() {
         super.onCreate();
 
-        AppInjector.getSecondaryUseCaseComponent().inject(this);
+        UseCaseInjector.getSecondaryUseCaseComponent().inject(this);
+    }
+
+//    @Override
+//    protected void onAddPreconditions(Set<UseCaseExecutor.Event> events) {
+//        super.onAddPreconditions(events);
+//
+//        events.add(UseCaseExecutor.Event.PRE_CONDITION_MAIN);
+//    }
+
+    @Override
+    protected void onAddPreconditions(Set<Class<? extends UseCase<?>>> useCases) {
+        super.onAddPreconditions(useCases);
+
+
     }
 
     @Override
-    protected void onAddPreconditions(Set<UseCaseExecutor.Event> events) {
-        super.onAddPreconditions(events);
-
-        events.add(UseCaseExecutor.Event.PRE_CONDITION_MAIN);
-    }
-
-    @Override
-    protected void onExecute() throws InterruptedException {
+    protected void onExecute() throws InterruptedException, UndoException {
 
         try {
 
@@ -70,13 +79,13 @@ public class SecondaryUseCase extends UseCase<UseCaseExecutor.Event, SecondaryMo
         if (data3 == 0) throw new InvalidValueException();
     }
 
-    public interface UI extends PrimaryActor<UseCaseExecutor.Event, SecondaryModel> {
+    public interface UI<E extends TectonicEvent> extends PrimaryActor<E, SecondaryModel> {
 
-        String askForData1() throws InterruptedException;
+        String askForData1() throws InterruptedException, UndoException;
 
-        String askForData2() throws InterruptedException;
+        String askForData2() throws InterruptedException, UndoException;
 
-        Double askForData3() throws InterruptedException;
+        Double askForData3() throws InterruptedException, UndoException;
 
         void askToConfirm() throws InterruptedException;
 

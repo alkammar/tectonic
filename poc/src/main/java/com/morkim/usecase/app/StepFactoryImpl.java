@@ -62,4 +62,9 @@ public class StepFactoryImpl implements StepFactory {
     public <S> void onCreated(S step) {
         StepCoordinator.replyWith(step.getClass().hashCode(), step);
     }
+
+    @Override
+    public <S> void onCreated(S step, S impl) {
+
+    }
 }

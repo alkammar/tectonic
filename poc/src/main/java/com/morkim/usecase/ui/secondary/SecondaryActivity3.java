@@ -12,8 +12,8 @@ import com.morkim.usecase.contract.Secondary;
 import com.morkim.usecase.di.AppInjector;
 import com.morkim.usecase.di.ui.secondary.DaggerSecondaryScreen3Component;
 import com.morkim.usecase.di.ui.secondary.SecondaryScreen3Module;
-import com.morkim.usecase.uc.InvalidValueException;
-import com.morkim.usecase.uc.SpecificBackendError;
+import lib.morkim.uc.InvalidValueException;
+import lib.morkim.uc.SpecificBackendError;
 
 import javax.inject.Inject;
 

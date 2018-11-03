@@ -2,20 +2,22 @@ package com.morkim.usecase.flow;
 
 import com.morkim.tectonic.flow.Step;
 import com.morkim.tectonic.flow.StepFactory;
+import com.morkim.tectonic.usecase.UndoException;
 import com.morkim.tectonic.usecase.UseCase;
 import com.morkim.tectonic.usecase.UseCaseHandle;
 import com.morkim.usecase.app.UseCaseExecutor;
 import com.morkim.usecase.contract.Secondary;
-import com.morkim.usecase.model.SecondaryModel;
-import com.morkim.usecase.uc.InvalidValueException;
-import com.morkim.usecase.uc.SecondaryUseCase;
-import com.morkim.usecase.uc.SpecificBackendError;
 
 import java.util.UUID;
 
 import javax.inject.Inject;
 
-public class SecondaryFlowImpl implements Secondary.Flow, SecondaryUseCase.UI {
+import lib.morkim.model.SecondaryModel;
+import lib.morkim.uc.InvalidValueException;
+import lib.morkim.uc.SecondaryUseCase;
+import lib.morkim.uc.SpecificBackendError;
+
+public class SecondaryFlowImpl implements Secondary.Flow, SecondaryUseCase.UI<UseCaseExecutor.Event> {
 
     private static final UUID DATA1 = UUID.randomUUID();
     private static final UUID DATA2 = UUID.randomUUID();
@@ -42,19 +44,19 @@ public class SecondaryFlowImpl implements Secondary.Flow, SecondaryUseCase.UI {
     }
 
     @Override
-    public String askForData1() throws InterruptedException {
+    public String askForData1() throws InterruptedException, UndoException {
         if (screen1 == null) screen1 = stepFactory.create(Secondary.Screen1.class);
         return UseCase.waitForSafe(DATA1);
     }
 
     @Override
-    public String askForData2() throws InterruptedException {
+    public String askForData2() throws InterruptedException, UndoException {
         if (screen2 == null) screen2 = stepFactory.create(Secondary.Screen2.class);
         return UseCase.waitForSafe(DATA2);
     }
 
     @Override
-    public Double askForData3() throws InterruptedException {
+    public Double askForData3() throws InterruptedException, UndoException {
         if (screen3 == null) screen3 = stepFactory.create(Secondary.Screen3.class);
         return UseCase.waitForSafe(DATA3);
     }

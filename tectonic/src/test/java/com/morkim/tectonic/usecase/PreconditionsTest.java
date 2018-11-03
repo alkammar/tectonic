@@ -4,6 +4,7 @@ import com.morkim.tectonic.usecase.entities.CompletedPreconditionsUseCase;
 import com.morkim.tectonic.usecase.entities.CompletedUseCase;
 import com.morkim.tectonic.usecase.entities.FailingPreconditionsUseCase;
 import com.morkim.tectonic.usecase.entities.SimpleTriggers;
+import com.morkim.tectonic.usecase.entities.SimpleUseCase;
 
 import org.junit.Test;
 
@@ -30,6 +31,8 @@ public class PreconditionsTest extends ConcurrentTectonicTest {
 		useCase.setExecutor(new SimpleTriggers());
 		useCase.execute();
 
+		UseCase.fetch(SimpleUseCase.class).abort();
+
 		assertFalse(useCase.isOnExecuteCalled());
 	}
 
@@ -49,10 +52,12 @@ public class PreconditionsTest extends ConcurrentTectonicTest {
 		});
 		thread.start();
 
-		sleep();
-		sleep();
-		sleep();
-		sleep();
+//		sleep();
+//		sleep();
+//		sleep();
+//		sleep();
+
+		useCaseThread.join();
 
 		assertTrue(useCase.isOnExecuteCalled());
 	}

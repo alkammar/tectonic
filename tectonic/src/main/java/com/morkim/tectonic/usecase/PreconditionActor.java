@@ -1,6 +1,6 @@
 package com.morkim.tectonic.usecase;
 
-public interface PreconditionActor<E> {
+public interface PreconditionActor<E extends TectonicEvent> {
     
     void onComplete(E event);
     

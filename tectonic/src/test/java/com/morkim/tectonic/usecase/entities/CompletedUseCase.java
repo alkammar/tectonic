@@ -2,6 +2,7 @@ package com.morkim.tectonic.usecase.entities;
 
 import com.morkim.tectonic.usecase.PreconditionActor;
 import com.morkim.tectonic.usecase.PrimaryActor;
+import com.morkim.tectonic.usecase.TectonicEvent;
 import com.morkim.tectonic.usecase.UndoException;
 
 public class CompletedUseCase extends SimpleUseCase {
@@ -19,7 +20,7 @@ public class CompletedUseCase extends SimpleUseCase {
         this.actor = actor;
     }
 
-    public interface Actor extends PrimaryActor<Integer, Void>, PreconditionActor<Integer> {
+    public interface Actor extends PrimaryActor<TectonicEvent, Void>, PreconditionActor<TectonicEvent> {
 
     }
 }

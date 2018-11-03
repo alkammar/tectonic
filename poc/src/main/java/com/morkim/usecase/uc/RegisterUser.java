@@ -2,6 +2,7 @@ package com.morkim.usecase.uc;
 
 import com.morkim.tectonic.usecase.PrimaryActor;
 import com.morkim.tectonic.usecase.Random;
+import com.morkim.tectonic.usecase.UndoException;
 import com.morkim.tectonic.usecase.UseCase;
 import com.morkim.usecase.app.UseCaseExecutor;
 import com.morkim.usecase.di.AppInjector;
@@ -11,7 +12,7 @@ import java.util.Objects;
 import javax.inject.Inject;
 
 
-public class RegisterUser extends UseCase {
+public class RegisterUser extends UseCase<Void> {
 
     @Inject
     UI ui;
@@ -27,7 +28,7 @@ public class RegisterUser extends UseCase {
     }
 
     @Override
-    protected void onExecute() throws InterruptedException {
+    protected void onExecute() throws InterruptedException, UndoException {
 
         try {
 
@@ -116,7 +117,7 @@ public class RegisterUser extends UseCase {
 
         void showError(ValidationException e);
 
-        void askForConfirmation() throws InterruptedException;
+        void askForConfirmation() throws InterruptedException, UndoException;
 
         void confirmRegistrationError();
     }

@@ -3,9 +3,9 @@ package com.morkim.usecase.di.flow;
 import com.morkim.usecase.contract.Secondary;
 import com.morkim.usecase.di.AppComponent;
 import com.morkim.usecase.di.PerUseCase;
-import com.morkim.usecase.uc.SecondaryUseCase;
 
 import dagger.Component;
+import lib.morkim.uc.SecondaryUseCase;
 
 @PerUseCase
 @Component(dependencies = {AppComponent.class}, modules = {SecondaryFlowModule.class})

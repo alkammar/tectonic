@@ -35,17 +35,17 @@ public class ResultActorTest extends TectonicTest {
 		useCase.setActor(new CompletedUseCase.Actor() {
 
 			@Override
-			public void onStart(Integer event, UseCaseHandle handle) {
+			public void onStart(TectonicEvent event, UseCaseHandle handle) {
 				onStartCalled = true;
 			}
 
 			@Override
-			public void onComplete(Integer event, Void result) {
+			public void onComplete(TectonicEvent event, Void result) {
 
 			}
 
 			@Override
-			public void onComplete(Integer event) {
+			public void onComplete(TectonicEvent event) {
 				onCompleteCalled = true;
 			}
 
@@ -55,7 +55,7 @@ public class ResultActorTest extends TectonicTest {
 			}
 
 			@Override
-			public void onAbort(Integer event) {
+			public void onAbort(TectonicEvent event) {
 				onAbortCalled = true;
 			}
 		});
@@ -72,18 +72,18 @@ public class ResultActorTest extends TectonicTest {
 		CompletedUseCase.Actor actor = new CompletedUseCase.Actor() {
 
 			@Override
-			public void onStart(Integer event, UseCaseHandle handle) {
+			public void onStart(TectonicEvent event, UseCaseHandle handle) {
 				onStartCalled = true;
 			}
 
 			@Override
-			public void onComplete(Integer event, Void result) {
+			public void onComplete(TectonicEvent event, Void result) {
 				onCompleteCalled = true;
 				onCompleteCalledCount++;
 			}
 
 			@Override
-			public void onComplete(Integer event) {
+			public void onComplete(TectonicEvent event) {
 				onCompleteCalled = true;
 				onCompleteCalledCount++;
 			}
@@ -94,7 +94,7 @@ public class ResultActorTest extends TectonicTest {
 			}
 
 			@Override
-			public void onAbort(Integer event) {
+			public void onAbort(TectonicEvent event) {
 				onAbortCalled = true;
 			}
 		};
@@ -113,16 +113,16 @@ public class ResultActorTest extends TectonicTest {
 		CompletedUseCase.Actor actor1 = new CompletedUseCase.Actor() {
 
 			@Override
-			public void onStart(Integer event, UseCaseHandle handle) {
+			public void onStart(TectonicEvent event, UseCaseHandle handle) {
 			}
 
 			@Override
-			public void onComplete(Integer event, Void result) {
+			public void onComplete(TectonicEvent event, Void result) {
 				onCompleteCalledCount++;
 			}
 
 			@Override
-			public void onComplete(Integer event) {
+			public void onComplete(TectonicEvent event) {
 				onCompleteCalledCount++;
 			}
 
@@ -132,23 +132,23 @@ public class ResultActorTest extends TectonicTest {
 			}
 
 			@Override
-			public void onAbort(Integer event) {
+			public void onAbort(TectonicEvent event) {
 				onAbortCalled = true;
 			}
 		};
 		CompletedUseCase.Actor actor2 = new CompletedUseCase.Actor() {
 
 			@Override
-			public void onStart(Integer event, UseCaseHandle handle) {
+			public void onStart(TectonicEvent event, UseCaseHandle handle) {
 			}
 
 			@Override
-			public void onComplete(Integer event, Void result) {
+			public void onComplete(TectonicEvent event, Void result) {
 				onCompleteCalledCount++;
 			}
 
 			@Override
-			public void onComplete(Integer event) {
+			public void onComplete(TectonicEvent event) {
 				onCompleteCalledCount++;
 			}
 
@@ -158,7 +158,7 @@ public class ResultActorTest extends TectonicTest {
 			}
 
 			@Override
-			public void onAbort(Integer event) {
+			public void onAbort(TectonicEvent event) {
 				onAbortCalled = true;
 			}
 		};

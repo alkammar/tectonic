@@ -6,11 +6,12 @@ import com.morkim.tectonic.usecase.UseCase;
 
 import java.util.Set;
 
-public class SimpleUseCase extends UseCase<Integer, Void> {
+public class SimpleUseCase extends UseCase<Void> {
 
     private int onCreateCalledCount;
     private int onExecuteCalledCount;
     private boolean onCheckPreconditionsCalled;
+    private boolean abortCalled;
     private Actor actor;
 
     @Override
@@ -21,7 +22,9 @@ public class SimpleUseCase extends UseCase<Integer, Void> {
     }
 
     @Override
-    protected void onAddPreconditions(Set<Integer> events) {
+    protected void onAddPreconditions(Set<Class<? extends UseCase<?>>> useCases) {
+        super.onAddPreconditions(useCases);
+
         onCheckPreconditionsCalled = true;
     }
 
@@ -32,6 +35,13 @@ public class SimpleUseCase extends UseCase<Integer, Void> {
 
     public boolean isOnExecuteCalled() {
         return onExecuteCalledCount > 0;
+    }
+
+    @Override
+    public void abort() {
+        super.abort();
+
+        abortCalled = true;
     }
 
     public int getOnExecuteCalledCount() {
@@ -52,6 +62,10 @@ public class SimpleUseCase extends UseCase<Integer, Void> {
 
     public boolean isOnCreateCalled() {
         return onCreateCalledCount > 0;
+    }
+
+    public boolean isAbortCalled() {
+        return abortCalled;
     }
 
     public interface Actor extends PrimaryActor<Integer, Void> {

@@ -15,13 +15,13 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 
 
+@SuppressWarnings({"WeakerAccess", "unused"})
 @SuppressLint("UseSparseArrays")
-public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHandle {
+public abstract class UseCase<R> implements PreconditionActor, UseCaseHandle {
 
-    private Triggers<E> executor;
+    private Triggers<?> executor;
 
     private static final Map<Class<? extends UseCase>, UseCase> ALIVE = new ConcurrentHashMap<>();
-    private static Map<Thread, ThreadManager> waitingUndo = new HashMap<>();
     private static ThreadManager defaultThreadManager;
     private Map<UUID, Action> actions = new HashMap<>();
     private static Map<UUID, Thread> keyThreadMap = new HashMap<>();
@@ -35,17 +35,18 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
 
 
     private ThreadManager threadManager = new ThreadManagerImpl();
-    private PrimaryActor<E, R> primaryActor;
-    private Set<ResultActor<E, R>> resultActors = new HashSet<>();
-    private PreconditionActor<E> preconditionActor;
+    private PrimaryActor<TectonicEvent, R> primaryActor;
+    private Set<ResultActor<TectonicEvent, R>> resultActors = new HashSet<>();
+    private PreconditionActor preconditionActor;
 
     private Set<Class<? extends UseCase>> completingWhenCompletedSet = new HashSet<>();
     private Set<Class<? extends UseCase>> abortingWhenCompletedSet = new HashSet<>();
     private Set<Class<? extends UseCase>> completingWhenAbortedSet = new HashSet<>();
     private Set<Class<? extends UseCase>> abortingWhenAbortedSet = new HashSet<>();
 
-    private E event;
-    private volatile Set<E> preconditions = new HashSet<>();
+    private TectonicEvent event;
+    private volatile Set<Class<? extends UseCase<?>>> preconditions = new HashSet<>();
+    private volatile Map<TectonicEvent, Class<? extends UseCase<?>>> preconditionEvents = new HashMap<>();
     private volatile boolean preconditionsExecuted;
     private volatile boolean aborted;
 
@@ -80,10 +81,10 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
     }
 
     public void execute() {
-        execute((E) null);
+        execute((TectonicEvent) null);
     }
 
-    public void execute(final E event) {
+    public void execute(final TectonicEvent event) {
         this.event = event;
 
         if (ALIVE.containsKey(getClass()) && !running) {
@@ -118,7 +119,7 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
                     if (running) {
                         if (preconditionActor != null) preconditionActor.onAbort(event);
 
-                        for (ResultActor<E, R> resultActor : resultActors)
+                        for (ResultActor<TectonicEvent, R> resultActor : resultActors)
                             if (resultActor != null) resultActor.onAbort(event);
                         if (preconditionActor != primaryActor)
                             if (primaryActor != null) primaryActor.onAbort(event);
@@ -146,11 +147,11 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
         }
     }
 
-    protected <r> r execute(Class<? extends UseCase<E, r>> cls) throws AbortedUseCase, InterruptedException {
+    protected <r> r execute(Class<? extends UseCase<r>> cls) throws AbortedUseCase, InterruptedException {
         return execute(null, cls);
     }
 
-    protected <r> r execute(UUID key, Class<? extends UseCase<E, r>> cls) throws AbortedUseCase, InterruptedException {
+    protected <r> r execute(UUID key, Class<? extends UseCase<r>> cls) throws AbortedUseCase, InterruptedException {
         r result = (cache.containsKey(key)) ? (r) cache.get(key) : executor.trigger(cls, event);
         if (key != null) cache.put(key, result);
         return result;
@@ -158,7 +159,8 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
 
     private void waitForPreconditions() throws InterruptedException, UndoException {
         if (!preconditionsExecuted) onAddPreconditions(preconditions);
-        for (E event : preconditions) executor.trigger(event, this);
+        for (Class<? extends UseCase<?>> precondition : preconditions)
+            preconditionEvents.put(executor.trigger(precondition, this), precondition);
         //noinspection StatementWithEmptyBody
         while (preconditions.size() > 0 && !aborted) ;
         preconditionsExecuted = true;
@@ -168,7 +170,7 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
         }
     }
 
-    protected void onAddPreconditions(Set<E> events) {
+    protected void onAddPreconditions(Set<Class<? extends UseCase<?>>> useCases) {
 
     }
 
@@ -329,20 +331,20 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
         for (UUID key : keys) cache.remove(key);
     }
 
-    public void setPrimaryActor(PrimaryActor<E, R> primaryActor) {
+    public void setPrimaryActor(PrimaryActor primaryActor) {
         this.primaryActor = primaryActor;
 
     }
 
-    public void setPreconditionActor(PreconditionActor<E> preconditionActor) {
+    public void setPreconditionActor(PreconditionActor preconditionActor) {
         this.preconditionActor = preconditionActor;
     }
 
-    public void addResultActor(ResultActor<E, R> resultActor) {
+    public void addResultActor(ResultActor<TectonicEvent, R> resultActor) {
         this.resultActors.add(resultActor);
     }
 
-    public void setExecutor(Triggers<E> executor) {
+    public void setExecutor(Triggers<?> executor) {
         this.executor = executor;
     }
 
@@ -367,7 +369,7 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
 
         if (running && preconditionActor != null) preconditionActor.onComplete(event);
         if (running)
-            for (ResultActor<E, R> resultActor : resultActors)
+            for (ResultActor<TectonicEvent, R> resultActor : resultActors)
                 if (resultActor != null) resultActor.onComplete(event, result);
         if (preconditionActor != primaryActor && resultActors != primaryActor)
             if (running && primaryActor != null) primaryActor.onComplete(event, result);
@@ -381,7 +383,7 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
         abortWhenCompleted(this);
     }
 
-    private void completeWhenCompleted(UseCase<E, R> uc) {
+    private void completeWhenCompleted(UseCase<R> uc) {
 
         synchronized (ALIVE) {
             List<UseCase> useCases = new ArrayList<>(ALIVE.values());
@@ -392,7 +394,7 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
         }
     }
 
-    private void abortWhenCompleted(UseCase<E, R> uc) {
+    private void abortWhenCompleted(UseCase<R> uc) {
 
         synchronized (ALIVE) {
             List<UseCase> useCases = new ArrayList<>(ALIVE.values());
@@ -403,7 +405,7 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
         }
     }
 
-    private void completeWhenAborted(UseCase<E, R> uc) {
+    private void completeWhenAborted(UseCase<R> uc) {
 
         synchronized (ALIVE) {
             List<UseCase> useCases = new ArrayList<>(ALIVE.values());
@@ -414,7 +416,7 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
         }
     }
 
-    private void abortWhenAborted(UseCase<E, R> uc) {
+    private void abortWhenAborted(UseCase<R> uc) {
 
         synchronized (ALIVE) {
             List<UseCase> useCases = new ArrayList<>(ALIVE.values());
@@ -435,7 +437,8 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
         retry(false);
     }
 
-    public void retry(boolean withPreconditions) {
+    @SuppressWarnings("WeakerAccess")
+    protected void retry(@SuppressWarnings("SameParameterValue") boolean withPreconditions) {
         running = false;
         preconditionsExecuted = !withPreconditions;
         execute(event);
@@ -466,12 +469,13 @@ public abstract class UseCase<E, R> implements PreconditionActor<E>, UseCaseHand
     }
 
     @Override
-    public void onComplete(E event) {
-        preconditions.remove(event);
+    public void onComplete(TectonicEvent event) {
+        preconditions.remove(preconditionEvents.get(event));
+        preconditionEvents.remove(event);
     }
 
     @Override
-    public void onAbort(E event) {
+    public void onAbort(TectonicEvent event) {
 
     }
 

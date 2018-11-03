@@ -10,7 +10,7 @@ import com.morkim.usecase.app.UseCaseExecutor;
 import com.morkim.usecase.contract.Login;
 import com.morkim.usecase.uc.LoginUser;
 import com.morkim.usecase.uc.MainUseCase;
-import com.morkim.usecase.uc.SecondaryUseCase;
+import lib.morkim.uc.SecondaryUseCase;
 import com.morkim.usecase.uc.UserWantsToRegister;
 
 import java.util.UUID;

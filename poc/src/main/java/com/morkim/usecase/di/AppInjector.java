@@ -15,6 +15,8 @@ import com.morkim.usecase.di.ui.secondary.SecondaryScreen1Component;
 import com.morkim.usecase.di.ui.secondary.SecondaryScreen2Component;
 import com.morkim.usecase.di.ui.secondary.SecondaryScreen3Component;
 
+import lib.morkim.di.UseCaseInjector;
+
 public class AppInjector {
 
     private static AppComponent appComponent;
@@ -92,6 +94,7 @@ public class AppInjector {
 
     public static void setSecondaryUseCaseComponent(SecondaryUseCaseComponent secondaryUseCaseComponent) {
         AppInjector.secondaryUseCaseComponent = secondaryUseCaseComponent;
+        UseCaseInjector.setSecondaryUseCaseComponent(secondaryUseCaseComponent);
     }
 
     public static void setSecondaryFlowComponent(SecondaryFlowComponent secondaryFlowComponent) {

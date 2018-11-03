@@ -1,10 +1,10 @@
 package com.morkim.usecase.app;
 
-import com.morkim.tectonic.usecase.AbortedUseCase;
 import com.morkim.tectonic.usecase.Builder;
 import com.morkim.tectonic.usecase.PreconditionActor;
 import com.morkim.tectonic.usecase.PrimaryActor;
 import com.morkim.tectonic.usecase.ResultActor;
+import com.morkim.tectonic.usecase.TectonicEvent;
 import com.morkim.tectonic.usecase.Triggers;
 import com.morkim.tectonic.usecase.UseCase;
 import com.morkim.usecase.di.AppInjector;
@@ -26,7 +26,8 @@ import com.morkim.usecase.uc.LoginUser;
 import com.morkim.usecase.uc.LogoutUser;
 import com.morkim.usecase.uc.MainUseCase;
 import com.morkim.usecase.uc.RegisterUser;
-import com.morkim.usecase.uc.SecondaryUseCase;
+
+import lib.morkim.uc.SecondaryUseCase;
 
 public class UseCaseExecutor implements Triggers<UseCaseExecutor.Event> {
 
@@ -36,27 +37,32 @@ public class UseCaseExecutor implements Triggers<UseCaseExecutor.Event> {
     }
 
     @Override
-    public <R> R trigger(Class<? extends UseCase<Event, R>> cls, Event contextEvent) throws InterruptedException, AbortedUseCase {
+    public <R> R trigger(Class<? extends UseCase<R>> cls, TectonicEvent contextEvent) {
         return null;
     }
 
     @Override
-    public Event trigger(Event event, PrimaryActor<Event, ?> primaryActor) {
+    public Event trigger(Event event, PrimaryActor primaryActor) {
         return trigger(event, null, primaryActor, null, null);
     }
 
     @Override
-    public Event trigger(Event event, ResultActor<Event, ?> resultActor) {
+    public Event trigger(Event event, ResultActor resultActor) {
         return trigger(event, null, null, resultActor, null);
     }
 
     @Override
-    public Event trigger(Event event, PreconditionActor<Event> preconditionActor) {
-        return trigger(event, preconditionActor, null, null, null);
+    public Event trigger(Class<? extends UseCase<?>> useCase, PreconditionActor preconditionActor) {
+
+        if (MainUseCase.class.equals(useCase)) {
+            return trigger(Event.PRE_CONDITION_MAIN, preconditionActor, null, null, null);
+        }
+
+        return null;
     }
 
     @Override
-    public Event trigger(Event event, PreconditionActor<Event> preconditionActor, PrimaryActor<Event, ?> primaryActor, ResultActor<Event, ?> resultActor, Event contextEvent) {
+    public Event trigger(Event event, PreconditionActor preconditionActor, PrimaryActor primaryActor, ResultActor resultActor, Event contextEvent) {
 
         switch (event) {
 
@@ -95,7 +101,7 @@ public class UseCaseExecutor implements Triggers<UseCaseExecutor.Event> {
                 AppInjector.setSecondaryUseCaseComponent(
                         DaggerSecondaryUseCaseComponent.builder()
                                 .appComponent(AppInjector.getAppComponent())
-                                .secondaryUseCaseModule(new SecondaryUseCaseModule(AppInjector.getSecondaryFlowComponent().ui()))
+                                .secondaryUseCaseModule(new SecondaryUseCaseModule())
                                 .build());
 
                 execute(SecondaryUseCase.class, event, preconditionActor, AppInjector.getSecondaryFlowComponent().ui(), resultActor);
@@ -135,8 +141,8 @@ public class UseCaseExecutor implements Triggers<UseCaseExecutor.Event> {
         return event;
     }
 
-    private void execute(Class<? extends UseCase> cls, Event event, PreconditionActor<Event> preconditionActor, PrimaryActor<Event, ?> primaryActor, ResultActor<Event, ?> resultActor) {
-        new Builder<Event>()
+    private void execute(Class<? extends UseCase> cls, TectonicEvent event, PreconditionActor preconditionActor, PrimaryActor primaryActor, ResultActor resultActor) {
+        new Builder()
                 .useCase(cls)
                 .primaryActor(primaryActor)
                 .resultActor(resultActor)
@@ -146,7 +152,7 @@ public class UseCaseExecutor implements Triggers<UseCaseExecutor.Event> {
                 .execute(event);
     }
 
-    public enum Event {
+    public enum Event implements TectonicEvent {
         LAUNCH_MAIN,
         REFRESH_MAIN,
         REFRESH_AUTH,

@@ -4,7 +4,7 @@ import com.morkim.tectonic.flow.StepFactory;
 import com.morkim.usecase.contract.Secondary;
 import com.morkim.usecase.di.PerUseCase;
 import com.morkim.usecase.flow.SecondaryFlowImpl;
-import com.morkim.usecase.uc.SecondaryUseCase;
+import lib.morkim.uc.SecondaryUseCase;
 
 import dagger.Module;
 import dagger.Provides;

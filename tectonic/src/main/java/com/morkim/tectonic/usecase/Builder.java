@@ -1,44 +1,45 @@
 package com.morkim.tectonic.usecase;
 
-public class Builder<E> {
+public class Builder {
 
-    private UseCase<E, ?> useCase;
+    private UseCase<?> useCase;
     private PreconditionActor preconditionActor;
     private PrimaryActor primaryActor;
     private ResultActor[] resultActors;
-    private Triggers<E> triggers;
+    private Triggers triggers;
 
-    public Builder<E> useCase(Class<? extends UseCase> aClass) {
+    public Builder useCase(Class<? extends UseCase> aClass) {
         useCase = UseCase.fetch(aClass);
 
         return this;
     }
 
-    public Builder<E> preconditionActor(PreconditionActor<E> preconditionActor) {
+    public Builder preconditionActor(PreconditionActor preconditionActor) {
         this.preconditionActor = preconditionActor;
 
         return this;
     }
 
-    public Builder<E> primaryActor(PrimaryActor<E, ?> primaryActor) {
+    public Builder primaryActor(PrimaryActor primaryActor) {
         this.primaryActor = primaryActor;
 
         return this;
     }
 
-    public Builder<E> resultActor(ResultActor<E, ?>... resultActors) {
+    @SafeVarargs
+    public final Builder resultActor(ResultActor<TectonicEvent, ?>... resultActors) {
         this.resultActors = resultActors;
 
         return this;
     }
 
-    public Builder<E> triggers(Triggers<E> triggers) {
+    public Builder triggers(Triggers triggers) {
         this.triggers = triggers;
 
         return this;
     }
 
-    public UseCase<E, ?> build() {
+    public UseCase<?> build() {
         useCase.setPreconditionActor(preconditionActor);
         useCase.setPrimaryActor(primaryActor);
         if (resultActors != null)

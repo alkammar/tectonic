@@ -4,10 +4,10 @@ import java.util.UUID;
 
 public class ResultUseCaseActor<E, R> implements ResultActor<E, R> {
 
-    private Class<? extends UseCase<E, R>> cls;
+    private Class<? extends UseCase<R>> cls;
     private UUID key;
 
-    public ResultUseCaseActor(Class<? extends UseCase<E, R>> cls, UUID key) {
+    public ResultUseCaseActor(Class<? extends UseCase<R>> cls, UUID key) {
         this.cls = cls;
         this.key = key;
     }

@@ -4,18 +4,19 @@ import android.os.SystemClock;
 
 import com.morkim.tectonic.usecase.ResultActor;
 import com.morkim.tectonic.usecase.Triggers;
+import com.morkim.tectonic.usecase.UndoException;
 import com.morkim.tectonic.usecase.UseCase;
 import com.morkim.usecase.app.UseCaseExecutor;
-import com.morkim.usecase.model.SecondaryModel;
-import com.morkim.usecase.uc.ExpiredCredentials;
-import com.morkim.usecase.uc.GeneralBackendError;
+import lib.morkim.model.SecondaryModel;
+import lib.morkim.uc.ExpiredCredentials;
+import lib.morkim.uc.GeneralBackendError;
 import com.morkim.usecase.uc.InvalidLogin;
 import com.morkim.usecase.uc.LoginUser;
 import com.morkim.usecase.uc.LogoutUser;
 import com.morkim.usecase.uc.MainUseCase;
 import com.morkim.usecase.uc.RegisterUser;
-import com.morkim.usecase.uc.SecondaryUseCase;
-import com.morkim.usecase.uc.SpecificBackendError;
+import lib.morkim.uc.SecondaryUseCase;
+import lib.morkim.uc.SpecificBackendError;
 
 import java.util.UUID;
 
@@ -71,7 +72,7 @@ public class BackendImpl implements MainUseCase.Backend, LogoutUser.Backend, Sec
     }
 
     @Override
-    public void register() throws InterruptedException {
+    public void register() throws InterruptedException, UndoException {
         triggers.trigger(UseCaseExecutor.Event.REGISTER, this);
         UseCase.waitForSafe(REGISTRATION);
     }

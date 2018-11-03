@@ -84,26 +84,26 @@ public class AbortTest extends ConcurrentTectonicTest {
 				onAbortCalledCount++;
 			}
 		});
-		useCase.setPreconditionActor(new PreconditionActor<Integer>() {
+		useCase.setPreconditionActor(new PreconditionActor<TectonicEvent>() {
 			@Override
-			public void onComplete(Integer event) {
+			public void onComplete(TectonicEvent event) {
 
 			}
 
 			@Override
-			public void onAbort(Integer event) {
+			public void onAbort(TectonicEvent event) {
 				onAbortCalledCount++;
 			}
 		});
-		useCase.addResultActor(new ResultActor<Integer, Void>() {
+		useCase.addResultActor(new ResultActor<TectonicEvent, Void>() {
 
 			@Override
-			public void onComplete(Integer event, Void result) {
+			public void onComplete(TectonicEvent event, Void result) {
 
 			}
 
 			@Override
-			public void onAbort(Integer event) {
+			public void onAbort(TectonicEvent event) {
 				onAbortCalledCount++;
 			}
 		});
@@ -156,14 +156,14 @@ public class AbortTest extends ConcurrentTectonicTest {
 //				onAbortCalledCount++;
 //			}
 //		});
-		useCase.setPreconditionActor(new PreconditionActor<Integer>() {
+		useCase.setPreconditionActor(new PreconditionActor<TectonicEvent>() {
 			@Override
-			public void onComplete(Integer event) {
+			public void onComplete(TectonicEvent event) {
 
 			}
 
 			@Override
-			public void onAbort(Integer event) {
+			public void onAbort(TectonicEvent event) {
 				onAbortCalledCount++;
 			}
 		});
@@ -202,17 +202,17 @@ public class AbortTest extends ConcurrentTectonicTest {
 		useCase.setPrimaryActor(new CompletedUseCase.Actor() {
 
 			@Override
-			public void onStart(Integer event, UseCaseHandle handle) {
+			public void onStart(TectonicEvent event, UseCaseHandle handle) {
 				AbortTest.this.handle = handle;
 			}
 
 			@Override
-			public void onComplete(Integer event, Void result) {
+			public void onComplete(TectonicEvent event, Void result) {
 
 			}
 
 			@Override
-			public void onComplete(Integer event) {
+			public void onComplete(TectonicEvent event) {
 				onCompleteCalled = true;
 			}
 
@@ -222,30 +222,30 @@ public class AbortTest extends ConcurrentTectonicTest {
 			}
 
 			@Override
-			public void onAbort(Integer event) {
+			public void onAbort(TectonicEvent event) {
 				onAbortCalledCount++;
 			}
 		});
-		useCase.setPreconditionActor(new PreconditionActor<Integer>() {
+		useCase.setPreconditionActor(new PreconditionActor<TectonicEvent>() {
 			@Override
-			public void onComplete(Integer event) {
+			public void onComplete(TectonicEvent event) {
 
 			}
 
 			@Override
-			public void onAbort(Integer event) {
+			public void onAbort(TectonicEvent event) {
 				onAbortCalledCount++;
 			}
 		});
-		useCase.addResultActor(new ResultActor<Integer, Void>() {
+		useCase.addResultActor(new ResultActor<TectonicEvent, Void>() {
 
 			@Override
-			public void onComplete(Integer event, Void result) {
+			public void onComplete(TectonicEvent event, Void result) {
 
 			}
 
 			@Override
-			public void onAbort(Integer event) {
+			public void onAbort(TectonicEvent event) {
 				onAbortCalledCount++;
 			}
 		});

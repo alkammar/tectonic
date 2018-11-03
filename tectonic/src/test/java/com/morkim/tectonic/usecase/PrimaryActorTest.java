@@ -7,7 +7,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;
 
 public class PrimaryActorTest extends TectonicTest {
@@ -32,17 +31,17 @@ public class PrimaryActorTest extends TectonicTest {
 		useCase.setActor(new CompletedUseCase.Actor() {
 
 			@Override
-			public void onStart(Integer event, UseCaseHandle handle) {
+			public void onStart(TectonicEvent event, UseCaseHandle handle) {
 				onStartCalled = true;
 			}
 
 			@Override
-			public void onComplete(Integer event, Void result) {
+			public void onComplete(TectonicEvent event, Void result) {
 
 			}
 
 			@Override
-			public void onComplete(Integer event) {
+			public void onComplete(TectonicEvent event) {
 				onCompleteCalled = true;
 			}
 
@@ -52,7 +51,7 @@ public class PrimaryActorTest extends TectonicTest {
 			}
 
 			@Override
-			public void onAbort(Integer event) {
+			public void onAbort(TectonicEvent event) {
 				onAbortCalled = true;
 			}
 		});
@@ -69,18 +68,18 @@ public class PrimaryActorTest extends TectonicTest {
 		CompletedUseCase.Actor actor = new CompletedUseCase.Actor() {
 
 			@Override
-			public void onStart(Integer event, UseCaseHandle handle) {
+			public void onStart(TectonicEvent event, UseCaseHandle handle) {
 				PrimaryActorTest.this.handle = handle;
 				onStartCalled = true;
 			}
 
 			@Override
-			public void onComplete(Integer event, Void result) {
+			public void onComplete(TectonicEvent event, Void result) {
 				onCompleteCalled = true;
 			}
 
 			@Override
-			public void onComplete(Integer event) {
+			public void onComplete(TectonicEvent event) {
 
 			}
 
@@ -90,7 +89,7 @@ public class PrimaryActorTest extends TectonicTest {
 			}
 
 			@Override
-			public void onAbort(Integer event) {
+			public void onAbort(TectonicEvent event) {
 				onAbortCalled = true;
 			}
 		};

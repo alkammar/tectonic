@@ -35,17 +35,17 @@ public class PreconditionActorTest extends TectonicTest {
 		useCase.setActor(new CompletedUseCase.Actor() {
 
 			@Override
-			public void onStart(Integer event, UseCaseHandle handle) {
+			public void onStart(TectonicEvent event, UseCaseHandle handle) {
 				onStartCalled = true;
 			}
 
 			@Override
-			public void onComplete(Integer event, Void result) {
+			public void onComplete(TectonicEvent event, Void result) {
 
 			}
 
 			@Override
-			public void onComplete(Integer event) {
+			public void onComplete(TectonicEvent event) {
 				onCompleteCalled = true;
 			}
 
@@ -55,7 +55,7 @@ public class PreconditionActorTest extends TectonicTest {
 			}
 
 			@Override
-			public void onAbort(Integer event) {
+			public void onAbort(TectonicEvent event) {
 				onAbortCalled = true;
 			}
 		});
@@ -72,17 +72,17 @@ public class PreconditionActorTest extends TectonicTest {
 		CompletedUseCase.Actor actor = new CompletedUseCase.Actor() {
 
 			@Override
-			public void onStart(Integer event, UseCaseHandle handle) {
+			public void onStart(TectonicEvent event, UseCaseHandle handle) {
 				onStartCalled = true;
 			}
 
 			@Override
-			public void onComplete(Integer event, Void result) {
+			public void onComplete(TectonicEvent event, Void result) {
 
 			}
 
 			@Override
-			public void onComplete(Integer event) {
+			public void onComplete(TectonicEvent event) {
 				onCompleteCalled = true;
 				onCompleteCalledCount++;
 			}
@@ -93,7 +93,7 @@ public class PreconditionActorTest extends TectonicTest {
 			}
 
 			@Override
-			public void onAbort(Integer event) {
+			public void onAbort(TectonicEvent event) {
 				onAbortCalled = true;
 			}
 		};

@@ -303,7 +303,7 @@ public abstract class UseCase<R> implements PreconditionActor, UseCaseHandle {
             action.interrupt();
         } else if (data instanceof Exception) {
             if (action != null) action.setException((Exception) data);
-            else cache.put(key, data);
+//            else cache.put(key, data);
         } else {
             cache.put(key, data);
             if (action != null) action.set(data);

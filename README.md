@@ -1,61 +1,46 @@
 # tectonic
-The use case library for Android
+A way to write use cases in code for Android (for now).
+It is a tool to implement requirements (abstract and concrete) by providing a way to write down the use case elements in code and executing that code.
+A way to close some gap between business requirements and implementation. And as a result the code takes a good step becoming a business documentation.
 
-## Why would I need this?
-You need Tectonic if you think you are one of the below
-- You feel deep inside that the login, registration or splash screens are not your root screens and they should not decide your flow :)
-- You want to to develop business logic that is independent of the UI flow.
-- You know that the database is not the center of the universe.
-- You believe that business logic should drive your app flow and not the UI.
-- You believe that modern "Agile" development has destroyed good architecture.
-- You enjoy writing business use cases and understand their importance for any software.
+## Problems That I Have Been Facing
+While designing and implementing software/application/component in recent times I always end up with the same project ingredients.
+- Agile
+- User stories and wireframes
+- Tight delivery dates
 
-### What does it do?
-Tectonic is a library that provides an abstraction and a management ground for developing business use cases programmatically independent of other aspects of the project itself, like the UI, persistence or services. 
-It is just pure business logic.
+Although not all are bad in nature, I was facing some difficulties having them individually and of corse combined.
 
-You can subclass the UseCase class, creating your project use cases. The use cases you will write will almost be identical to a use case written by an architect, which means you have your use cases inside your code and not just in a document that can be neglected, forgotten or outdated.
+#### Agile
+This has become the trend method to delivering software for quiet some time now. 
+I even had a chat with a friend who works in embedded systems development in Germany and told me that they use Agile. Which was a surprise to me and still to him, as he thinks it is used just because everyone is using it now and they should not be falling behind (this is actually an issue I see in software development we see a lot with new tools/methods becoming popular each year without analysing the real benefits to the business). 
 
-When you write a use case, you start thinking of the preconditions to execute this use case. Tectonic provides the functionality that enables you to precondition your use case execution. This preconditioning is the key for flow control and will make your business logic in control and not the UI.
+I beleive Agile was adopted to solve a main issue in software that has been seen while delivering. A client provide requirement, vendor says it would take x months to deliver including desing and development. After x months, the client checks the delivables and says that is not what we wanted, classic client!
+So the Agile came to solve this problem by envolving the client in the development process to keep the delivery steered in the desired direction.
+Also introducing a backlog to put all the client dreams - sorry requirements - in a controlled pipeline or else nothing will be delivered. If you tell me as a client I can come every 2 weeks and change my mind on what I want to do, I will do it every 2 weeks.
 
-## Let me give you a simple example
-Lets say you have a banking app, what is your main use case?
-Definetly it is not the authentication/login use case, right? The Login use case is just a superimposed functionality that leads you to your main use case but it is not the main use case. The main use case here is to see your bank accounts, lets call it the ShowMyAccounts use case.
-So why should the login use case (or the login screen) decides the control of your flow to lead you to the ShowMyAccounts (or the accounts screen)
+My problem with Agile is not the above (assuming the Agile process is implemented correctly), but with the fact that in Agile you are not given time to properly design the software. You are only given time to implement UI and call some services. The fast paced short burst (sprint) nature of Agile makes it hard to design a decent software with proper components and abstractions. Basically it is hard to design a component that outlasts the project scope and can be used in a another project (cross industries or even within the same industry). Don't ever think when I say components I mean utils!
 
-Using Tectonic there is a new way of looking into this. Lets see how would we design this using the library
-This is a hypothetical example just to clarify the idea
+This is why I think there is a growing popularity for tools that for instance makes it easier to integrate a backend service like Retrofit but nothing to make designing software more easier (one TecTocic's main aims).
 
-- You main entry is now the Home/Landing/MyAccounts screen (not the Splash or Login screens), this is of course defined in your manifest file.
-- MyAccounts/Main screen will execute our entry/main use case when it starts.
-- The main use case has a precondition, that the user should be logged in/authenticated in order to retrieve the user's accounts.
-- The precondition in the ShowMyAccounts use case blocks itself and triggers the execution of the Login use case.
-- The Login use case requires input from the outside world in the form of a password, so it blocks as well and requests the input it needs. 
-- This login input request is captured by the Main screen which opens the Login screen.
-- Once the user submits his password the Login screen will execute the pending Login use case again with password entered.
-- The Login use case does it thing and authenticate the user, once the use case is completed the Login screen dismisses itself.
-- Then the control goes back to the ShowMyAccounts use case which starts loading the user accounts.
+#### User Stories and Wireframes
+All I can say about user stories that they are cool ... from a one dimentional visual user perspective. They will give you minimum insight on how the application components interact with each other (or even what are the application components) to achieve the flow required. And you will end up either with screens or service calls that are doing business logic (later on how much business logic is actually there in the simplest applications) or a ridiculous component that looks like it was adopted from the streets that does not look like anything else in the project.
 
-In the same way we can make the Login use case preconditioned by the Registration use case and so on. The idea here is to give the use cases the business flow control and from there the UI reacts to it.
+If you from a older era that experienced the majesty of use cases, you know how much they are more expressive than user stories although having the simplest visual design symbols, a stick man and an oval! 
+With elements like:
+- Triggers
+- Preconditions
+- Actors
+- Sub use cases
+- Main scenario
+- Alternate scenarios
+- Post conditions
 
-One cool thing here is the segregation of the UI and the use case. The case is oblivios about the existence of the UI.
-Lets say the Registration is one screen which executes the Registration use case when the user submits his registration data.
-Your UI designed decided he wants to split the Registration screen into screens. The good thing here is that the Registration use case will not care about that, it will send you the request for the missing input, which you can use to navigate to the second Registration screen.
-The second registration screen can then execute the use case with all the inputs required by the Registration use case.
+If you have not seen a use case before I suggest reading about the use cases.
 
-There is an PoC module in this project showing this example in code.
+#### Tight delivery dates
+Nothing to say here, they just fuck things up more.
 
+## What I Actually Wanted in a Software
 # Architecture
 - 
-
-# The uniqueness of this library
-
-## Features
-
-- Subscriptions
-
-- Caching
-
-- Chaining
-
-- Callbacks

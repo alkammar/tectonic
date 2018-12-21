@@ -1,15 +1,10 @@
 # tectonic
 A way to write use cases in code for Android (for now).
 It is a tool to implement requirements (abstract and concrete) by providing a way to write down the use case elements in code and executing that code.
-A way to close some gap between business requirements and implementation. And as a result the code takes a good step becoming a business documentation.
+A way to directly bind business requirements and implementation. And as a result the code takes a good step becoming a business documentation.
 
 ## Problems That I Have Been Facing
-While designing and implementing software/application/component in recent times I always end up with the same project ingredients.
-- Agile
-- User stories and wireframes
-- Tight delivery dates
-
-Although not all are bad in nature, I was facing some difficulties having them individually and of corse combined.
+While designing and implementing software/application/component in recent times (8 years) I always end up with the same project ingredients.
 
 #### Agile
 This has become the trend method to delivering software for quiet some time now. 
@@ -36,11 +31,25 @@ With elements like:
 - Alternate scenarios
 - Post conditions
 
-If you have not seen a use case before I suggest reading about the use cases.
+If you have not seen or written a use case before I suggest reading about them first, they are so elegant.
 
 #### Tight delivery dates
 Nothing to say here, they just fuck things up more.
 
-## What I Actually Wanted in a Software
+## What I Actually Wanted in my Software
+#### Clean architecture
+My main use of clean architecture is to make the business logic the driver seat, calling the shots, independant on any platform specific components and all other app components react to its actions. Not the other way around where you have the screens (which are platform specific component) control the actions flow.
+
+#### Business abstraction
+The business logic can be reused across different projects in the same industry if abstracted enough (and of course is  extendable). Furthermore that business logic can span cross industries if they are having the same use case, something like reset password, a use case that can be found in any client application that requires credentials.
+
+The high level goal is to create a library of abstract and flexible business components that can be used in more than one project. That way we can kick off projects with 
+
+
+
+Let me give an example of a feature that is implmented cross industries that you can find in many applications.
+Resetting a user's password.
+When loo
+
 # Architecture
 - 

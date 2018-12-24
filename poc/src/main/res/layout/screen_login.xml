@@ -6,6 +6,7 @@
     android:orientation="vertical">
 
     <EditText
+        android:hint="Password"
         android:id="@+id/ti_password"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -18,5 +19,12 @@
         android:layout_height="wrap_content"
         android:layout_margin="20dp"
         android:text="Submit"/>
+
+    <Button
+        android:id="@+id/btn_register"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="20dp"
+        android:text="Not Registered?"/>
 
 </LinearLayout>

@@ -17,7 +17,7 @@ import java.util.concurrent.ExecutionException;
 
 @SuppressWarnings({"WeakerAccess", "unused"})
 @SuppressLint("UseSparseArrays")
-public abstract class UseCase<R> implements PreconditionActor, UseCaseHandle {
+public abstract class UseCase<R> implements PreconditionActor, PrimaryHandle {
 
     private Triggers<?> executor;
 

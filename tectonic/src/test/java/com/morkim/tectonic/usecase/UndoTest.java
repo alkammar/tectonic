@@ -18,7 +18,7 @@ public class UndoTest extends ConcurrentTectonicTest {
     private UUID ACTION_DATA_KEY_2 = UUID.randomUUID();
     private UUID ACTION_DATA_KEY_3 = UUID.randomUUID();
 
-    private UseCaseHandle handle;
+    private PrimaryHandle handle;
 
     private int count;
 
@@ -54,7 +54,7 @@ public class UndoTest extends ConcurrentTectonicTest {
         UndoUseCase.Actor actor = new UndoUseCase.Actor() {
 
             @Override
-            public void onStart(Integer event, UseCaseHandle handle) {
+            public void onStart(Integer event, PrimaryHandle handle) {
                 UndoTest.this.handle = handle;
             }
 

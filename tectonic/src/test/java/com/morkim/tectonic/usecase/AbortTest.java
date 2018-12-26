@@ -16,7 +16,7 @@ import static org.junit.Assert.assertFalse;
 public class AbortTest extends ConcurrentTectonicTest {
 
 	private volatile boolean onAbortCalled;
-	private UseCaseHandle handle;
+	private PrimaryHandle handle;
 	private boolean onCompleteCalled;
 	private int onAbortCalledCount;
 
@@ -35,7 +35,7 @@ public class AbortTest extends ConcurrentTectonicTest {
 		useCase.setPrimaryActor(new SimpleUseCase.Actor() {
 
 			@Override
-			public void onStart(Integer event, UseCaseHandle handle) {
+			public void onStart(Integer event, PrimaryHandle handle) {
 
 			}
 
@@ -65,7 +65,7 @@ public class AbortTest extends ConcurrentTectonicTest {
 		useCase.setPrimaryActor(new SimpleUseCase.Actor() {
 
 			@Override
-			public void onStart(Integer event, UseCaseHandle handle) {
+			public void onStart(Integer event, PrimaryHandle handle) {
 				AbortTest.this.handle = handle;
 			}
 
@@ -202,7 +202,7 @@ public class AbortTest extends ConcurrentTectonicTest {
 		useCase.setPrimaryActor(new CompletedUseCase.Actor() {
 
 			@Override
-			public void onStart(TectonicEvent event, UseCaseHandle handle) {
+			public void onStart(TectonicEvent event, PrimaryHandle handle) {
 				AbortTest.this.handle = handle;
 			}
 

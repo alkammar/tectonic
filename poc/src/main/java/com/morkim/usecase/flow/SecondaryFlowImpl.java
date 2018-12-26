@@ -2,9 +2,9 @@ package com.morkim.usecase.flow;
 
 import com.morkim.tectonic.flow.Step;
 import com.morkim.tectonic.flow.StepFactory;
+import com.morkim.tectonic.usecase.PrimaryHandle;
 import com.morkim.tectonic.usecase.UndoException;
 import com.morkim.tectonic.usecase.UseCase;
-import com.morkim.tectonic.usecase.UseCaseHandle;
 import com.morkim.usecase.app.UseCaseExecutor;
 import com.morkim.usecase.contract.Secondary;
 
@@ -30,7 +30,7 @@ public class SecondaryFlowImpl implements Secondary.Flow, SecondaryUseCase.UI<Us
     private Secondary.Screen2 screen2;
     private Secondary.Screen3 screen3;
 
-    private UseCaseHandle handle;
+    private PrimaryHandle handle;
 
     @Inject
     public SecondaryFlowImpl(StepFactory stepFactory) {
@@ -39,7 +39,7 @@ public class SecondaryFlowImpl implements Secondary.Flow, SecondaryUseCase.UI<Us
     }
 
     @Override
-    public void onStart(UseCaseExecutor.Event event, UseCaseHandle handle) {
+    public void onStart(UseCaseExecutor.Event event, PrimaryHandle handle) {
         this.handle = handle;
     }
 
@@ -120,7 +120,7 @@ public class SecondaryFlowImpl implements Secondary.Flow, SecondaryUseCase.UI<Us
     @Override
     public void onUndo(Step step) {
         if (step == screen1) { screen1 = null; UseCase.clear(DATA1); }
-        if (step == screen2) { screen2 = null; UseCase.clear(DATA1, DATA2);}
+        if (step == screen2) { screen2 = null; UseCase.clear(DATA1, DATA2); }
         if (step == screen3) { screen3 = null; UseCase.clear(DATA2, DATA3); }
     }
 

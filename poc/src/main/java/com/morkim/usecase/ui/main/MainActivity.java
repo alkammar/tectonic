@@ -10,8 +10,8 @@ import android.widget.TextView;
 
 import com.morkim.tectonic.flow.Step;
 import com.morkim.tectonic.flow.StepFactory;
+import com.morkim.tectonic.usecase.PrimaryHandle;
 import com.morkim.tectonic.usecase.Triggers;
-import com.morkim.tectonic.usecase.UseCaseHandle;
 import com.morkim.usecase.R;
 import com.morkim.usecase.app.UseCaseExecutor;
 import com.morkim.usecase.di.AppInjector;
@@ -35,7 +35,7 @@ public class MainActivity extends AppCompatActivity implements MainUseCase.UI {
 
     private TextView label;
     private ProgressBar progress;
-    private UseCaseHandle handle;
+    private PrimaryHandle handle;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -98,7 +98,7 @@ public class MainActivity extends AppCompatActivity implements MainUseCase.UI {
     }
 
     @Override
-    public void onStart(UseCaseExecutor.Event event, UseCaseHandle handle) {
+    public void onStart(UseCaseExecutor.Event event, PrimaryHandle handle) {
         this.handle = handle;
 
         runOnUiThread(() -> {

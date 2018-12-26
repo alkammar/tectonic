@@ -7,20 +7,21 @@ import com.morkim.tectonic.usecase.Triggers;
 import com.morkim.tectonic.usecase.UndoException;
 import com.morkim.tectonic.usecase.UseCase;
 import com.morkim.usecase.app.UseCaseExecutor;
-import lib.morkim.model.SecondaryModel;
-import lib.morkim.uc.ExpiredCredentials;
-import lib.morkim.uc.GeneralBackendError;
 import com.morkim.usecase.uc.InvalidLogin;
 import com.morkim.usecase.uc.LoginUser;
 import com.morkim.usecase.uc.LogoutUser;
 import com.morkim.usecase.uc.MainUseCase;
 import com.morkim.usecase.uc.RegisterUser;
-import lib.morkim.uc.SecondaryUseCase;
-import lib.morkim.uc.SpecificBackendError;
 
 import java.util.UUID;
 
 import javax.inject.Inject;
+
+import lib.morkim.model.SecondaryModel;
+import lib.morkim.uc.ExpiredCredentials;
+import lib.morkim.uc.GeneralBackendError;
+import lib.morkim.uc.SecondaryUseCase;
+import lib.morkim.uc.SpecificBackendError;
 
 public class BackendImpl implements MainUseCase.Backend, LogoutUser.Backend, SecondaryUseCase.Backend, LoginUser.Backend, ResultActor<UseCaseExecutor.Event, Void>,RegisterUser.Backend {
 

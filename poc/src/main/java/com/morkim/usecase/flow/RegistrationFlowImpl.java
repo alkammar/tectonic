@@ -2,10 +2,10 @@ package com.morkim.usecase.flow;
 
 import com.morkim.tectonic.flow.Step;
 import com.morkim.tectonic.flow.StepFactory;
+import com.morkim.tectonic.usecase.PrimaryHandle;
 import com.morkim.tectonic.usecase.Random;
 import com.morkim.tectonic.usecase.UndoException;
 import com.morkim.tectonic.usecase.UseCase;
-import com.morkim.tectonic.usecase.UseCaseHandle;
 import com.morkim.usecase.app.UseCaseExecutor;
 import com.morkim.usecase.contract.Registration;
 import com.morkim.usecase.uc.RegisterUser;
@@ -27,7 +27,7 @@ public class RegistrationFlowImpl implements Registration.Flow, RegisterUser.UI 
 
     private StepFactory stepFactory;
 
-    private UseCaseHandle handle;
+    private PrimaryHandle handle;
 
     private Registration.Step1 step1;
     private Registration.Step2 step2;
@@ -40,7 +40,7 @@ public class RegistrationFlowImpl implements Registration.Flow, RegisterUser.UI 
     }
 
     @Override
-    public void onStart(UseCaseExecutor.Event event, UseCaseHandle handle) {
+    public void onStart(UseCaseExecutor.Event event, PrimaryHandle handle) {
         this.handle = handle;
     }
 

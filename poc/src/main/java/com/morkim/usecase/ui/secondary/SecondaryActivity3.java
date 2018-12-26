@@ -12,10 +12,11 @@ import com.morkim.usecase.contract.Secondary;
 import com.morkim.usecase.di.AppInjector;
 import com.morkim.usecase.di.ui.secondary.DaggerSecondaryScreen3Component;
 import com.morkim.usecase.di.ui.secondary.SecondaryScreen3Module;
-import lib.morkim.uc.InvalidValueException;
-import lib.morkim.uc.SpecificBackendError;
 
 import javax.inject.Inject;
+
+import lib.morkim.uc.InvalidValueException;
+import lib.morkim.uc.SpecificBackendError;
 
 
 public class SecondaryActivity3 extends AppCompatActivity implements Secondary.Screen3 {

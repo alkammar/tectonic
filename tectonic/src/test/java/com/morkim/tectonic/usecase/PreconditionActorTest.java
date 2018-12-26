@@ -35,7 +35,7 @@ public class PreconditionActorTest extends TectonicTest {
 		useCase.setActor(new CompletedUseCase.Actor() {
 
 			@Override
-			public void onStart(TectonicEvent event, UseCaseHandle handle) {
+			public void onStart(TectonicEvent event, PrimaryHandle handle) {
 				onStartCalled = true;
 			}
 
@@ -72,7 +72,7 @@ public class PreconditionActorTest extends TectonicTest {
 		CompletedUseCase.Actor actor = new CompletedUseCase.Actor() {
 
 			@Override
-			public void onStart(TectonicEvent event, UseCaseHandle handle) {
+			public void onStart(TectonicEvent event, PrimaryHandle handle) {
 				onStartCalled = true;
 			}
 

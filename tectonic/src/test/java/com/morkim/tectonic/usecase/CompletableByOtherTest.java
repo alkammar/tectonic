@@ -29,7 +29,7 @@ public class CompletableByOtherTest {
 		CompletableByOtherCompletionUseCase completableByOther = UseCase.fetch(CompletableByOtherCompletionUseCase.class);
 		completableByOther.setPrimaryActor(new SimpleUseCase.Actor() {
 			@Override
-			public void onStart(Integer event, UseCaseHandle handle) {
+			public void onStart(Integer event, PrimaryHandle handle) {
 
 			}
 
@@ -68,7 +68,7 @@ public class CompletableByOtherTest {
 		CompletableByOtherAbortionUseCase completableByOther = UseCase.fetch(CompletableByOtherAbortionUseCase.class);
 		completableByOther.setPrimaryActor(new SimpleUseCase.Actor() {
 			@Override
-			public void onStart(Integer event, UseCaseHandle handle) {
+			public void onStart(Integer event, PrimaryHandle handle) {
 
 			}
 

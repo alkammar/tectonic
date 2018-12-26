@@ -27,7 +27,7 @@ public class AbortableByOtherTest {
 		AbortableByOtherCompletionUseCase abortableByOther = UseCase.fetch(AbortableByOtherCompletionUseCase.class);
 		abortableByOther.setPrimaryActor(new SimpleUseCase.Actor() {
 			@Override
-			public void onStart(Integer event, UseCaseHandle handle) {
+			public void onStart(Integer event, PrimaryHandle handle) {
 
 			}
 
@@ -66,7 +66,7 @@ public class AbortableByOtherTest {
 		AbortableByOtherAbortionUseCase abortableByOther = UseCase.fetch(AbortableByOtherAbortionUseCase.class);
 		abortableByOther.setPrimaryActor(new SimpleUseCase.Actor() {
 			@Override
-			public void onStart(Integer event, UseCaseHandle handle) {
+			public void onStart(Integer event, PrimaryHandle handle) {
 
 			}
 

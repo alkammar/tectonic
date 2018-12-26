@@ -1,6 +1,5 @@
 package com.morkim.usecase.di.uc.login;
 
-import com.morkim.tectonic.usecase.PrimaryActor;
 import com.morkim.tectonic.usecase.Triggers;
 import com.morkim.usecase.app.UseCaseExecutor;
 import com.morkim.usecase.auth.AuthenticationFlow;

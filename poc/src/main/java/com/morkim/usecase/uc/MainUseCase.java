@@ -1,9 +1,11 @@
 package com.morkim.usecase.uc;
 
 import com.morkim.tectonic.usecase.PrimaryActor;
+import com.morkim.tectonic.usecase.SecondaryActor;
 import com.morkim.tectonic.usecase.UseCase;
-import com.morkim.usecase.app.UseCaseExecutor;
 import com.morkim.usecase.di.AppInjector;
+
+import java.util.Set;
 
 import javax.inject.Inject;
 
@@ -31,6 +33,17 @@ public class MainUseCase extends UseCase<String> {
     }
 
     @Override
+    protected void onAddPrimaryActors(Set<PrimaryActor> actors) {
+        actors.add(ui);
+    }
+
+    @Override
+    protected void onAddSecondaryActors(Set<SecondaryActor> actors) {
+        actors.add(authenticator);
+        actors.add(backend);
+    }
+
+    @Override
     protected void onExecute() throws InterruptedException {
 
         try {
@@ -50,17 +63,17 @@ public class MainUseCase extends UseCase<String> {
         }
     }
 
-    public interface Backend {
+    public interface Backend<E> extends SecondaryActor<E, Void> {
 
         String retrieveSomeData() throws ExpiredCredentials;
     }
 
-    public interface Authenticator {
+    public interface Authenticator<E> extends SecondaryActor<E, Void> {
 
         void refreshAuthentication() throws InterruptedException;
     }
 
-    public interface UI extends PrimaryActor<UseCaseExecutor.Event, String> {
+    public interface UI<E> extends PrimaryActor<E, String> {
 
         void updateResult(String data);
     }

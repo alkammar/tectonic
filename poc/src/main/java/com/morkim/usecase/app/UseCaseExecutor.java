@@ -144,7 +144,6 @@ public class UseCaseExecutor implements Triggers<UseCaseExecutor.Event> {
     private void execute(Class<? extends UseCase> cls, TectonicEvent event, PreconditionActor preconditionActor, PrimaryActor primaryActor, ResultActor resultActor) {
         new Builder()
                 .useCase(cls)
-                .primaryActor(primaryActor)
                 .resultActor(resultActor)
                 .preconditionActor(preconditionActor)
                 .triggers(this)

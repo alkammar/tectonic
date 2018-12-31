@@ -7,6 +7,7 @@ import com.morkim.tectonic.flow.Step;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -17,7 +18,7 @@ import java.util.concurrent.ExecutionException;
 
 @SuppressWarnings({"WeakerAccess", "unused"})
 @SuppressLint("UseSparseArrays")
-public abstract class UseCase<R> implements PreconditionActor, PrimaryHandle {
+public abstract class UseCase<R> implements PreconditionActor {
 
     private Triggers<?> executor;
 
@@ -35,7 +36,8 @@ public abstract class UseCase<R> implements PreconditionActor, PrimaryHandle {
 
 
     private ThreadManager threadManager = new ThreadManagerImpl();
-    private PrimaryActor<TectonicEvent, R> primaryActor;
+    private Set<PrimaryActor> primaryActors = new LinkedHashSet<>();
+    private Set<SecondaryActor> secondaryActors = new LinkedHashSet<>();
     private Set<ResultActor<TectonicEvent, R>> resultActors = new HashSet<>();
     private PreconditionActor preconditionActor;
 
@@ -49,6 +51,8 @@ public abstract class UseCase<R> implements PreconditionActor, PrimaryHandle {
     private volatile Map<TectonicEvent, Class<? extends UseCase<?>>> preconditionEvents = new HashMap<>();
     private volatile boolean preconditionsExecuted;
     private volatile boolean aborted;
+    private final UseCaseHandle primaryHandle;
+    private final UseCaseHandle secondaryHandle;
 
     public synchronized static <U extends UseCase> U fetch(Class<U> useCaseClass) {
 
@@ -78,6 +82,30 @@ public abstract class UseCase<R> implements PreconditionActor, PrimaryHandle {
     @SuppressLint("UseSparseArrays")
     protected UseCase() {
         steps = new HashMap<>();
+
+        primaryHandle = new UseCaseHandle() {
+            @Override
+            public void undo(Step step, UUID... actions) {
+                UseCase.this.undo(step, actions);
+            }
+
+            @Override
+            public void abort() {
+                UseCase.this.abort();
+            }
+        };
+
+        secondaryHandle = new UseCaseHandle() {
+            @Override
+            public void undo(Step step, UUID... actions) {
+                UseCase.this.undo(step, actions);
+            }
+
+            @Override
+            public void abort() {
+
+            }
+        };
     }
 
     public void execute() {
@@ -100,16 +128,22 @@ public abstract class UseCase<R> implements PreconditionActor, PrimaryHandle {
                     abortWhenCompleted(abortingWhenCompletedSet);
                     completeWhenAborted(completingWhenAbortedSet);
                     abortWhenAborted(abortingWhenAbortedSet);
+
                     boolean executeOnStart = !preconditionsExecuted;
                     waitForPreconditions();
 
-                    if (primaryActor != null && executeOnStart)
-                        primaryActor.onStart(event, UseCase.this);
+                    primaryActors.clear();
+                    secondaryActors.clear();
+
+                    onAddPrimaryActors(primaryActors);
+                    onAddSecondaryActors(secondaryActors);
+
+                    if (executeOnStart) notifyActorsOfStart(event);
 
                     try {
                         onExecute();
                     } catch (UndoException e) {
-                        if (running && primaryActor != null) primaryActor.onUndo(e.getStep());
+                        if (running) notifyActorsOfUndo(e);
                         throw e;
                     }
                 }
@@ -121,8 +155,9 @@ public abstract class UseCase<R> implements PreconditionActor, PrimaryHandle {
 
                         for (ResultActor<TectonicEvent, R> resultActor : resultActors)
                             if (resultActor != null) resultActor.onAbort(event);
-                        if (preconditionActor != primaryActor)
-                            if (primaryActor != null) primaryActor.onAbort(event);
+
+                        notifyActorsOfAbort(event);
+
                         running = false;
 
                         completeWhenAborted(UseCase.this);
@@ -177,6 +212,10 @@ public abstract class UseCase<R> implements PreconditionActor, PrimaryHandle {
     private ThreadManager getThreadManager() {
         return defaultThreadManager == null ? threadManager : defaultThreadManager;
     }
+
+    protected abstract void onAddPrimaryActors(Set<PrimaryActor> actors);
+
+    protected abstract void onAddSecondaryActors(Set<SecondaryActor> actors);
 
     protected abstract void onExecute() throws InterruptedException, UndoException;
 
@@ -331,11 +370,6 @@ public abstract class UseCase<R> implements PreconditionActor, PrimaryHandle {
         for (UUID key : keys) cache.remove(key);
     }
 
-    public void setPrimaryActor(PrimaryActor primaryActor) {
-        this.primaryActor = primaryActor;
-
-    }
-
     public void setPreconditionActor(PreconditionActor preconditionActor) {
         this.preconditionActor = preconditionActor;
     }
@@ -368,11 +402,13 @@ public abstract class UseCase<R> implements PreconditionActor, PrimaryHandle {
         }
 
         if (running && preconditionActor != null) preconditionActor.onComplete(event);
-        if (running)
-            for (ResultActor<TectonicEvent, R> resultActor : resultActors)
+        if (running) {
+            for (ResultActor<TectonicEvent, R> resultActor : resultActors) {
                 if (resultActor != null) resultActor.onComplete(event, result);
-        if (preconditionActor != primaryActor && resultActors != primaryActor)
-            if (running && primaryActor != null) primaryActor.onComplete(event, result);
+            }
+            notifyActorsOfComplete(result);
+        }
+
         running = false;
         preconditionsExecuted = false;
         onDestroy();
@@ -381,6 +417,40 @@ public abstract class UseCase<R> implements PreconditionActor, PrimaryHandle {
 
         completeWhenCompleted(this);
         abortWhenCompleted(this);
+    }
+
+    private void notifyActorsOfStart(TectonicEvent event) {
+
+        for (Actor actor : primaryActors)
+            if (actor != null) actor.onStart(event, primaryHandle);
+
+        for (Actor actor : secondaryActors)
+            if (actor != null) actor.onStart(event, secondaryHandle);
+    }
+
+    private void notifyActorsOfUndo(UndoException e) {
+        for (Actor actor : primaryActors)
+            if (actor != null) actor.onUndo(e.getStep());
+
+        for (Actor actor : secondaryActors)
+            if (actor != null) actor.onUndo(e.getStep());
+    }
+
+    private void notifyActorsOfComplete(R result) {
+        for (PrimaryActor actor : primaryActors)
+            if (preconditionActor != actor && !resultActors.contains(actor) && actor != null)
+                actor.onComplete(event, result);
+        for (SecondaryActor actor : secondaryActors)
+            if (preconditionActor != actor && !resultActors.contains(actor) && actor != null)
+                actor.onComplete(event, result);
+    }
+
+    private void notifyActorsOfAbort(TectonicEvent event) {
+        for (Actor actor : primaryActors)
+            if (preconditionActor != actor && actor != null) actor.onAbort(event);
+
+        for (Actor actor : secondaryActors)
+            if (preconditionActor != actor && actor != null) actor.onAbort(event);
     }
 
     private void completeWhenCompleted(UseCase<R> uc) {
@@ -444,15 +514,13 @@ public abstract class UseCase<R> implements PreconditionActor, PrimaryHandle {
         execute(event);
     }
 
-    @Override
-    public void undo(Step step, UUID... actions) {
+    private void undo(Step step, UUID... actions) {
         for (UUID action : actions) cache.remove(action);
 
         if (blockingAction != null) blockingAction.setException(new UndoException(step));
     }
 
-    @Override
-    public void abort() {
+    protected void abort() {
         if (preconditionsExecuted) {
             synchronized (ALIVE) {
                 onDestroy();

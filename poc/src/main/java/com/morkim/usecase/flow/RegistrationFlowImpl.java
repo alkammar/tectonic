@@ -2,7 +2,7 @@ package com.morkim.usecase.flow;
 
 import com.morkim.tectonic.flow.Step;
 import com.morkim.tectonic.flow.StepFactory;
-import com.morkim.tectonic.usecase.PrimaryHandle;
+import com.morkim.tectonic.usecase.UseCaseHandle;
 import com.morkim.tectonic.usecase.Random;
 import com.morkim.tectonic.usecase.UndoException;
 import com.morkim.tectonic.usecase.UseCase;
@@ -15,7 +15,9 @@ import java.util.UUID;
 
 import javax.inject.Inject;
 
-public class RegistrationFlowImpl implements Registration.Flow, RegisterUser.UI {
+public class RegistrationFlowImpl
+        implements Registration.Flow,
+        RegisterUser.UI<UseCaseExecutor.Event> {
 
     private static final UUID EMAIL = UUID.randomUUID();
     private static final UUID PASSWORD = UUID.randomUUID();
@@ -27,7 +29,7 @@ public class RegistrationFlowImpl implements Registration.Flow, RegisterUser.UI 
 
     private StepFactory stepFactory;
 
-    private PrimaryHandle handle;
+    private UseCaseHandle handle;
 
     private Registration.Step1 step1;
     private Registration.Step2 step2;
@@ -40,7 +42,7 @@ public class RegistrationFlowImpl implements Registration.Flow, RegisterUser.UI 
     }
 
     @Override
-    public void onStart(UseCaseExecutor.Event event, PrimaryHandle handle) {
+    public void onStart(UseCaseExecutor.Event event, UseCaseHandle handle) {
         this.handle = handle;
     }
 

@@ -100,7 +100,7 @@ public class RandomAccessActorTest extends ConcurrentTectonicTest {
 //        final StepData data3 = new StepData();
 //
 //        RandomActionsUseCase useCase = UseCase.fetch(RandomActionsUseCase.class);
-//        RandomActionsUseCase.Actor actor = new RandomActionsUseCase.Actor() {
+//        RandomActionsUseCase.SimpleActor actor = new RandomActionsUseCase.SimpleActor() {
 //
 //            @Override
 //            public Random<StepData> requestData1() throws InterruptedException {
@@ -121,7 +121,7 @@ public class RandomAccessActorTest extends ConcurrentTectonicTest {
 //            }
 //        };
 //
-//        useCase.setActor(actor);
+//        useCase.setUnknownActor(actor);
 //
 //        useCase.execute();
 //

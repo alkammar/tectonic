@@ -25,9 +25,9 @@ public class AbortableByOtherTest {
 	public void complete_use_case__aborts_another_use_case() throws InterruptedException {
 
 		AbortableByOtherCompletionUseCase abortableByOther = UseCase.fetch(AbortableByOtherCompletionUseCase.class);
-		abortableByOther.setPrimaryActor(new SimpleUseCase.Actor() {
+		abortableByOther.addPrimaryActor(new SimpleUseCase.SimpleActor() {
 			@Override
-			public void onStart(Integer event, PrimaryHandle handle) {
+			public void onStart(Integer event, UseCaseHandle handle) {
 
 			}
 
@@ -64,9 +64,9 @@ public class AbortableByOtherTest {
 	public void abort_use_case__aborts_another_use_case() throws InterruptedException {
 
 		AbortableByOtherAbortionUseCase abortableByOther = UseCase.fetch(AbortableByOtherAbortionUseCase.class);
-		abortableByOther.setPrimaryActor(new SimpleUseCase.Actor() {
+		abortableByOther.addPrimaryActor(new SimpleUseCase.SimpleActor() {
 			@Override
-			public void onStart(Integer event, PrimaryHandle handle) {
+			public void onStart(Integer event, UseCaseHandle handle) {
 
 			}
 

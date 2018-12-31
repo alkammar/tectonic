@@ -2,12 +2,13 @@ package com.morkim.usecase.uc;
 
 import com.morkim.tectonic.usecase.PrimaryActor;
 import com.morkim.tectonic.usecase.Random;
+import com.morkim.tectonic.usecase.SecondaryActor;
 import com.morkim.tectonic.usecase.UndoException;
 import com.morkim.tectonic.usecase.UseCase;
-import com.morkim.usecase.app.UseCaseExecutor;
 import com.morkim.usecase.di.AppInjector;
 
 import java.util.Objects;
+import java.util.Set;
 
 import javax.inject.Inject;
 
@@ -25,6 +26,16 @@ public class RegisterUser extends UseCase<Void> {
         super.onCreate();
 
         AppInjector.getRegisterUserComponent().inject(this);
+    }
+
+    @Override
+    protected void onAddPrimaryActors(Set<PrimaryActor> actors) {
+        actors.add(ui);
+    }
+
+    @Override
+    protected void onAddSecondaryActors(Set<SecondaryActor> actors) {
+        actors.add(backend);
     }
 
     @Override
@@ -95,7 +106,7 @@ public class RegisterUser extends UseCase<Void> {
         return UI.OK;
     }
 
-    public interface UI extends PrimaryActor<UseCaseExecutor.Event, Void> {
+    public interface UI<E> extends PrimaryActor<E, Void> {
 
         int OK = 0;
         int ERROR_EMPTY_EMAIL = 1;
@@ -122,7 +133,7 @@ public class RegisterUser extends UseCase<Void> {
         void confirmRegistrationError();
     }
 
-    public interface Backend {
+    public interface Backend<E> extends SecondaryActor<E, Void> {
 
         void register(String email, String password, String mobile) throws UserAlreadyRegistered;
     }

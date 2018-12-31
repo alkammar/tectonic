@@ -2,7 +2,7 @@ package com.morkim.usecase.auth;
 
 import com.morkim.tectonic.flow.Step;
 import com.morkim.tectonic.flow.StepFactory;
-import com.morkim.tectonic.usecase.PrimaryHandle;
+import com.morkim.tectonic.usecase.UseCaseHandle;
 import com.morkim.tectonic.usecase.Triggers;
 import com.morkim.tectonic.usecase.UnexpectedStep;
 import com.morkim.tectonic.usecase.UseCase;
@@ -21,10 +21,10 @@ import lib.morkim.uc.SecondaryUseCase;
 
 public class AuthenticationFlow
         implements
-        LoginUser.UI,
+        LoginUser.UI<UseCaseExecutor.Event>,
         Login.Flow,
-        MainUseCase.Authenticator,
-        SecondaryUseCase.Authenticator {
+        MainUseCase.Authenticator<UseCaseExecutor.Event>,
+        SecondaryUseCase.Authenticator<UseCaseExecutor.Event> {
 
     private static final UUID REFRESH = UUID.randomUUID();
     private static final UUID PASSWORD = UUID.randomUUID();
@@ -53,7 +53,7 @@ public class AuthenticationFlow
     }
 
     @Override
-    public void onStart(UseCaseExecutor.Event event, PrimaryHandle handle) {
+    public void onStart(UseCaseExecutor.Event event, UseCaseHandle handle) {
 
     }
 

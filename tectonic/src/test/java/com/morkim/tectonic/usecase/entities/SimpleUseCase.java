@@ -1,9 +1,13 @@
 package com.morkim.tectonic.usecase.entities;
 
+import com.morkim.tectonic.usecase.Actor;
 import com.morkim.tectonic.usecase.PrimaryActor;
+import com.morkim.tectonic.usecase.SecondaryActor;
 import com.morkim.tectonic.usecase.UndoException;
 import com.morkim.tectonic.usecase.UseCase;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 public class SimpleUseCase extends UseCase<Void> {
@@ -12,7 +16,9 @@ public class SimpleUseCase extends UseCase<Void> {
     private int onExecuteCalledCount;
     private boolean onCheckPreconditionsCalled;
     private boolean abortCalled;
-    private Actor actor;
+    private List<PrimaryActor> primaryActors = new ArrayList<>();
+    private List<SecondaryActor> secondaryActors = new ArrayList<>();
+    private Actor unknownActor;
 
     @Override
     protected void onCreate() {
@@ -26,6 +32,16 @@ public class SimpleUseCase extends UseCase<Void> {
         super.onAddPreconditions(useCases);
 
         onCheckPreconditionsCalled = true;
+    }
+
+    @Override
+    protected void onAddPrimaryActors(Set<PrimaryActor> actors) {
+        actors.addAll(primaryActors);
+    }
+
+    @Override
+    protected void onAddSecondaryActors(Set<SecondaryActor> actors) {
+        actors.addAll(secondaryActors);
     }
 
     @Override
@@ -52,8 +68,8 @@ public class SimpleUseCase extends UseCase<Void> {
         return onCheckPreconditionsCalled;
     }
 
-    public void setActor(Actor actor) {
-        this.actor = actor;
+    public void setUnknownActor(Actor unknownActor) {
+        this.unknownActor = unknownActor;
     }
 
     public int getOnCreateCalledCount() {
@@ -68,6 +84,15 @@ public class SimpleUseCase extends UseCase<Void> {
         return abortCalled;
     }
 
-    public interface Actor extends PrimaryActor<Integer, Void> {
+    public void addPrimaryActor(PrimaryActor primaryActor) {
+        this.primaryActors.add(primaryActor);
+    }
+
+    public void addSecondaryActor(SecondaryActor secondaryActor) {
+        this.secondaryActors.add(secondaryActor);
+    }
+
+    public interface SimpleActor extends PrimaryActor<Integer, Void> {
+
     }
 }

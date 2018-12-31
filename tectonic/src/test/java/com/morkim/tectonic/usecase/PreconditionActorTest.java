@@ -32,10 +32,10 @@ public class PreconditionActorTest extends TectonicTest {
 	public void no_precondition_actor__callbacks_not_called() {
 
 		CompletedUseCase useCase = UseCase.fetch(CompletedUseCase.class);
-		useCase.setActor(new CompletedUseCase.Actor() {
+		useCase.setUnknownActor(new CompletedUseCase.Actor() {
 
 			@Override
-			public void onStart(TectonicEvent event, PrimaryHandle handle) {
+			public void onStart(TectonicEvent event, UseCaseHandle handle) {
 				onStartCalled = true;
 			}
 
@@ -72,7 +72,7 @@ public class PreconditionActorTest extends TectonicTest {
 		CompletedUseCase.Actor actor = new CompletedUseCase.Actor() {
 
 			@Override
-			public void onStart(TectonicEvent event, PrimaryHandle handle) {
+			public void onStart(TectonicEvent event, UseCaseHandle handle) {
 				onStartCalled = true;
 			}
 
@@ -98,7 +98,7 @@ public class PreconditionActorTest extends TectonicTest {
 			}
 		};
 		useCase.setPreconditionActor(actor);
-		useCase.setActor(actor);
+		useCase.setUnknownActor(actor);
 		useCase.execute();
 
 		assertTrue(onCompleteCalled);

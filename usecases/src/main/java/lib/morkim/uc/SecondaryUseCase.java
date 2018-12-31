@@ -1,6 +1,7 @@
 package lib.morkim.uc;
 
 import com.morkim.tectonic.usecase.PrimaryActor;
+import com.morkim.tectonic.usecase.SecondaryActor;
 import com.morkim.tectonic.usecase.TectonicEvent;
 import com.morkim.tectonic.usecase.UndoException;
 import com.morkim.tectonic.usecase.UseCase;
@@ -31,18 +32,15 @@ public class SecondaryUseCase extends UseCase<SecondaryModel> {
         UseCaseInjector.getSecondaryUseCaseComponent().inject(this);
     }
 
-//    @Override
-//    protected void onAddPreconditions(Set<UseCaseExecutor.Event> events) {
-//        super.onAddPreconditions(events);
-//
-//        events.add(UseCaseExecutor.Event.PRE_CONDITION_MAIN);
-//    }
+    @Override
+    protected void onAddPrimaryActors(Set<PrimaryActor> actors) {
+        actors.add(ui);
+    }
 
     @Override
-    protected void onAddPreconditions(Set<Class<? extends UseCase<?>>> useCases) {
-        super.onAddPreconditions(useCases);
-
-
+    protected void onAddSecondaryActors(Set<SecondaryActor> actors) {
+        actors.add(authenticator);
+        actors.add(backend);
     }
 
     @Override
@@ -96,13 +94,13 @@ public class SecondaryUseCase extends UseCase<SecondaryModel> {
         void unblock();
     }
 
-    public interface Backend {
+    public interface Backend<E> extends SecondaryActor<E, Void> {
 
         SecondaryModel requestSomething(String data1, String data2, double data3)
                 throws ExpiredCredentials, GeneralBackendError, SpecificBackendError;
     }
 
-    public interface Authenticator {
+    public interface Authenticator<E> extends SecondaryActor<E, Void> {
 
         void refreshAuthentication() throws InterruptedException;
     }

@@ -4,7 +4,9 @@ import com.morkim.tectonic.flow.Step;
 
 import java.util.UUID;
 
-public interface SecondaryHandle {
+public interface UseCaseHandle {
 
     void undo(Step step, UUID... actions);
+
+    void abort();
 }

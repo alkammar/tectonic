@@ -27,9 +27,9 @@ public class CompletableByOtherTest {
 	public void complete_use_case__completes_another_use_case() throws InterruptedException {
 
 		CompletableByOtherCompletionUseCase completableByOther = UseCase.fetch(CompletableByOtherCompletionUseCase.class);
-		completableByOther.setPrimaryActor(new SimpleUseCase.Actor() {
+		completableByOther.addPrimaryActor(new SimpleUseCase.SimpleActor() {
 			@Override
-			public void onStart(Integer event, PrimaryHandle handle) {
+			public void onStart(Integer event, UseCaseHandle handle) {
 
 			}
 
@@ -66,9 +66,9 @@ public class CompletableByOtherTest {
 	public void abort_use_case__completes_another_use_case() throws InterruptedException {
 
 		CompletableByOtherAbortionUseCase completableByOther = UseCase.fetch(CompletableByOtherAbortionUseCase.class);
-		completableByOther.setPrimaryActor(new SimpleUseCase.Actor() {
+		completableByOther.addPrimaryActor(new SimpleUseCase.SimpleActor() {
 			@Override
-			public void onStart(Integer event, PrimaryHandle handle) {
+			public void onStart(Integer event, UseCaseHandle handle) {
 
 			}
 

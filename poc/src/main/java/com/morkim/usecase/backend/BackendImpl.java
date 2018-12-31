@@ -2,6 +2,8 @@ package com.morkim.usecase.backend;
 
 import android.os.SystemClock;
 
+import com.morkim.tectonic.flow.Step;
+import com.morkim.tectonic.usecase.UseCaseHandle;
 import com.morkim.tectonic.usecase.ResultActor;
 import com.morkim.tectonic.usecase.Triggers;
 import com.morkim.tectonic.usecase.UndoException;
@@ -23,7 +25,13 @@ import lib.morkim.uc.GeneralBackendError;
 import lib.morkim.uc.SecondaryUseCase;
 import lib.morkim.uc.SpecificBackendError;
 
-public class BackendImpl implements MainUseCase.Backend, LogoutUser.Backend, SecondaryUseCase.Backend, LoginUser.Backend, ResultActor<UseCaseExecutor.Event, Void>,RegisterUser.Backend {
+public class BackendImpl
+        implements MainUseCase.Backend<UseCaseExecutor.Event>,
+        LogoutUser.Backend<UseCaseExecutor.Event>,
+        SecondaryUseCase.Backend<UseCaseExecutor.Event>,
+        LoginUser.Backend<UseCaseExecutor.Event>,
+        ResultActor<UseCaseExecutor.Event, Void>,
+        RegisterUser.Backend<UseCaseExecutor.Event> {
 
     private static final UUID REGISTRATION = UUID.randomUUID();
     private static boolean isExpired = true;
@@ -32,6 +40,11 @@ public class BackendImpl implements MainUseCase.Backend, LogoutUser.Backend, Sec
     @Inject
     public BackendImpl(Triggers<UseCaseExecutor.Event> triggers) {
         this.triggers = triggers;
+    }
+
+    @Override
+    public void onStart(UseCaseExecutor.Event event, UseCaseHandle handle) {
+
     }
 
     @Override
@@ -90,6 +103,11 @@ public class BackendImpl implements MainUseCase.Backend, LogoutUser.Backend, Sec
 
     @Override
     public void register(String email, String password, String mobile) {
+
+    }
+
+    @Override
+    public void onUndo(Step step) {
 
     }
 }

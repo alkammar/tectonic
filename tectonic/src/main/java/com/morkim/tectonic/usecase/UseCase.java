@@ -203,7 +203,7 @@ public abstract class UseCase<R> implements PreconditionActor, UseCaseHandle {
         }
     }
 
-    public static <D> D waitFor(UUID key) throws InterruptedException, ExecutionException {
+    public static <D> D waitFor(UUID key) throws InterruptedException, ExecutionException, UndoException {
         if (cache.containsKey(key)) {
             D d = (D) cache.get(key);
             if (d instanceof Exception) {
@@ -222,6 +222,8 @@ public abstract class UseCase<R> implements PreconditionActor, UseCaseHandle {
             } catch (ExecutionException e) {
                 if (e.getCause() instanceof InterruptedException)
                     throw (InterruptedException) e.getCause();
+                if (UndoException.class.equals(e.getCause().getClass()))
+                    throw (UndoException) e.getCause();
                 throw e;
             }
         }
@@ -258,8 +260,6 @@ public abstract class UseCase<R> implements PreconditionActor, UseCaseHandle {
         try {
             return waitFor(key);
         } catch (ExecutionException e) {
-            if (UndoException.class.equals(e.getCause().getClass()))
-                throw (UndoException) e.getCause();
             e.printStackTrace();
         }
 

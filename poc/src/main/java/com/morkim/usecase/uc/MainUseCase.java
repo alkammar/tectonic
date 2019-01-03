@@ -2,6 +2,7 @@ package com.morkim.usecase.uc;
 
 import com.morkim.tectonic.usecase.PrimaryActor;
 import com.morkim.tectonic.usecase.SecondaryActor;
+import com.morkim.tectonic.usecase.UndoException;
 import com.morkim.tectonic.usecase.UseCase;
 import com.morkim.usecase.di.AppInjector;
 
@@ -44,7 +45,7 @@ public class MainUseCase extends UseCase<String> {
     }
 
     @Override
-    protected void onExecute() throws InterruptedException {
+    protected void onExecute() throws InterruptedException, UndoException {
 
         try {
             String someData = backend.retrieveSomeData();
@@ -70,7 +71,7 @@ public class MainUseCase extends UseCase<String> {
 
     public interface Authenticator<E> extends SecondaryActor<E, Void> {
 
-        void refreshAuthentication() throws InterruptedException;
+        void refreshAuthentication() throws InterruptedException, UndoException;
     }
 
     public interface UI<E> extends PrimaryActor<E, String> {

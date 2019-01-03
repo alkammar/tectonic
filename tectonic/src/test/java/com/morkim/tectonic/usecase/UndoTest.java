@@ -1,8 +1,8 @@
 package com.morkim.tectonic.usecase;
 
 import com.morkim.tectonic.flow.Step;
-import com.morkim.tectonic.usecase.entities.UndoUseCase;
 import com.morkim.tectonic.usecase.entities.StepData;
+import com.morkim.tectonic.usecase.entities.UndoUseCase;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -14,11 +14,23 @@ import static org.junit.Assert.assertTrue;
 
 public class UndoTest extends ConcurrentTectonicTest {
 
+    private Step step1 = new Step() {
+        @Override
+        public void terminate() {
+
+        }
+    };
+
+    private Step step2 = new Step() {
+        @Override
+        public void terminate() {
+
+        }
+    };
+
     private UUID ACTION_DATA_KEY_1 = UUID.randomUUID();
     private UUID ACTION_DATA_KEY_2 = UUID.randomUUID();
     private UUID ACTION_DATA_KEY_3 = UUID.randomUUID();
-
-    private UseCaseHandle handle;
 
     private int count;
 
@@ -30,20 +42,11 @@ public class UndoTest extends ConcurrentTectonicTest {
 
         count = 0;
 
-        handle = null;
-
         onUndoCalled = false;
     }
 
     @Test
     public void undo_cached__new_data_accessed_for_undone() throws InterruptedException {
-
-        final Step step = new Step() {
-            @Override
-            public void terminate() {
-
-            }
-        };
 
         final StepData data1 = new StepData();
         final StepData data2 = new StepData();
@@ -55,7 +58,7 @@ public class UndoTest extends ConcurrentTectonicTest {
 
             @Override
             public void onStart(Integer event, UseCaseHandle handle) {
-                UndoTest.this.handle = handle;
+                useCaseHandle = handle;
             }
 
             @Override
@@ -76,19 +79,19 @@ public class UndoTest extends ConcurrentTectonicTest {
             @Override
             public StepData requestData() throws InterruptedException, UndoException {
                 count++;
-                return UseCase.waitForSafe(ACTION_DATA_KEY_1);
+                return useCaseHandle.waitForSafe(ACTION_DATA_KEY_1);
             }
 
             @Override
             public StepData requestOtherData() throws InterruptedException, UndoException {
                 count++;
-                return UseCase.waitForSafe(ACTION_DATA_KEY_2);
+                return useCaseHandle.waitForSafe(ACTION_DATA_KEY_2);
             }
 
             @Override
             public StepData requestAnotherData() throws InterruptedException, UndoException {
                 count++;
-                return UseCase.waitForSafe(ACTION_DATA_KEY_3);
+                return useCaseHandle.waitForSafe(ACTION_DATA_KEY_3);
             }
         };
         useCase.addPrimaryActor(actor);
@@ -99,7 +102,7 @@ public class UndoTest extends ConcurrentTectonicTest {
             @Override
             public void run() {
                 sleep();
-                UseCase.replyWith(ACTION_DATA_KEY_1, data1);
+                useCaseHandle.replyWith(step1, ACTION_DATA_KEY_1, data1);
             }
         });
         thread1.start();
@@ -110,7 +113,7 @@ public class UndoTest extends ConcurrentTectonicTest {
             @Override
             public void run() {
                 sleep();
-                UseCase.replyWith(ACTION_DATA_KEY_2, data2);
+                useCaseHandle.replyWith(step2, ACTION_DATA_KEY_2, data2);
             }
         });
         thread2.start();
@@ -121,7 +124,7 @@ public class UndoTest extends ConcurrentTectonicTest {
             @Override
             public void run() {
                 sleep();
-                handle.undo(step, ACTION_DATA_KEY_2);
+                useCaseHandle.undo(step2);
             }
         });
         thread3.start();
@@ -132,7 +135,7 @@ public class UndoTest extends ConcurrentTectonicTest {
             @Override
             public void run() {
                 sleep();
-                UseCase.replyWith(ACTION_DATA_KEY_2, data4);
+                useCaseHandle.replyWith(step2, ACTION_DATA_KEY_2, data4);
             }
         });
         thread4.start();
@@ -143,7 +146,7 @@ public class UndoTest extends ConcurrentTectonicTest {
             @Override
             public void run() {
                 sleep();
-                UseCase.replyWith(ACTION_DATA_KEY_3, data3);
+                useCaseHandle.replyWith(step2, ACTION_DATA_KEY_3, data3);
             }
         });
         thread5.start();

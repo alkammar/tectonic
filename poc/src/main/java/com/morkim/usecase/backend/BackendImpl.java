@@ -3,11 +3,10 @@ package com.morkim.usecase.backend;
 import android.os.SystemClock;
 
 import com.morkim.tectonic.flow.Step;
-import com.morkim.tectonic.usecase.UseCaseHandle;
 import com.morkim.tectonic.usecase.ResultActor;
 import com.morkim.tectonic.usecase.Triggers;
 import com.morkim.tectonic.usecase.UndoException;
-import com.morkim.tectonic.usecase.UseCase;
+import com.morkim.tectonic.usecase.UseCaseHandle;
 import com.morkim.usecase.app.UseCaseExecutor;
 import com.morkim.usecase.uc.InvalidLogin;
 import com.morkim.usecase.uc.LoginUser;
@@ -36,6 +35,7 @@ public class BackendImpl
     private static final UUID REGISTRATION = UUID.randomUUID();
     private static boolean isExpired = true;
     private Triggers<UseCaseExecutor.Event> triggers;
+    private UseCaseHandle handle;
 
     @Inject
     public BackendImpl(Triggers<UseCaseExecutor.Event> triggers) {
@@ -44,7 +44,7 @@ public class BackendImpl
 
     @Override
     public void onStart(UseCaseExecutor.Event event, UseCaseHandle handle) {
-
+        this.handle = handle;
     }
 
     @Override
@@ -88,12 +88,12 @@ public class BackendImpl
     @Override
     public void register() throws InterruptedException, UndoException {
         triggers.trigger(UseCaseExecutor.Event.REGISTER, this);
-        UseCase.waitForSafe(REGISTRATION);
+        handle.waitForSafe(REGISTRATION);
     }
 
     @Override
     public void onComplete(UseCaseExecutor.Event event, Void result) {
-        UseCase.replyWith(REGISTRATION);
+        handle.replyWith(() -> {}, REGISTRATION);
     }
 
     @Override

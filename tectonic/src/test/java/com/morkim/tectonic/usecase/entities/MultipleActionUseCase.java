@@ -1,10 +1,20 @@
 package com.morkim.tectonic.usecase.entities;
 
+import com.morkim.tectonic.usecase.PrimaryActor;
 import com.morkim.tectonic.usecase.UndoException;
+
+import java.util.Set;
 
 public class MultipleActionUseCase extends SimpleUseCase {
 
     private Actor actor;
+
+    @Override
+    protected void onAddPrimaryActors(Set<PrimaryActor> actors) {
+        super.onAddPrimaryActors(actors);
+
+        actors.add(actor);
+    }
 
     @Override
     protected void onExecute() throws InterruptedException, UndoException {
@@ -23,7 +33,7 @@ public class MultipleActionUseCase extends SimpleUseCase {
         this.actor = actor;
     }
 
-    public interface Actor {
+    public interface Actor extends PrimaryActor {
 
         StepData requestData1() throws InterruptedException, UndoException;
 

@@ -5,6 +5,8 @@ import org.junit.BeforeClass;
 
 public class ConcurrentTectonicTest {
 
+    protected UseCaseHandle useCaseHandle;
+
     Thread useCaseThread;
 
     private ThreadManagerImpl threadManager;
@@ -16,6 +18,7 @@ public class ConcurrentTectonicTest {
 
     @Before
     public void setup() {
+        useCaseHandle = null;
         UseCase.clearAll();
         threadManager = new ThreadManagerImpl() {
             @Override

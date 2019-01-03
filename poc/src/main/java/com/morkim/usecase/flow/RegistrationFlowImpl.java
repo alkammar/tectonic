@@ -49,23 +49,23 @@ public class RegistrationFlowImpl
     @Override
     public Random<String> askForEmail() throws InterruptedException {
         if (step1 == null) step1 = stepFactory.create(Registration.Step1.class);
-        return UseCase.waitForRandom(EMAIL);
+        return handle.waitForRandom(EMAIL);
     }
 
     @Override
     public Random<String> askForPassword() throws InterruptedException {
-        return UseCase.waitForRandom(PASSWORD);
+        return handle.waitForRandom(PASSWORD);
     }
 
     @Override
     public Random<String> askForPasswordConfirmation() throws InterruptedException {
-        return UseCase.waitForRandom(PASSWORD_CONFIRM);
+        return handle.waitForRandom(PASSWORD_CONFIRM);
     }
 
     @Override
     public void askForConfirmation() throws InterruptedException, UndoException {
-        if (!validStep1) UseCase.waitForSafe(NEXT);
-        else UseCase.waitForSafe(CONFIRM);
+        if (!validStep1) handle.waitForSafe(NEXT);
+        else handle.waitForSafe(CONFIRM);
     }
 
     @Override
@@ -83,7 +83,7 @@ public class RegistrationFlowImpl
 
         if (validStep1) {
             if (step2 == null) step2 = stepFactory.create(Registration.Step2.class);
-            return UseCase.waitForRandom(MOBILE);
+            return handle.waitForRandom(MOBILE);
         } else {
             return new Random<>("");
         }
@@ -91,21 +91,21 @@ public class RegistrationFlowImpl
 
     @Override
     public void submitPassword(String password) {
-        UseCase.replyWithRandom(PASSWORD, new Random<>(password));
+        handle.replyWithRandom(step1, PASSWORD, new Random<>(password));
     }
 
     @Override
     public void next(String email, String password, String passwordConfirm) {
-        UseCase.replyWith(EMAIL, new Random<>(email));
-        UseCase.replyWith(PASSWORD, new Random<>(password));
-        UseCase.replyWith(PASSWORD_CONFIRM, new Random<>(passwordConfirm));
-        UseCase.replyWithRandom(NEXT);
+        handle.replyWith(step1, EMAIL, new Random<>(email));
+        handle.replyWith(step1, PASSWORD, new Random<>(password));
+        handle.replyWith(step1, PASSWORD_CONFIRM, new Random<>(passwordConfirm));
+        handle.replyWithRandom(step1, NEXT);
     }
 
     @Override
     public void submit(String mobile) {
-        UseCase.replyWith(MOBILE, new Random<>(mobile));
-        UseCase.replyWithRandom(CONFIRM);
+        handle.replyWith(step2, MOBILE, new Random<>(mobile));
+        handle.replyWithRandom(step2, CONFIRM);
     }
 
     @Override
@@ -125,20 +125,20 @@ public class RegistrationFlowImpl
         if (e5 != RegisterUser.UI.OK) { step1.showError(e5); }
 
         validStep1 = (e1 | e2 | e3 | e4 | e5) == RegisterUser.UI.OK;
-        if (!validStep1) UseCase.clear(NEXT);
+        if (!validStep1) handle.clear(NEXT);
 
         int e6 = error & RegisterUser.UI.ERROR_EMPTY_MOBILE;
 
         if (validStep1 && step2 != null) if (e6 != RegisterUser.UI.OK) { step2.showError(e6); }
 
         boolean validStep2 = e6 == RegisterUser.UI.OK;
-        if (!validStep2) UseCase.clear(CONFIRM);
+        if (!validStep2) handle.clear(CONFIRM);
     }
 
     @Override
     public void goBack(Step step) {
         if (step == step1) handle.abort();
-        else if (step == step2) handle.undo(step, MOBILE);
+        else if (step == step2) handle.undo(step);
     }
 
     @Override
@@ -146,8 +146,6 @@ public class RegistrationFlowImpl
 
         step2.terminate();
         step1.terminate();
-
-        UseCase.clear(EMAIL, PASSWORD, PASSWORD_CONFIRM, NEXT, MOBILE, CONFIRM);
     }
 
     @Override
@@ -162,7 +160,5 @@ public class RegistrationFlowImpl
 
         step2.terminate();
         step1.terminate();
-
-        UseCase.clear(EMAIL, PASSWORD, PASSWORD_CONFIRM, NEXT, MOBILE, CONFIRM);
     }
 }

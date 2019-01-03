@@ -1,5 +1,6 @@
 package com.morkim.tectonic.usecase;
 
+import com.morkim.tectonic.flow.Step;
 import com.morkim.tectonic.usecase.entities.ActorCachingUseCase;
 import com.morkim.tectonic.usecase.entities.MultipleActionUseCase;
 import com.morkim.tectonic.usecase.entities.StepData;
@@ -12,6 +13,13 @@ import java.util.UUID;
 import static org.junit.Assert.assertEquals;
 
 public class CacheActorTest extends ConcurrentTectonicTest {
+
+    Step step = new Step() {
+        @Override
+        public void terminate() {
+
+        }
+    };
 
     private UUID ACTION_DATA_KEY_1 = UUID.randomUUID();
     private UUID ACTION_DATA_KEY_2 = UUID.randomUUID();
@@ -33,6 +41,26 @@ public class CacheActorTest extends ConcurrentTectonicTest {
 
         ActorCachingUseCase useCase = UseCase.fetch(ActorCachingUseCase.class);
         ActorCachingUseCase.Actor actor = new ActorCachingUseCase.Actor() {
+
+            @Override
+            public void onComplete(Object event, Object result) {
+
+            }
+
+            @Override
+            public void onAbort(Object event) {
+
+            }
+
+            @Override
+            public void onStart(Object event, UseCaseHandle handle) {
+                useCaseHandle = handle;
+            }
+
+            @Override
+            public void onUndo(Step step) {
+
+            }
 
             @Override
             public StepData requestData() throws InterruptedException {
@@ -64,9 +92,29 @@ public class CacheActorTest extends ConcurrentTectonicTest {
         ActorCachingUseCase.Actor actor = new ActorCachingUseCase.Actor() {
 
             @Override
+            public void onComplete(Object event, Object result) {
+
+            }
+
+            @Override
+            public void onAbort(Object event) {
+
+            }
+
+            @Override
+            public void onStart(Object event, UseCaseHandle handle) {
+                useCaseHandle = handle;
+            }
+
+            @Override
+            public void onUndo(Step step) {
+
+            }
+
+            @Override
             public StepData requestData() throws InterruptedException, UndoException {
                 count++;
-                return UseCase.waitForSafe(ACTION_DATA_KEY_1);
+                return useCaseHandle.waitForSafe(ACTION_DATA_KEY_1);
             }
         };
         useCase.setActor(actor);
@@ -75,7 +123,7 @@ public class CacheActorTest extends ConcurrentTectonicTest {
             @Override
             public void run() {
                 sleep();
-                UseCase.replyWith(ACTION_DATA_KEY_1, data1);
+                useCaseHandle.replyWith(step, ACTION_DATA_KEY_1, data1);
             }
         });
         thread.start();
@@ -103,15 +151,35 @@ public class CacheActorTest extends ConcurrentTectonicTest {
         MultipleActionUseCase.Actor actor = new MultipleActionUseCase.Actor() {
 
             @Override
+            public void onComplete(Object event, Object result) {
+
+            }
+
+            @Override
+            public void onAbort(Object event) {
+
+            }
+
+            @Override
+            public void onStart(Object event, UseCaseHandle handle) {
+                useCaseHandle = handle;
+            }
+
+            @Override
+            public void onUndo(Step step) {
+
+            }
+
+            @Override
             public StepData requestData1() throws InterruptedException, UndoException {
                 count++;
-                return UseCase.waitForSafe(ACTION_DATA_KEY_1);
+                return useCaseHandle.waitForSafe(ACTION_DATA_KEY_1);
             }
 
             @Override
             public StepData requestData2() throws InterruptedException, UndoException {
                 count++;
-                return UseCase.waitForSafe(ACTION_DATA_KEY_2);
+                return useCaseHandle.waitForSafe(ACTION_DATA_KEY_2);
             }
         };
 
@@ -123,7 +191,7 @@ public class CacheActorTest extends ConcurrentTectonicTest {
             @Override
             public void run() {
                 sleep();
-                UseCase.replyWith(ACTION_DATA_KEY_2, data2);
+                useCaseHandle.replyWith(step, ACTION_DATA_KEY_2, data2);
             }
         });
         thread1.start();
@@ -134,7 +202,7 @@ public class CacheActorTest extends ConcurrentTectonicTest {
             @Override
             public void run() {
                 sleep();
-                UseCase.replyWith(ACTION_DATA_KEY_1, data1);
+                useCaseHandle.replyWith(step, ACTION_DATA_KEY_1, data1);
             }
         });
         thread2.start();
@@ -159,15 +227,35 @@ public class CacheActorTest extends ConcurrentTectonicTest {
         MultipleActionUseCase.Actor actor = new MultipleActionUseCase.Actor() {
 
             @Override
+            public void onComplete(Object event, Object result) {
+
+            }
+
+            @Override
+            public void onAbort(Object event) {
+
+            }
+
+            @Override
+            public void onStart(Object event, UseCaseHandle handle) {
+                useCaseHandle = handle;
+            }
+
+            @Override
+            public void onUndo(Step step) {
+
+            }
+
+            @Override
             public StepData requestData1() throws InterruptedException, UndoException {
                 count++;
-                return UseCase.waitForSafe(ACTION_DATA_KEY_1);
+                return useCaseHandle.waitForSafe(ACTION_DATA_KEY_1);
             }
 
             @Override
             public StepData requestData2() throws InterruptedException, UndoException {
                 count++;
-                return UseCase.waitForSafe(ACTION_DATA_KEY_2);
+                return useCaseHandle.waitForSafe(ACTION_DATA_KEY_2);
             }
         };
 
@@ -179,7 +267,7 @@ public class CacheActorTest extends ConcurrentTectonicTest {
             @Override
             public void run() {
                 sleep();
-                UseCase.replyWith(ACTION_DATA_KEY_1, data1);
+                useCaseHandle.replyWith(step, ACTION_DATA_KEY_1, data1);
             }
         });
         thread1.start();
@@ -190,7 +278,7 @@ public class CacheActorTest extends ConcurrentTectonicTest {
             @Override
             public void run() {
                 sleep();
-                UseCase.replyWith(ACTION_DATA_KEY_1, data2);
+                useCaseHandle.replyWith(step, ACTION_DATA_KEY_1, data2);
             }
         });
         thread2.start();
@@ -201,7 +289,7 @@ public class CacheActorTest extends ConcurrentTectonicTest {
             @Override
             public void run() {
                 sleep();
-                UseCase.replyWith(ACTION_DATA_KEY_2, data3);
+                useCaseHandle.replyWith(step, ACTION_DATA_KEY_2, data3);
             }
         });
         thread3.start();

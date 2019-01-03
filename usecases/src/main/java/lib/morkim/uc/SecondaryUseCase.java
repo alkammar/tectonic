@@ -102,6 +102,6 @@ public class SecondaryUseCase extends UseCase<SecondaryModel> {
 
     public interface Authenticator<E> extends SecondaryActor<E, Void> {
 
-        void refreshAuthentication() throws InterruptedException;
+        void refreshAuthentication() throws InterruptedException, UndoException;
     }
 }

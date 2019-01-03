@@ -2,6 +2,7 @@ package com.morkim.usecase.auth;
 
 import com.morkim.tectonic.flow.Step;
 import com.morkim.tectonic.flow.StepFactory;
+import com.morkim.tectonic.usecase.UndoException;
 import com.morkim.tectonic.usecase.UseCaseHandle;
 import com.morkim.tectonic.usecase.Triggers;
 import com.morkim.tectonic.usecase.UnexpectedStep;
@@ -33,6 +34,7 @@ public class AuthenticationFlow
     private Login.Screen login;
 
     private Triggers<UseCaseExecutor.Event> triggers;
+    private UseCaseHandle handle;
 
     @Inject
     public AuthenticationFlow(StepFactory stepFactory, Triggers<UseCaseExecutor.Event> triggers) {
@@ -41,12 +43,12 @@ public class AuthenticationFlow
     }
 
     @Override
-    public void refreshAuthentication() throws InterruptedException {
+    public void refreshAuthentication() throws InterruptedException, UndoException {
 
         triggers.trigger(UseCaseExecutor.Event.REFRESH_AUTH, this);
 
         try {
-            UseCase.waitFor(REFRESH);
+            handle.waitFor(REFRESH);
         } catch (ExecutionException e) {
             e.printStackTrace();
         }
@@ -54,28 +56,28 @@ public class AuthenticationFlow
 
     @Override
     public void onStart(UseCaseExecutor.Event event, UseCaseHandle handle) {
-
+        this.handle = handle;
     }
 
     @Override
     public String askForPassword() throws InterruptedException, UnexpectedStep {
         if (login == null) login = stepFactory.create(Login.Screen.class);
-        return UseCase.waitFor(PASSWORD, UserWantsToRegister.class);
+        return handle.waitFor(PASSWORD, UserWantsToRegister.class);
     }
 
     @Override
     public void submit(String password) {
-        UseCase.replyWith(PASSWORD, password);
+        handle.replyWith(login, PASSWORD, password);
     }
 
     @Override
     public void notRegistered() {
-        UseCase.replyWith(PASSWORD, new UserWantsToRegister());
+        handle.replyWith(login, PASSWORD, new UserWantsToRegister());
     }
 
     @Override
     public void show(Exception e) {
-        UseCase.clear(PASSWORD);
+        handle.clear(PASSWORD);
         login.handle(e);
     }
 
@@ -85,9 +87,6 @@ public class AuthenticationFlow
             case REFRESH_AUTH:
                 login.terminate();
                 login = null;
-                UseCase.replyWith(REFRESH);
-                UseCase.clear(PASSWORD);
-                UseCase.clear(REFRESH);
                 break;
         }
     }

@@ -125,8 +125,8 @@ public abstract class UseCase<R> implements PreconditionActor {
                     primaryActors.clear();
                     secondaryActors.clear();
 
-                    onAddPrimaryActors(primaryActors);
                     onAddSecondaryActors(secondaryActors);
+                    onAddPrimaryActors(primaryActors);
 
                     if (executeOnStart) notifyActorsOfStart(event);
 

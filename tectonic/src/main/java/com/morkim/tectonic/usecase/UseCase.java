@@ -316,10 +316,7 @@ public abstract class UseCase<R> implements PreconditionActor {
 
     private <D> void replyWith(Step step, UUID key, D data) {
 
-//        Thread thread = keyThreadMap.get(key);
-//        Action action = thread == null ? null : (Action) threadUseCaseMap.get(thread).actions.get(key);
         Action action = thread == null ? null : this.actions.get(key);
-//        StepCache cache = getUseCaseCache(thread);
         Object cachedData = cache.get(key);
 
         if (action != null && cachedData != null) {
@@ -573,6 +570,11 @@ public abstract class UseCase<R> implements PreconditionActor {
         @Override
         public <D> D waitForSafe(UUID key) throws UndoException, InterruptedException {
             return UseCase.this.waitForSafe(key);
+        }
+
+        @Override
+        public <D> D waitFor(UUID key, Runnable runnable) throws InterruptedException, ExecutionException {
+            return UseCase.this.waitFor(key, runnable);
         }
 
         @Override

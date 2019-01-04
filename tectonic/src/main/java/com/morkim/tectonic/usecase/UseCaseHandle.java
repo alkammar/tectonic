@@ -17,6 +17,8 @@ public interface UseCaseHandle {
 
     <D> D waitForSafe(UUID key) throws UndoException, InterruptedException;
 
+    <D> D waitFor(UUID key, Runnable runnable) throws InterruptedException, ExecutionException;
+
     <D> D waitFor(UUID key, Class<? extends Exception>... exs) throws UnexpectedStep, InterruptedException;
 
     void replyWithRandom(Step step, UUID key);

@@ -122,6 +122,8 @@ public abstract class UseCase<R> implements PreconditionActor {
                     boolean executeOnStart = !preconditionsExecuted;
                     waitForPreconditions();
 
+                    onInitialize();
+
                     primaryActors.clear();
                     secondaryActors.clear();
 
@@ -168,6 +170,10 @@ public abstract class UseCase<R> implements PreconditionActor {
                 }
             });
         }
+    }
+
+    protected void onInitialize() {
+
     }
 
     protected <r> r execute(Class<? extends UseCase<r>> cls) throws AbortedUseCase, InterruptedException {

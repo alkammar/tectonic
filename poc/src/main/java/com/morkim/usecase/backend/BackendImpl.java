@@ -88,7 +88,7 @@ public class BackendImpl
     @Override
     public void register() throws InterruptedException, UndoException {
         triggers.trigger(UseCaseExecutor.Event.REGISTER, this);
-        handle.waitForSafe(REGISTRATION);
+        handle.waitForSafe(this, () -> {}, REGISTRATION);
     }
 
     @Override

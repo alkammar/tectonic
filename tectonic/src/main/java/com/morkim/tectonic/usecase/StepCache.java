@@ -6,18 +6,29 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.Stack;
 import java.util.UUID;
 
 public class StepCache {
 
-    private Map<Step, Set<UUID>> steps = new HashMap<>();
-    private Map<UUID, Object> values = new HashMap<>();
+    private Map<Step, Set<UUID>> keys = new HashMap<>();
+    private Map<Step, Actor> actors = new HashMap<>();
+    private Stack<Step> stack = new Stack<>();
 
-    void put(Step step, UUID key, Object value) {
-        Set<UUID> stepKeys = steps.get(step);
+    private Map<UUID, Object> values = new HashMap<>();
+    private Map<UUID, Action> actions = new HashMap<>();
+
+    <D> void put(Actor actor, Step step, UUID key, Action<D> action) {
+        actions.put(key, action);
+        Set<UUID> stepKeys = keys.get(step);
         if (stepKeys == null) stepKeys = new HashSet<>();
         stepKeys.add(key);
-        steps.put(step, stepKeys);
+        if (keys.put(step, stepKeys) == null)
+            stack.add(step);
+        actors.put(step, actor);
+    }
+
+    void put(UUID key, Object value) {
         values.put(key, value);
     }
 
@@ -26,7 +37,7 @@ public class StepCache {
     }
 
     @SuppressWarnings("unchecked")
-    <D> D get(UUID key) {
+    <D> D getValue(UUID key) {
         return (D) values.get(key);
     }
 
@@ -35,15 +46,54 @@ public class StepCache {
     }
 
     void clear() {
-        steps.clear();
+        keys.clear();
+        actors.clear();
+        stack.clear();
         values.clear();
+        actions.clear();
     }
 
-    void remove(Step step) {
-        Set<UUID> keys = steps.get(step);
-        for (UUID key : keys)
-            values.remove(key);
+    Action getAction(UUID key) {
+        return actions.get(key);
+    }
+//
+//    Actor getActor(Step step) {
+//        return actors.get(step);
+//    }
 
-        steps.remove(step);
+    boolean isEmpty() {
+        return keys.isEmpty();
+    }
+
+    Step peak() {
+        return stack.isEmpty() ? null : stack.peek();
+    }
+
+    Actor pop() {
+        Step step = stack.isEmpty() ? null : stack.pop();
+        Actor actor = actors.get(step);
+        remove(step);
+        return actor;
+    }
+
+    private void remove(Step step) {
+        removeKeys(step);
+        this.keys.remove(step);
+        this.actors.remove(step);
+    }
+
+    private void removeKeys(Step step) {
+        Set<UUID> keys = this.keys.get(step);
+        if (keys != null)
+            for (UUID key : keys)
+                values.remove(key);
+    }
+
+    Actor getActor(Step step) {
+        return actors.get(step);
+    }
+
+    void reset(Step step) {
+        removeKeys(step);
     }
 }

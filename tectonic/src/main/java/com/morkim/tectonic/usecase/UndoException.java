@@ -5,7 +5,7 @@ import com.morkim.tectonic.flow.Step;
 public class UndoException extends Exception {
     private Step step;
 
-    public UndoException(Step step) {
+    public UndoException() {
         this.step = step;
     }
 

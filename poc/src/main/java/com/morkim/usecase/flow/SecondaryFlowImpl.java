@@ -46,19 +46,19 @@ public class SecondaryFlowImpl implements Secondary.Flow, SecondaryUseCase.UI<Us
     @Override
     public String askForData1() throws InterruptedException, UndoException {
         if (screen1 == null) screen1 = stepFactory.create(Secondary.Screen1.class);
-        return handle.waitForSafe(DATA1);
+        return handle.waitForSafe(this, screen1, DATA1);
     }
 
     @Override
     public String askForData2() throws InterruptedException, UndoException {
         if (screen2 == null) screen2 = stepFactory.create(Secondary.Screen2.class);
-        return handle.waitForSafe(DATA2);
+        return handle.waitForSafe(this, screen2, DATA2);
     }
 
     @Override
     public Double askForData3() throws InterruptedException, UndoException {
         if (screen3 == null) screen3 = stepFactory.create(Secondary.Screen3.class);
-        return handle.waitForSafe(DATA3);
+        return handle.waitForSafe(this, screen3, DATA3);
     }
 
     @Override
@@ -105,7 +105,7 @@ public class SecondaryFlowImpl implements Secondary.Flow, SecondaryUseCase.UI<Us
     public void goBack(Step step) {
         step.terminate();
         if (step instanceof Secondary.Screen1) handle.abort();
-        else handle.undo(step);
+        else handle.undo();
     }
 
     @Override

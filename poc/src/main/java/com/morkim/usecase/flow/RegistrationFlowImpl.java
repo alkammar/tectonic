@@ -5,7 +5,6 @@ import com.morkim.tectonic.flow.StepFactory;
 import com.morkim.tectonic.usecase.UseCaseHandle;
 import com.morkim.tectonic.usecase.Random;
 import com.morkim.tectonic.usecase.UndoException;
-import com.morkim.tectonic.usecase.UseCase;
 import com.morkim.usecase.app.UseCaseExecutor;
 import com.morkim.usecase.contract.Registration;
 import com.morkim.usecase.uc.RegisterUser;
@@ -64,8 +63,8 @@ public class RegistrationFlowImpl
 
     @Override
     public void askForConfirmation() throws InterruptedException, UndoException {
-        if (!validStep1) handle.waitForSafe(NEXT);
-        else handle.waitForSafe(CONFIRM);
+        if (!validStep1) handle.waitForSafe(this, step1, NEXT);
+        else handle.waitForSafe(this, step2, CONFIRM);
     }
 
     @Override
@@ -138,7 +137,7 @@ public class RegistrationFlowImpl
     @Override
     public void goBack(Step step) {
         if (step == step1) handle.abort();
-        else if (step == step2) handle.undo(step);
+        else if (step == step2) handle.undo();
     }
 
     @Override

@@ -6,7 +6,6 @@ import com.morkim.tectonic.usecase.UndoException;
 import com.morkim.tectonic.usecase.UseCaseHandle;
 import com.morkim.tectonic.usecase.Triggers;
 import com.morkim.tectonic.usecase.UnexpectedStep;
-import com.morkim.tectonic.usecase.UseCase;
 import com.morkim.usecase.app.UseCaseExecutor;
 import com.morkim.usecase.contract.Login;
 import com.morkim.usecase.uc.LoginUser;
@@ -48,7 +47,7 @@ public class AuthenticationFlow
         triggers.trigger(UseCaseExecutor.Event.REFRESH_AUTH, this);
 
         try {
-            handle.waitFor(REFRESH);
+            handle.waitFor(this, login, REFRESH);
         } catch (ExecutionException e) {
             e.printStackTrace();
         }
@@ -62,7 +61,7 @@ public class AuthenticationFlow
     @Override
     public String askForPassword() throws InterruptedException, UnexpectedStep {
         if (login == null) login = stepFactory.create(Login.Screen.class);
-        return handle.waitFor(PASSWORD, UserWantsToRegister.class);
+        return handle.waitFor(this, login, PASSWORD, UserWantsToRegister.class);
     }
 
     @Override

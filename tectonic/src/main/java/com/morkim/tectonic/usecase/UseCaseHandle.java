@@ -7,19 +7,19 @@ import java.util.concurrent.ExecutionException;
 
 public interface UseCaseHandle {
 
-    void undo(Step step);
+    void undo();
 
     void abort();
 
     <D> Random<D> waitForRandom(UUID key);
 
-    <D> D waitFor(UUID key) throws ExecutionException, UndoException, InterruptedException;
+    <D> D waitFor(Actor actor, Step step, UUID key) throws ExecutionException, UndoException, InterruptedException;
 
-    <D> D waitForSafe(UUID key) throws UndoException, InterruptedException;
+    <D> D waitForSafe(Actor actor, Step step, UUID key) throws UndoException, InterruptedException;
 
-    <D> D waitFor(UUID key, Runnable runnable) throws InterruptedException, ExecutionException;
+    <D> D waitFor(Actor actor, Step step, UUID key, Runnable runnable) throws InterruptedException, ExecutionException;
 
-    <D> D waitFor(UUID key, Class<? extends Exception>... exs) throws UnexpectedStep, InterruptedException;
+    <D> D waitFor(Actor actor, Step step, UUID key, Class<? extends Exception>... exs) throws UnexpectedStep, InterruptedException;
 
     void replyWithRandom(Step step, UUID key);
 

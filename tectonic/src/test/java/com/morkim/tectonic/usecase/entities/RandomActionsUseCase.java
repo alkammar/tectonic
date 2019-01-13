@@ -25,22 +25,14 @@ public class RandomActionsUseCase extends SimpleUseCase {
     protected void onExecute() throws InterruptedException, UndoException {
         super.onExecute();
 
-        System.out.println("request 1");
         Random<StepData> data1 = actor.requestData1();
-
-        System.out.println("request 2");
         Random<StepData> data2 = actor.requestData2();
-
-        System.out.println("request 3");
         Random<StepData> data3 = actor.requestData3();
 
         actor.confirm();
 
-        System.out.println("validate 1");
         validateData1(data1);
-        System.out.println("validate 2");
         validateData2(data2);
-        System.out.println("validate 3");
         validateData3(data3);
 
         complete();

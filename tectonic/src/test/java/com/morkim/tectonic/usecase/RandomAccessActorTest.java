@@ -98,10 +98,10 @@ public class RandomAccessActorTest extends ConcurrentTectonicTest {
             @Override
             public void run() {
                 sleep();
-                useCaseHandle.replyWith(step, ACTION_DATA_KEY_1, new Random<>(data1));
-                useCaseHandle.replyWith(step, ACTION_DATA_KEY_2, new Random<>(data2));
-                useCaseHandle.replyWith(step, ACTION_DATA_KEY_3, new Random<>(data3));
-                useCaseHandle.replyWithRandom(step, CONFIRM);
+                useCaseHandle.replyWith(ACTION_DATA_KEY_1, new Random<>(data1));
+                useCaseHandle.replyWith(ACTION_DATA_KEY_2, new Random<>(data2));
+                useCaseHandle.replyWith(ACTION_DATA_KEY_3, new Random<>(data3));
+                useCaseHandle.replyWithRandom(CONFIRM);
             }
         });
         thread.start();

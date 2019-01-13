@@ -304,7 +304,7 @@ public abstract class UseCase<R> implements PreconditionActor {
         return null;
     }
 
-    private void replyWith(Step step, UUID key) {
+    private void replyWith(UUID key) {
         replyWith(key, null);
     }
 
@@ -324,11 +324,11 @@ public abstract class UseCase<R> implements PreconditionActor {
         }
     }
 
-    private void replyWithRandom(Step step, UUID key) {
-        replyWithRandom(step, key, null);
+    private void replyWithRandom(UUID key) {
+        replyWithRandom(key, null);
     }
 
-    private <D> void replyWithRandom(Step step, UUID key, D data) {
+    private <D> void replyWithRandom(UUID key, D data) {
 
         Action action = cache.getAction(key);
         if (action == blockingAction) {
@@ -581,8 +581,18 @@ public abstract class UseCase<R> implements PreconditionActor {
         }
 
         @Override
+        public <D> D waitFor(Actor actor, UUID key) throws ExecutionException, UndoException, InterruptedException {
+            return UseCase.this.waitFor(actor, new IsolatedStep(), key);
+        }
+
+        @Override
         public <D> D waitFor(Actor actor, Step step, UUID key) throws ExecutionException, UndoException, InterruptedException {
             return UseCase.this.waitFor(actor, step, key);
+        }
+
+        @Override
+        public <D> D waitForSafe(Actor actor, UUID key) throws UndoException, InterruptedException {
+            return UseCase.this.waitForSafe(actor, new IsolatedStep(), key);
         }
 
         @Override
@@ -591,8 +601,18 @@ public abstract class UseCase<R> implements PreconditionActor {
         }
 
         @Override
+        public <D> D waitFor(Actor actor, UUID key, Runnable runnable) throws InterruptedException, ExecutionException {
+            return UseCase.this.waitFor(actor, new IsolatedStep(), key, runnable);
+        }
+
+        @Override
         public <D> D waitFor(Actor actor, Step step, UUID key, Runnable runnable) throws InterruptedException, ExecutionException {
             return UseCase.this.waitFor(actor, step, key, runnable);
+        }
+
+        @Override
+        public <D> D waitFor(Actor actor, UUID key, Class<? extends Exception>... exs) throws UnexpectedStep, InterruptedException {
+            return UseCase.this.waitFor(actor, new IsolatedStep(), key, exs);
         }
 
         @Override
@@ -601,28 +621,36 @@ public abstract class UseCase<R> implements PreconditionActor {
         }
 
         @Override
-        public void replyWithRandom(Step step, UUID key) {
-            UseCase.this.replyWithRandom(step, key);
+        public void replyWithRandom(UUID key) {
+            UseCase.this.replyWithRandom(key);
         }
 
         @Override
-        public void replyWith(Step step, UUID key) {
-            UseCase.this.replyWith(step, key);
+        public void replyWith(UUID key) {
+            UseCase.this.replyWith(key);
         }
 
         @Override
-        public <D> void replyWith(Step step, UUID key, D data) {
+        public <D> void replyWith(UUID key, D data) {
             UseCase.this.replyWith(key, data);
         }
 
         @Override
-        public <D> void replyWithRandom(Step step, UUID key, Random<D> data) {
-            UseCase.this.replyWithRandom(step, key, data);
+        public <D> void replyWithRandom(UUID key, Random<D> data) {
+            UseCase.this.replyWithRandom(key, data);
         }
 
         @Override
         public void clear(UUID... keys) {
             UseCase.this.clear(keys);
+        }
+    }
+
+    private class IsolatedStep implements Step {
+
+        @Override
+        public void terminate() {
+
         }
     }
 }

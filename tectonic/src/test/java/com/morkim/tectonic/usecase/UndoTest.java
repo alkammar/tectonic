@@ -95,10 +95,10 @@ public class UndoTest extends ConcurrentTectonicTest {
 
         undo();
         replyPrimaryStep1(new Random<>(data1), new Random<>(data2));
-        replySecondaryStep(stepS1, ACTION_DATA_KEY_3, data3);
+        replySecondaryStep(ACTION_DATA_KEY_3, data3);
         replyPrimaryStep2(new Random<>(data4), new Random<>(data5));
         replyPrimaryStep3(new Random<>(new StepData()), new Random<>(new StepData()));
-        replySecondaryStep(stepS2, ACTION_DATA_KEY_9, data6);
+        replySecondaryStep(ACTION_DATA_KEY_9, data6);
 
         useCaseThread.join();
 
@@ -123,13 +123,13 @@ public class UndoTest extends ConcurrentTectonicTest {
         useCase.execute();
 
         replyPrimaryStep1(new Random<>(data1), new Random<>(data2));
-        replySecondaryStep(stepS1, ACTION_DATA_KEY_3, data3);
+        replySecondaryStep(ACTION_DATA_KEY_3, data3);
         undo();
         replyPrimaryStep1(new Random<>(data1), new Random<>(data2));
-        replySecondaryStep(stepS1, ACTION_DATA_KEY_3, data3);
+        replySecondaryStep(ACTION_DATA_KEY_3, data3);
         replyPrimaryStep2(new Random<>(data4), new Random<>(data5));
         replyPrimaryStep3(new Random<>(new StepData()), new Random<>(new StepData()));
-        replySecondaryStep(stepS2, ACTION_DATA_KEY_9, data6);
+        replySecondaryStep(ACTION_DATA_KEY_9, data6);
 
         useCaseThread.join();
 
@@ -155,12 +155,12 @@ public class UndoTest extends ConcurrentTectonicTest {
         useCase.execute();
 
         replyPrimaryStep1(new Random<>(data1), new Random<>(data2));
-        replySecondaryStep(stepS1, ACTION_DATA_KEY_3, data3);
+        replySecondaryStep(ACTION_DATA_KEY_3, data3);
         replyPrimaryStep2(new Random<>(data4), new Random<>(data5));
         undo();
         replyPrimaryStep2(new Random<>(data4), new Random<>(data5));
         replyPrimaryStep3(new Random<>(new StepData()), new Random<>(new StepData()));
-        replySecondaryStep(stepS2, ACTION_DATA_KEY_9, data6);
+        replySecondaryStep(ACTION_DATA_KEY_9, data6);
 
         useCaseThread.join();
 
@@ -187,10 +187,10 @@ public class UndoTest extends ConcurrentTectonicTest {
         replyPrimaryStep1(new Random<>(data1), new Random<>(data2));
         undo();
         replyPrimaryStep1(new Random<>(data1), new Random<>(data2));
-        replySecondaryStep(stepS1, ACTION_DATA_KEY_3, data3);
+        replySecondaryStep(ACTION_DATA_KEY_3, data3);
         replyPrimaryStep2(new Random<>(data4), new Random<>(data5));
         replyPrimaryStep3(new Random<>(new StepData()), new Random<>(new StepData()));
-        replySecondaryStep(stepS2, ACTION_DATA_KEY_9, data6);
+        replySecondaryStep(ACTION_DATA_KEY_9, data6);
 
         useCaseThread.join();
 
@@ -218,13 +218,13 @@ public class UndoTest extends ConcurrentTectonicTest {
         useCase.execute();
 
         replyPrimaryStep1(new Random<>(data1), new Random<>(data2));
-        replySecondaryStep(stepS1, ACTION_DATA_KEY_3, data3);
+        replySecondaryStep(ACTION_DATA_KEY_3, data3);
         undo();
         replyPrimaryStep1(new Random<>(data1_), new Random<>(data2_));
-        replySecondaryStep(stepS1, ACTION_DATA_KEY_3, data3);
+        replySecondaryStep(ACTION_DATA_KEY_3, data3);
         replyPrimaryStep2(new Random<>(data4), new Random<>(data5));
         replyPrimaryStep3(new Random<>(new StepData()), new Random<>(new StepData()));
-        replySecondaryStep(stepS2, ACTION_DATA_KEY_9, data6);
+        replySecondaryStep(ACTION_DATA_KEY_9, data6);
 
         useCaseThread.join();
 
@@ -257,9 +257,9 @@ public class UndoTest extends ConcurrentTectonicTest {
             @Override
             public void run() {
                 sleep();
-                useCaseHandle.replyWith(stepP1, ACTION_DATA_KEY_1, dataA);
-                useCaseHandle.replyWith(stepP1, ACTION_DATA_KEY_2, dataB);
-                useCaseHandle.replyWithRandom(stepP1, ACTION_CONFIRMATION_KEY_1);
+                useCaseHandle.replyWith(ACTION_DATA_KEY_1, dataA);
+                useCaseHandle.replyWith(ACTION_DATA_KEY_2, dataB);
+                useCaseHandle.replyWithRandom(ACTION_CONFIRMATION_KEY_1);
             }
         });
         thread.start();
@@ -272,9 +272,9 @@ public class UndoTest extends ConcurrentTectonicTest {
             @Override
             public void run() {
                 sleep();
-                useCaseHandle.replyWith(stepP2, ACTION_DATA_KEY_4, dataA);
-                useCaseHandle.replyWith(stepP2, ACTION_DATA_KEY_5, dataB);
-                useCaseHandle.replyWithRandom(stepP2, ACTION_CONFIRMATION_KEY_2);
+                useCaseHandle.replyWith(ACTION_DATA_KEY_4, dataA);
+                useCaseHandle.replyWith(ACTION_DATA_KEY_5, dataB);
+                useCaseHandle.replyWithRandom(ACTION_CONFIRMATION_KEY_2);
             }
         });
         thread.start();
@@ -287,9 +287,9 @@ public class UndoTest extends ConcurrentTectonicTest {
             @Override
             public void run() {
                 sleep();
-                useCaseHandle.replyWith(stepP3, ACTION_DATA_KEY_7, dataA);
-                useCaseHandle.replyWith(stepP3, ACTION_DATA_KEY_8, dataB);
-                useCaseHandle.replyWithRandom(stepP3, ACTION_CONFIRMATION_KEY_3);
+                useCaseHandle.replyWith(ACTION_DATA_KEY_7, dataA);
+                useCaseHandle.replyWith(ACTION_DATA_KEY_8, dataB);
+                useCaseHandle.replyWithRandom(ACTION_CONFIRMATION_KEY_3);
             }
         });
         thread.start();
@@ -297,12 +297,12 @@ public class UndoTest extends ConcurrentTectonicTest {
         thread.join();
     }
 
-    private void replySecondaryStep(final Step step, final UUID key, final Object data) throws InterruptedException {
+    private void replySecondaryStep(final UUID key, final Object data) throws InterruptedException {
         Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
                 sleep();
-                useCaseHandle.replyWith(step, key, data);
+                useCaseHandle.replyWith(key, data);
             }
         });
         thread.start();

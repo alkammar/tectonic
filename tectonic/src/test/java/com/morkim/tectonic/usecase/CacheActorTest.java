@@ -123,7 +123,7 @@ public class CacheActorTest extends ConcurrentTectonicTest {
             @Override
             public void run() {
                 sleep();
-                useCaseHandle.replyWith(step, ACTION_DATA_KEY_1, data1);
+                useCaseHandle.replyWith(ACTION_DATA_KEY_1, data1);
             }
         });
         thread.start();
@@ -191,7 +191,7 @@ public class CacheActorTest extends ConcurrentTectonicTest {
             @Override
             public void run() {
                 sleep();
-                useCaseHandle.replyWith(step, ACTION_DATA_KEY_2, data2);
+                useCaseHandle.replyWith(ACTION_DATA_KEY_2, data2);
             }
         });
         thread1.start();
@@ -202,7 +202,7 @@ public class CacheActorTest extends ConcurrentTectonicTest {
             @Override
             public void run() {
                 sleep();
-                useCaseHandle.replyWith(step, ACTION_DATA_KEY_1, data1);
+                useCaseHandle.replyWith(ACTION_DATA_KEY_1, data1);
             }
         });
         thread2.start();
@@ -267,7 +267,7 @@ public class CacheActorTest extends ConcurrentTectonicTest {
             @Override
             public void run() {
                 sleep();
-                useCaseHandle.replyWith(step, ACTION_DATA_KEY_1, data1);
+                useCaseHandle.replyWith(ACTION_DATA_KEY_1, data1);
             }
         });
         thread1.start();
@@ -278,7 +278,7 @@ public class CacheActorTest extends ConcurrentTectonicTest {
             @Override
             public void run() {
                 sleep();
-                useCaseHandle.replyWith(step, ACTION_DATA_KEY_1, data2);
+                useCaseHandle.replyWith(ACTION_DATA_KEY_1, data2);
             }
         });
         thread2.start();
@@ -289,7 +289,7 @@ public class CacheActorTest extends ConcurrentTectonicTest {
             @Override
             public void run() {
                 sleep();
-                useCaseHandle.replyWith(step, ACTION_DATA_KEY_2, data3);
+                useCaseHandle.replyWith(ACTION_DATA_KEY_2, data3);
             }
         });
         thread3.start();

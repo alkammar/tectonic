@@ -50,7 +50,7 @@ public class PreconditionActorTest extends TectonicTest {
 			}
 
 			@Override
-			public void onUndo(Step step) {
+			public void onUndo(Step step, boolean inclusive) {
 
 			}
 
@@ -88,7 +88,7 @@ public class PreconditionActorTest extends TectonicTest {
 			}
 
 			@Override
-			public void onUndo(Step step) {
+			public void onUndo(Step step, boolean inclusive) {
 
 			}
 

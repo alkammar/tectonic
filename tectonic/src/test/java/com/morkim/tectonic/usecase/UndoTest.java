@@ -13,6 +13,8 @@ import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class UndoTest extends ConcurrentTectonicTest {
 
@@ -52,6 +54,7 @@ public class UndoTest extends ConcurrentTectonicTest {
     };
 
     private List<Step> undoPrimarySteps = new ArrayList<>();
+    private List<Boolean> undoPrimaryInclusive = new ArrayList<>();
     private List<Step> undoSecondarySteps = new ArrayList<>();
 
     private UUID ACTION_DATA_KEY_1 = UUID.randomUUID();
@@ -75,6 +78,7 @@ public class UndoTest extends ConcurrentTectonicTest {
         super.setup();
 
         undoPrimarySteps.clear();
+        undoPrimaryInclusive.clear();
         undoSecondarySteps.clear();
     }
 
@@ -105,6 +109,7 @@ public class UndoTest extends ConcurrentTectonicTest {
         assertEquals(1, undoPrimarySteps.size());
         assertEquals(0, undoSecondarySteps.size());
         assertEquals(stepP1, undoPrimarySteps.get(0));
+        assertTrue(undoPrimaryInclusive.get(0));
     }
 
     @Test
@@ -136,6 +141,7 @@ public class UndoTest extends ConcurrentTectonicTest {
         assertEquals(1, undoPrimarySteps.size());
         assertEquals(1, undoSecondarySteps.size());
         assertEquals(stepP2, undoPrimarySteps.get(0));
+        assertTrue(undoPrimaryInclusive.get(0));
         assertEquals(stepS1, undoSecondarySteps.get(0));
     }
 
@@ -167,6 +173,7 @@ public class UndoTest extends ConcurrentTectonicTest {
         assertEquals(1, undoPrimarySteps.size());
         assertEquals(0, undoSecondarySteps.size());
         assertEquals(stepP3, undoPrimarySteps.get(0));
+        assertTrue(undoPrimaryInclusive.get(0));
     }
 
     @Test
@@ -197,6 +204,7 @@ public class UndoTest extends ConcurrentTectonicTest {
         assertEquals(1, undoPrimarySteps.size());
         assertEquals(1, undoSecondarySteps.size());
         assertEquals(stepP1, undoPrimarySteps.get(0));
+        assertFalse(undoPrimaryInclusive.get(0));
         assertEquals(stepS1, undoSecondarySteps.get(0));
     }
 
@@ -323,8 +331,9 @@ public class UndoTest extends ConcurrentTectonicTest {
         }
 
         @Override
-        public void onUndo(Step step) {
+        public void onUndo(Step step, boolean inclusive) {
             undoPrimarySteps.add(step);
+            undoPrimaryInclusive.add(inclusive);
         }
 
         @Override
@@ -391,7 +400,7 @@ public class UndoTest extends ConcurrentTectonicTest {
         }
 
         @Override
-        public void onUndo(Step step) {
+        public void onUndo(Step step, boolean inclusive) {
             undoSecondarySteps.add(step);
         }
 

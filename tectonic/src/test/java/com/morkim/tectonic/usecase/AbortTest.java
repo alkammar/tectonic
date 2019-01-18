@@ -46,7 +46,7 @@ public class AbortTest extends ConcurrentTectonicTest {
 			}
 
 			@Override
-			public void onUndo(Step step) {
+			public void onUndo(Step step, boolean inclusive) {
 
 			}
 
@@ -76,7 +76,7 @@ public class AbortTest extends ConcurrentTectonicTest {
 			}
 
 			@Override
-			public void onUndo(Step step) {
+			public void onUndo(Step step, boolean inclusive) {
 
 			}
 
@@ -218,7 +218,7 @@ public class AbortTest extends ConcurrentTectonicTest {
 			}
 
 			@Override
-			public void onUndo(Step step) {
+			public void onUndo(Step step, boolean inclusive) {
 
 			}
 
@@ -280,7 +280,7 @@ public class AbortTest extends ConcurrentTectonicTest {
 			}
 
 			@Override
-			public void onUndo(Step step) {
+			public void onUndo(Step step, boolean inclusive) {
 
 			}
 

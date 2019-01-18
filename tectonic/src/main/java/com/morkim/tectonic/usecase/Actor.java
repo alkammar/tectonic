@@ -15,6 +15,7 @@ public interface Actor<E, R> extends ResultActor<E, R> {
      * Callback to notify that use case has undone the {@code step}. A single step can consist of one or
      * more cached pieces of data
      * @param step the step undone
+     * @param inclusive if this step is included in the undo
      */
-    void onUndo(Step step);
+    void onUndo(Step step, boolean inclusive);
 }

@@ -123,7 +123,7 @@ public class MainActivity extends AppCompatActivity implements MainUseCase.UI<Us
     }
 
     @Override
-    public void onUndo(Step step) {
+    public void onUndo(Step step, boolean inclusive) {
 
     }
 

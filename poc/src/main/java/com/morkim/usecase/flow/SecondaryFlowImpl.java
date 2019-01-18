@@ -116,7 +116,7 @@ public class SecondaryFlowImpl implements Secondary.Flow, SecondaryUseCase.UI<Us
     }
 
     @Override
-    public void onUndo(Step step) {
+    public void onUndo(Step step, boolean inclusive) {
         if (step == screen1) screen1 = null;
         if (step == screen2) screen2 = null;
         if (step == screen3) screen3 = null;

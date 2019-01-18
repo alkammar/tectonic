@@ -91,7 +91,7 @@ public class AuthenticationFlow
     }
 
     @Override
-    public void onUndo(Step step) {
+    public void onUndo(Step step, boolean inclusive) {
 
     }
 

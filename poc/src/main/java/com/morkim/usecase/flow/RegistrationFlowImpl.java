@@ -148,7 +148,7 @@ public class RegistrationFlowImpl
     }
 
     @Override
-    public void onUndo(Step step) {
+    public void onUndo(Step step, boolean inclusive) {
         validStep1 = false;
         step.terminate();
         step2 = null;

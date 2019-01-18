@@ -255,7 +255,7 @@ public abstract class UseCase<R> implements PreconditionActor {
         }
     }
 
-    private <D> D waitFor(Actor actor, Step step, UUID key, Runnable runnable) throws InterruptedException, ExecutionException {
+    private <D> D waitFor(Actor actor, Step step, UUID key, Runnable runnable) throws InterruptedException, ExecutionException, UndoException {
 
         if (cache.containsKey(key)) {
             D d = cache.getValue(key);
@@ -274,8 +274,8 @@ public abstract class UseCase<R> implements PreconditionActor {
             try {
                 return action.get();
             } catch (ExecutionException e) {
-                if (e.getCause() instanceof InterruptedException)
-                    throw (InterruptedException) e.getCause();
+                if (e.getCause() instanceof InterruptedException) throw (InterruptedException) e.getCause();
+                if (UndoException.class.equals(e.getCause().getClass())) throw (UndoException) e.getCause();
                 throw e;
             }
         }
@@ -601,12 +601,12 @@ public abstract class UseCase<R> implements PreconditionActor {
         }
 
         @Override
-        public <D> D waitFor(Actor actor, UUID key, Runnable runnable) throws InterruptedException, ExecutionException {
+        public <D> D waitFor(Actor actor, UUID key, Runnable runnable) throws InterruptedException, ExecutionException, UndoException {
             return UseCase.this.waitFor(actor, new IsolatedStep(), key, runnable);
         }
 
         @Override
-        public <D> D waitFor(Actor actor, Step step, UUID key, Runnable runnable) throws InterruptedException, ExecutionException {
+        public <D> D waitFor(Actor actor, Step step, UUID key, Runnable runnable) throws InterruptedException, ExecutionException, UndoException {
             return UseCase.this.waitFor(actor, step, key, runnable);
         }
 

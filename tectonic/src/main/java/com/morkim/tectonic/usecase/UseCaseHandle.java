@@ -21,9 +21,9 @@ public interface UseCaseHandle {
 
     <D> D waitForSafe(Actor actor, Step step, UUID key) throws UndoException, InterruptedException;
 
-    <D> D waitFor(Actor actor, UUID key, Runnable runnable) throws InterruptedException, ExecutionException;
+    <D> D waitFor(Actor actor, UUID key, Runnable runnable) throws InterruptedException, ExecutionException, UndoException;
 
-    <D> D waitFor(Actor actor, Step step, UUID key, Runnable runnable) throws InterruptedException, ExecutionException;
+    <D> D waitFor(Actor actor, Step step, UUID key, Runnable runnable) throws InterruptedException, ExecutionException, UndoException;
 
     <D> D waitFor(Actor actor, UUID key, Class<? extends Exception>... exs) throws UnexpectedStep, InterruptedException;
 

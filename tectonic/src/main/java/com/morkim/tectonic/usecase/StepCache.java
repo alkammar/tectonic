@@ -16,10 +16,10 @@ public class StepCache {
     private Stack<Step> stack = new Stack<>();
 
     private Map<UUID, Object> values = new HashMap<>();
-    private Map<UUID, Action> actions = new HashMap<>();
+    private Map<UUID, Synchronizer> synchronizers = new HashMap<>();
 
-    <D> void put(Actor actor, Step step, UUID key, Action<D> action) {
-        actions.put(key, action);
+    <D> void put(Actor actor, Step step, UUID key, Synchronizer<D> synchronizer) {
+        synchronizers.put(key, synchronizer);
         Set<UUID> stepKeys = keys.get(step);
         if (stepKeys == null) stepKeys = new HashSet<>();
         stepKeys.add(key);
@@ -50,16 +50,12 @@ public class StepCache {
         actors.clear();
         stack.clear();
         values.clear();
-        actions.clear();
+        synchronizers.clear();
     }
 
-    Action getAction(UUID key) {
-        return actions.get(key);
+    Synchronizer getAction(UUID key) {
+        return synchronizers.get(key);
     }
-//
-//    Actor getActor(Step step) {
-//        return actors.get(step);
-//    }
 
     boolean isEmpty() {
         return keys.isEmpty();

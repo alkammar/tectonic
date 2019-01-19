@@ -35,7 +35,7 @@ public abstract class UseCase<R> implements PreconditionActor {
     private StepCache cache = new StepCache();
     private static boolean waitingToRestart;
 
-    private Action<?> blockingAction;
+    private Synchronizer<?> blockingSynchronizer;
     private boolean running;
 
     private ThreadManager threadManager = new ThreadManagerImpl();
@@ -270,11 +270,11 @@ public abstract class UseCase<R> implements PreconditionActor {
             }
             return d;
         } else {
-            Action<D> action = new Action<>();
-            cache.put(actor, step, key, action);
-            blockingAction = action;
+            Synchronizer<D> synchronizer = new Synchronizer<>();
+            cache.put(actor, step, key, synchronizer);
+            blockingSynchronizer = synchronizer;
             try {
-                return action.get();
+                return synchronizer.get();
             } catch (ExecutionException e) {
                 if (e.getCause() instanceof InterruptedException) throw (InterruptedException) e.getCause();
                 if (UndoException.class.equals(e.getCause().getClass())) throw (UndoException) e.getCause();
@@ -296,11 +296,11 @@ public abstract class UseCase<R> implements PreconditionActor {
 
             runnable.run();
 
-            Action<D> action = new Action<>();
-            cache.put(actor, step, key, action);
-            blockingAction = action;
+            Synchronizer<D> synchronizer = new Synchronizer<>();
+            cache.put(actor, step, key, synchronizer);
+            blockingSynchronizer = synchronizer;
             try {
-                return action.get();
+                return synchronizer.get();
             } catch (ExecutionException e) {
                 if (e.getCause() instanceof InterruptedException) throw (InterruptedException) e.getCause();
                 if (UndoException.class.equals(e.getCause().getClass())) throw (UndoException) e.getCause();
@@ -315,13 +315,13 @@ public abstract class UseCase<R> implements PreconditionActor {
         if (cache.containsKey(key)) {
             return cache.getValue(key);
         } else {
-            Action<D> action = new Action<>();
+            Synchronizer<D> synchronizer = new Synchronizer<>();
 
-            cache.put(actor, step, key, action);
-            blockingAction = action;
+            cache.put(actor, step, key, synchronizer);
+            blockingSynchronizer = synchronizer;
 
             try {
-                return action.get();
+                return synchronizer.get();
             } catch (ExecutionException e) {
                 for (Class<? extends Exception> ex : exs)
                     if (e.getCause().getClass() == ex) //noinspection unchecked
@@ -338,17 +338,17 @@ public abstract class UseCase<R> implements PreconditionActor {
 
     private <D> void replyWith(UUID key, D data) {
 
-        Action action = thread == null ? null : cache.getAction(key);
+        Synchronizer synchronizer = thread == null ? null : cache.getAction(key);
         Object cachedData = cache.getValue(key);
 
-        if (action != null && cachedData != null) {
+        if (synchronizer != null && cachedData != null) {
             cache.put(key, data);
-            action.interrupt();
+            synchronizer.interrupt();
         } else if (data instanceof Exception) {
-            if (action != null) action.setException((Exception) data);
+            if (synchronizer != null) synchronizer.setException((Exception) data);
         } else {
             cache.put(key, data);
-            if (action != null) action.set(data);
+            if (synchronizer != null) synchronizer.set(data);
         }
     }
 
@@ -358,11 +358,11 @@ public abstract class UseCase<R> implements PreconditionActor {
 
     private <D> void replyWithRandom(UUID key, D data) {
 
-        Action action = cache.getAction(key);
-        if (action == blockingAction) {
+        Synchronizer synchronizer = cache.getAction(key);
+        if (synchronizer == blockingSynchronizer) {
             cache.put(key, data);
-            blockingAction.interrupt();
-            blockingAction = null;
+            blockingSynchronizer.interrupt();
+            blockingSynchronizer = null;
         } else {
             replyWith(key, data);
         }
@@ -546,8 +546,8 @@ public abstract class UseCase<R> implements PreconditionActor {
 
     private void undo() {
         if (!cache.isEmpty())
-            if (blockingAction != null)
-                blockingAction.setException(new UndoException());
+            if (blockingSynchronizer != null)
+                blockingSynchronizer.setException(new UndoException());
     }
 
     protected void abort() {

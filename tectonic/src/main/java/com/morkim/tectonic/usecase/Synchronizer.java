@@ -4,7 +4,7 @@ import com.google.common.util.concurrent.SettableFuture;
 
 import java.util.concurrent.ExecutionException;
 
-public class Action<D> {
+public class Synchronizer<D> {
 
     private SettableFuture<D> future = SettableFuture.create();
     private Thread thread = Thread.currentThread();

@@ -35,7 +35,7 @@ public class PrimaryActorTest extends TectonicTest {
 	public void no_primary_actor__callbacks_not_called() {
 
 		CompletedUseCase useCase = UseCase.fetch(CompletedUseCase.class);
-		useCase.setUnknownActor(new Actor<TectonicEvent, Void>() {
+		useCase.setUnknownActor(new Actor<TectonicEvent>() {
 
 			@Override
 			public void onStart(TectonicEvent event, UseCaseHandle handle) {
@@ -43,7 +43,7 @@ public class PrimaryActorTest extends TectonicTest {
 			}
 
 			@Override
-			public void onComplete(TectonicEvent event, Void result) {
+			public void onComplete(TectonicEvent event) {
 				onCompleteCalled = true;
 			}
 
@@ -76,13 +76,8 @@ public class PrimaryActorTest extends TectonicTest {
 			}
 
 			@Override
-			public void onComplete(TectonicEvent event, Void result) {
-				onCompleteCalled = true;
-			}
-
-			@Override
 			public void onComplete(TectonicEvent event) {
-
+				onCompleteCalled = true;
 			}
 
 			@Override
@@ -118,13 +113,8 @@ public class PrimaryActorTest extends TectonicTest {
             }
 
             @Override
-            public void onComplete(TectonicEvent event, Void result) {
-                onCompleteCount++;
-            }
-
-            @Override
             public void onComplete(TectonicEvent event) {
-
+                onCompleteCount++;
             }
 
             @Override
@@ -146,13 +136,8 @@ public class PrimaryActorTest extends TectonicTest {
             }
 
             @Override
-            public void onComplete(TectonicEvent event, Void result) {
-                onCompleteCount++;
-            }
-
-            @Override
             public void onComplete(TectonicEvent event) {
-
+                onCompleteCount++;
             }
 
             @Override

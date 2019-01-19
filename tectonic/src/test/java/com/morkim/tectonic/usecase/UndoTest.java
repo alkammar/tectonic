@@ -326,7 +326,7 @@ public class UndoTest extends ConcurrentTectonicTest {
         }
 
         @Override
-        public void onComplete(Integer event, Void result) {
+        public void onComplete(Integer event) {
 
         }
 
@@ -395,7 +395,7 @@ public class UndoTest extends ConcurrentTectonicTest {
         }
 
         @Override
-        public void onComplete(Integer event, Void result) {
+        public void onComplete(Integer event) {
 
         }
 

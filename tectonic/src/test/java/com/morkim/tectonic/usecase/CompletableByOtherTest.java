@@ -39,7 +39,7 @@ public class CompletableByOtherTest {
 			}
 
 			@Override
-			public void onComplete(Integer event, Void result) {
+			public void onComplete(Integer event) {
 				completed = true;
 			}
 
@@ -78,7 +78,7 @@ public class CompletableByOtherTest {
 			}
 
 			@Override
-			public void onComplete(Integer event, Void result) {
+			public void onComplete(Integer event) {
 				completed = true;
 			}
 

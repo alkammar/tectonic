@@ -45,12 +45,12 @@ public class LogoutUser extends UseCase<Void> {
         complete();
     }
 
-    public interface Backend<E extends TectonicEvent> extends SecondaryActor<E, Void> {
+    public interface Backend<E extends TectonicEvent> extends SecondaryActor<E> {
 
         boolean logout();
     }
 
-    public interface UI<E extends TectonicEvent> extends PrimaryActor<E, Void> {
+    public interface UI<E extends TectonicEvent> extends PrimaryActor<E> {
 
         void showLogin();
     }

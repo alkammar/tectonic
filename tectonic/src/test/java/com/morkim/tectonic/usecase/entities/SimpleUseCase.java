@@ -92,7 +92,7 @@ public class SimpleUseCase extends UseCase<Void> {
         this.secondaryActors.add(secondaryActor);
     }
 
-    public interface SimpleActor extends PrimaryActor<Integer, Void> {
+    public interface SimpleActor extends PrimaryActor<Integer> {
 
     }
 }

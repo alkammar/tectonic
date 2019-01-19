@@ -92,8 +92,13 @@ public class BackendImpl
     }
 
     @Override
-    public void onComplete(UseCaseExecutor.Event event, Void result) {
+    public void onComplete(UseCaseExecutor.Event event) {
         handle.replyWith(REGISTRATION);
+    }
+
+    @Override
+    public void onComplete(UseCaseExecutor.Event event, Void result) {
+
     }
 
     @Override

@@ -5,8 +5,6 @@ import com.morkim.tectonic.usecase.PrimaryActor;
 import com.morkim.tectonic.usecase.TectonicEvent;
 import com.morkim.tectonic.usecase.UndoException;
 
-import java.util.Set;
-
 public class CompletedUseCase extends SimpleUseCase {
 
     @Override
@@ -16,7 +14,7 @@ public class CompletedUseCase extends SimpleUseCase {
         complete();
     }
 
-    public interface Actor extends PrimaryActor<TectonicEvent, Void>, PreconditionActor<TectonicEvent> {
+    public interface Actor extends PrimaryActor<TectonicEvent>, PreconditionActor<TectonicEvent> {
 
     }
 }

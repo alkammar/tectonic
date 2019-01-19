@@ -2,7 +2,7 @@ package com.morkim.tectonic.usecase;
 
 import com.morkim.tectonic.flow.Step;
 
-public interface Actor<E, R> {
+public interface Actor<E> {
 
     /**
      * Called to notify the start of the execution of the use case body
@@ -19,7 +19,7 @@ public interface Actor<E, R> {
      */
     void onUndo(Step step, boolean inclusive);
 
-    void onComplete(E event, R result);
+    void onComplete(E event);
 
     void onAbort(E event);
 }

@@ -1,5 +1,5 @@
 package com.morkim.tectonic.usecase;
 
-public interface SecondaryActor<E, R> extends Actor<E, R> {
+public interface SecondaryActor<E> extends Actor<E> {
 
 }

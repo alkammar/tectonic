@@ -51,7 +51,7 @@ public class RandomAccessActorTest extends ConcurrentTectonicTest {
             }
 
             @Override
-            public void onComplete(Object event, Object result) {
+            public void onComplete(Object event) {
 
             }
 

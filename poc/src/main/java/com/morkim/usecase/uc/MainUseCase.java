@@ -64,17 +64,17 @@ public class MainUseCase extends UseCase<String> {
         }
     }
 
-    public interface Backend<E> extends SecondaryActor<E, Void> {
+    public interface Backend<E> extends SecondaryActor<E> {
 
         String retrieveSomeData() throws ExpiredCredentials;
     }
 
-    public interface Authenticator<E> extends SecondaryActor<E, Void> {
+    public interface Authenticator<E> extends SecondaryActor<E> {
 
         void refreshAuthentication() throws InterruptedException, UndoException;
     }
 
-    public interface UI<E> extends PrimaryActor<E, String> {
+    public interface UI<E> extends PrimaryActor<E> {
 
         void updateResult(String data);
     }

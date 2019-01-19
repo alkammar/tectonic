@@ -106,7 +106,7 @@ public class RegisterUser extends UseCase<Void> {
         return UI.OK;
     }
 
-    public interface UI<E> extends PrimaryActor<E, Void> {
+    public interface UI<E> extends PrimaryActor<E> {
 
         int OK = 0;
         int ERROR_EMPTY_EMAIL = 1;
@@ -133,7 +133,7 @@ public class RegisterUser extends UseCase<Void> {
         void confirmRegistrationError();
     }
 
-    public interface Backend<E> extends SecondaryActor<E, Void> {
+    public interface Backend<E> extends SecondaryActor<E> {
 
         void register(String email, String password, String mobile) throws UserAlreadyRegistered;
     }

@@ -77,7 +77,7 @@ public class SecondaryUseCase extends UseCase<SecondaryModel> {
         if (data3 == 0) throw new InvalidValueException();
     }
 
-    public interface UI<E extends TectonicEvent> extends PrimaryActor<E, SecondaryModel> {
+    public interface UI<E extends TectonicEvent> extends PrimaryActor<E> {
 
         String askForData1() throws InterruptedException, UndoException;
 
@@ -94,13 +94,13 @@ public class SecondaryUseCase extends UseCase<SecondaryModel> {
         void unblock();
     }
 
-    public interface Backend<E> extends SecondaryActor<E, Void> {
+    public interface Backend<E> extends SecondaryActor<E> {
 
         SecondaryModel requestSomething(String data1, String data2, double data3)
                 throws ExpiredCredentials, GeneralBackendError, SpecificBackendError;
     }
 
-    public interface Authenticator<E> extends SecondaryActor<E, Void> {
+    public interface Authenticator<E> extends SecondaryActor<E> {
 
         void refreshAuthentication() throws InterruptedException, UndoException;
     }

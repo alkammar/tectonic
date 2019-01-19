@@ -40,11 +40,6 @@ public class PreconditionActorTest extends TectonicTest {
 			}
 
 			@Override
-			public void onComplete(TectonicEvent event, Void result) {
-
-			}
-
-			@Override
 			public void onComplete(TectonicEvent event) {
 				onCompleteCalled = true;
 			}
@@ -74,11 +69,6 @@ public class PreconditionActorTest extends TectonicTest {
 			@Override
 			public void onStart(TectonicEvent event, UseCaseHandle handle) {
 				onStartCalled = true;
-			}
-
-			@Override
-			public void onComplete(TectonicEvent event, Void result) {
-
 			}
 
 			@Override

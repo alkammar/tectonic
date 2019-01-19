@@ -76,7 +76,7 @@ public class UndoUseCase extends SimpleUseCase {
         this.secondaryActor = secondaryActor;
     }
 
-    public interface PActor extends PrimaryActor<Integer, Void> {
+    public interface PActor extends PrimaryActor<Integer> {
 
         Random<StepData> requestData1() throws InterruptedException, UndoException;
 
@@ -97,7 +97,7 @@ public class UndoUseCase extends SimpleUseCase {
         void requestYetAnotherConfirmation() throws InterruptedException, UndoException;
     }
 
-    public interface SActor extends SecondaryActor<Integer, Void> {
+    public interface SActor extends SecondaryActor<Integer> {
 
         StepData requestData3() throws InterruptedException, UndoException, ExecutionException;
 

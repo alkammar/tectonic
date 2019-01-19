@@ -41,7 +41,7 @@ public class AbortTest extends ConcurrentTectonicTest {
 			}
 
 			@Override
-			public void onComplete(Integer event, Void result) {
+			public void onComplete(Integer event) {
 				onCompleteCalled = true;
 			}
 
@@ -71,7 +71,7 @@ public class AbortTest extends ConcurrentTectonicTest {
 			}
 
 			@Override
-			public void onComplete(Integer event, Void result) {
+			public void onComplete(Integer event) {
 				onCompleteCalled = true;
 			}
 
@@ -208,11 +208,6 @@ public class AbortTest extends ConcurrentTectonicTest {
 			}
 
 			@Override
-			public void onComplete(TectonicEvent event, Void result) {
-
-			}
-
-			@Override
 			public void onComplete(TectonicEvent event) {
 				onCompleteCalled = true;
 			}
@@ -267,7 +262,7 @@ public class AbortTest extends ConcurrentTectonicTest {
 	public void abort_from_secondary_actor__onAbort_not_called() {
 
 		InterruptableUseCase useCase = UseCase.fetch(InterruptableUseCase.class);
-		useCase.addSecondaryActor(new SecondaryActor<Integer, Void>() {
+		useCase.addSecondaryActor(new SecondaryActor<Integer>() {
 
 			@Override
 			public void onStart(Integer event, UseCaseHandle handle) {
@@ -275,7 +270,7 @@ public class AbortTest extends ConcurrentTectonicTest {
 			}
 
 			@Override
-			public void onComplete(Integer event, Void result) {
+			public void onComplete(Integer event) {
 				onCompleteCalled = true;
 			}
 

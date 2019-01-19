@@ -3,7 +3,6 @@ package com.morkim.tectonic.usecase.entities;
 import com.morkim.tectonic.usecase.UndoException;
 import com.morkim.tectonic.usecase.UseCase;
 
-import java.text.SimpleDateFormat;
 import java.util.Set;
 
 public class AbortableByOtherAbortionUseCase extends SimpleUseCase {

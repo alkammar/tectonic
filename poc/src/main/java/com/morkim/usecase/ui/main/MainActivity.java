@@ -110,13 +110,13 @@ public class MainActivity extends AppCompatActivity implements MainUseCase.UI<Us
     }
 
     @Override
-    public void onComplete(UseCaseExecutor.Event event, String result) {
+    public void onComplete(UseCaseExecutor.Event event) {
 
         runOnUiThread(() -> {
             // use case has completed
             refresh.setEnabled(true);
             progress.setVisibility(View.GONE);
-            updateResult(result);
+            updateResult("completed");
             Log.i("MainActivity", "onComplete");
         });
 

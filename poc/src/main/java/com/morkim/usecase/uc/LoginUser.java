@@ -1,8 +1,6 @@
 package com.morkim.usecase.uc;
 
-import com.morkim.tectonic.usecase.Actor;
 import com.morkim.tectonic.usecase.PrimaryActor;
-import com.morkim.tectonic.usecase.ResultActor;
 import com.morkim.tectonic.usecase.SecondaryActor;
 import com.morkim.tectonic.usecase.UndoException;
 import com.morkim.tectonic.usecase.UnexpectedStep;
@@ -59,14 +57,14 @@ public class LoginUser extends UseCase<Void> {
         }
     }
 
-    public interface Backend<E> extends SecondaryActor<E, Void> {
+    public interface Backend<E> extends SecondaryActor<E> {
 
         void validateCredentials(String password) throws InvalidLogin;
 
         void register() throws InterruptedException, UndoException;
     }
 
-    public interface UI<E> extends PrimaryActor<E, Void> {
+    public interface UI<E> extends PrimaryActor<E> {
 
         String askForPassword() throws InterruptedException, UnexpectedStep;
 

@@ -81,7 +81,7 @@ public class AuthenticationFlow
     }
 
     @Override
-    public void onComplete(UseCaseExecutor.Event event, Void result) {
+    public void onComplete(UseCaseExecutor.Event event) {
         switch (event) {
             case REFRESH_AUTH:
                 login.terminate();

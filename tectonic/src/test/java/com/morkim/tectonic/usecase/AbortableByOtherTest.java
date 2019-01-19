@@ -37,7 +37,7 @@ public class AbortableByOtherTest {
 			}
 
 			@Override
-			public void onComplete(Integer event, Void result) {
+			public void onComplete(Integer event) {
 
 			}
 
@@ -76,7 +76,7 @@ public class AbortableByOtherTest {
 			}
 
 			@Override
-			public void onComplete(Integer event, Void result) {
+			public void onComplete(Integer event) {
 
 			}
 

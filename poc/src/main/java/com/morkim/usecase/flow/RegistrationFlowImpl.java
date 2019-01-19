@@ -141,7 +141,7 @@ public class RegistrationFlowImpl
     }
 
     @Override
-    public void onComplete(UseCaseExecutor.Event event, Void result) {
+    public void onComplete(UseCaseExecutor.Event event) {
 
         step2.terminate();
         step1.terminate();

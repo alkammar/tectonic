@@ -463,10 +463,10 @@ public abstract class UseCase<R> implements PreconditionActor {
     private void notifyActorsOfComplete(R result) {
         for (PrimaryActor actor : primaryActors)
             if (preconditionActor != actor && !resultActors.contains(actor) && actor != null)
-                actor.onComplete(event, result);
+                actor.onComplete(event);
         for (SecondaryActor actor : secondaryActors)
             if (preconditionActor != actor && !resultActors.contains(actor) && actor != null)
-                actor.onComplete(event, result);
+                actor.onComplete(event);
     }
 
     private void notifyActorsOfAbort(TectonicEvent event) {

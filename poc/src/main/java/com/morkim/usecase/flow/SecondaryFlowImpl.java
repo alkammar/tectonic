@@ -109,7 +109,7 @@ public class SecondaryFlowImpl implements Secondary.Flow, SecondaryUseCase.UI<Us
     }
 
     @Override
-    public void onComplete(UseCaseExecutor.Event event, SecondaryModel result) {
+    public void onComplete(UseCaseExecutor.Event event) {
         screen1.terminate();
         screen2.terminate();
         screen3.terminate();

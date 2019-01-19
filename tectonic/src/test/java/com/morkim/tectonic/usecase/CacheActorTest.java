@@ -43,7 +43,7 @@ public class CacheActorTest extends ConcurrentTectonicTest {
         ActorCachingUseCase.Actor actor = new ActorCachingUseCase.Actor() {
 
             @Override
-            public void onComplete(Object event, Object result) {
+            public void onComplete(Object event) {
 
             }
 
@@ -92,7 +92,7 @@ public class CacheActorTest extends ConcurrentTectonicTest {
         ActorCachingUseCase.Actor actor = new ActorCachingUseCase.Actor() {
 
             @Override
-            public void onComplete(Object event, Object result) {
+            public void onComplete(Object event) {
 
             }
 
@@ -151,7 +151,7 @@ public class CacheActorTest extends ConcurrentTectonicTest {
         MultipleActionUseCase.Actor actor = new MultipleActionUseCase.Actor() {
 
             @Override
-            public void onComplete(Object event, Object result) {
+            public void onComplete(Object event) {
 
             }
 
@@ -227,7 +227,7 @@ public class CacheActorTest extends ConcurrentTectonicTest {
         MultipleActionUseCase.Actor actor = new MultipleActionUseCase.Actor() {
 
             @Override
-            public void onComplete(Object event, Object result) {
+            public void onComplete(Object event) {
 
             }
 

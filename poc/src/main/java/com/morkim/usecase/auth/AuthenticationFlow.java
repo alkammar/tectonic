@@ -66,12 +66,12 @@ public class AuthenticationFlow
 
     @Override
     public void submit(String password) {
-        handle.replyWith(login, PASSWORD, password);
+        handle.replyWith(PASSWORD, password);
     }
 
     @Override
     public void notRegistered() {
-        handle.replyWith(login, PASSWORD, new UserWantsToRegister());
+        handle.replyWith(PASSWORD, new UserWantsToRegister());
     }
 
     @Override

@@ -98,7 +98,18 @@ public class ResultActorTest extends TectonicTest {
 				onAbortCalled = true;
 			}
 		};
-		useCase.addResultActor(actor);
+		useCase.addResultActor(new ResultActor<TectonicEvent, Void>() {
+			@Override
+			public void onComplete(TectonicEvent event, Void result) {
+				onCompleteCalled = true;
+				onCompleteCalledCount++;
+			}
+
+			@Override
+			public void onAbort(TectonicEvent event) {
+				onAbortCalled = true;
+			}
+		});
 		useCase.setUnknownActor(actor);
 		useCase.execute();
 
@@ -110,60 +121,28 @@ public class ResultActorTest extends TectonicTest {
 	public void multiple_result_actors__all_actors_receive_complete_callback() {
 
 		CompletedUseCase useCase = UseCase.fetch(CompletedUseCase.class);
-		CompletedUseCase.Actor actor1 = new CompletedUseCase.Actor() {
-
-			@Override
-			public void onStart(TectonicEvent event, UseCaseHandle handle) {
-			}
-
+		useCase.addResultActor(new ResultActor<TectonicEvent, Void>() {
 			@Override
 			public void onComplete(TectonicEvent event, Void result) {
 				onCompleteCalledCount++;
 			}
 
 			@Override
-			public void onComplete(TectonicEvent event) {
-				onCompleteCalledCount++;
-			}
-
-			@Override
-			public void onUndo(Step step, boolean inclusive) {
-
-			}
-
-			@Override
 			public void onAbort(TectonicEvent event) {
 				onAbortCalled = true;
 			}
-		};
-		CompletedUseCase.Actor actor2 = new CompletedUseCase.Actor() {
-
-			@Override
-			public void onStart(TectonicEvent event, UseCaseHandle handle) {
-			}
-
+		});
+		useCase.addResultActor(new ResultActor<TectonicEvent, Void>() {
 			@Override
 			public void onComplete(TectonicEvent event, Void result) {
 				onCompleteCalledCount++;
 			}
 
 			@Override
-			public void onComplete(TectonicEvent event) {
-				onCompleteCalledCount++;
-			}
-
-			@Override
-			public void onUndo(Step step, boolean inclusive) {
-
-			}
-
-			@Override
 			public void onAbort(TectonicEvent event) {
 				onAbortCalled = true;
 			}
-		};
-		useCase.addResultActor(actor1);
-		useCase.addResultActor(actor2);
+		});
 		useCase.execute();
 
 		assertEquals(2, onCompleteCalledCount);

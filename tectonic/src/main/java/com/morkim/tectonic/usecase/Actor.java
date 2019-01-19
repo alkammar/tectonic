@@ -2,7 +2,7 @@ package com.morkim.tectonic.usecase;
 
 import com.morkim.tectonic.flow.Step;
 
-public interface Actor<E, R> extends ResultActor<E, R> {
+public interface Actor<E, R> {
 
     /**
      * Called to notify the start of the execution of the use case body
@@ -18,4 +18,8 @@ public interface Actor<E, R> extends ResultActor<E, R> {
      * @param inclusive if this step is included in the undo
      */
     void onUndo(Step step, boolean inclusive);
+
+    void onComplete(E event, R result);
+
+    void onAbort(E event);
 }

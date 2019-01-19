@@ -37,7 +37,7 @@ public class UseCaseExecutor implements Triggers<UseCaseExecutor.Event> {
     }
 
     @Override
-    public <R> R trigger(Class<? extends UseCase<R>> cls, TectonicEvent contextEvent) {
+    public <R> Event map(Class<? extends UseCase<R>> cls, TectonicEvent contextEvent) {
         return null;
     }
 

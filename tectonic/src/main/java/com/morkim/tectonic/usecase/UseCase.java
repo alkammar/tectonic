@@ -177,10 +177,38 @@ public abstract class UseCase<R> implements PreconditionActor {
         return execute(null, cls);
     }
 
-    protected <r> r execute(UUID key, Class<? extends UseCase<r>> cls) throws AbortedUseCase, InterruptedException {
-        r result = (cache.containsKey(key)) ? (r) cache.getValue(key) : executor.trigger(cls, event);
-        if (key != null) cache.put(key, result);
-        return result;
+    protected <r> r execute(final UUID key, final Class<? extends UseCase<r>> cls) throws AbortedUseCase, InterruptedException {
+
+        if (cache.containsKey(key)) {
+            return cache.getValue(key);
+        } else {
+            Triggers<TectonicEvent> triggers = (Triggers<TectonicEvent>) executor;
+
+            final UUID finalKey = key == null ? UUID.randomUUID() : key;
+            triggers.trigger(
+                    triggers.map(cls, event),
+                    null,
+                    null,
+                    new ResultActor<TectonicEvent, r>() {
+                        @Override
+                        public void onComplete(TectonicEvent event, r result) {
+                            replyWith(finalKey, result);
+                        }
+
+                        @Override
+                        public void onAbort(TectonicEvent event) {
+                            replyWith(finalKey, new AbortedUseCase(cls));
+                        }
+                    },
+                    event);
+            try {
+                return waitFor(null, ANONYMOUS_STEP, finalKey, AbortedUseCase.class);
+            } catch (UnexpectedStep e) {
+                if (e.getCause() instanceof AbortedUseCase) throw (AbortedUseCase) e.getCause();
+            }
+        }
+
+        return null;
     }
 
     private void waitForPreconditions() throws InterruptedException, UndoException {

@@ -90,21 +90,21 @@ public class RegistrationFlowImpl
 
     @Override
     public void submitPassword(String password) {
-        handle.replyWithRandom(step1, PASSWORD, new Random<>(password));
+        handle.replyWithRandom(PASSWORD, new Random<>(password));
     }
 
     @Override
     public void next(String email, String password, String passwordConfirm) {
-        handle.replyWith(step1, EMAIL, new Random<>(email));
-        handle.replyWith(step1, PASSWORD, new Random<>(password));
-        handle.replyWith(step1, PASSWORD_CONFIRM, new Random<>(passwordConfirm));
-        handle.replyWithRandom(step1, NEXT);
+        handle.replyWith(EMAIL, new Random<>(email));
+        handle.replyWith(PASSWORD, new Random<>(password));
+        handle.replyWith(PASSWORD_CONFIRM, new Random<>(passwordConfirm));
+        handle.replyWithRandom(NEXT);
     }
 
     @Override
     public void submit(String mobile) {
-        handle.replyWith(step2, MOBILE, new Random<>(mobile));
-        handle.replyWithRandom(step2, CONFIRM);
+        handle.replyWith( MOBILE, new Random<>(mobile));
+        handle.replyWithRandom(CONFIRM);
     }
 
     @Override

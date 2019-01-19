@@ -93,7 +93,7 @@ public class BackendImpl
 
     @Override
     public void onComplete(UseCaseExecutor.Event event, Void result) {
-        handle.replyWith(() -> {}, REGISTRATION);
+        handle.replyWith(REGISTRATION);
     }
 
     @Override

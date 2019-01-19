@@ -88,17 +88,17 @@ public class SecondaryFlowImpl implements Secondary.Flow, SecondaryUseCase.UI<Us
 
     @Override
     public void submitData1(String data1) {
-        handle.replyWith(screen1, DATA1, data1);
+        handle.replyWith(DATA1, data1);
     }
 
     @Override
     public void submitData2(String data2) {
-        handle.replyWith(screen2, DATA2, data2);
+        handle.replyWith(DATA2, data2);
     }
 
     @Override
     public void confirm(double value) {
-        handle.replyWith(screen3, DATA3, value);
+        handle.replyWith(DATA3, value);
     }
 
     @Override

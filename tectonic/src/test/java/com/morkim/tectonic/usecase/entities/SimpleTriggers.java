@@ -30,7 +30,7 @@ public class SimpleTriggers implements Triggers<TectonicEvent> {
     }
 
     @Override
-    public <R> R trigger(Class<? extends UseCase<R>> cls, TectonicEvent contextEvent) throws InterruptedException, AbortedUseCase {
+    public <R> TectonicEvent map(Class<? extends UseCase<R>> cls, TectonicEvent contextEvent) throws InterruptedException, AbortedUseCase {
         return null;
     }
 

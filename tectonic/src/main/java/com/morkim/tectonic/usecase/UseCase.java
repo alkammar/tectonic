@@ -116,9 +116,6 @@ public abstract class UseCase<R> implements PreconditionActor {
                     completeWhenAborted(completingWhenAbortedSet);
                     abortWhenAborted(abortingWhenAbortedSet);
 
-                    boolean executeOnStart = !preconditionsExecuted;
-                    waitForPreconditions();
-
                     onInitialize();
 
                     primaryActors.clear();
@@ -126,6 +123,9 @@ public abstract class UseCase<R> implements PreconditionActor {
 
                     onAddSecondaryActors(secondaryActors);
                     onAddPrimaryActors(primaryActors);
+
+                    boolean executeOnStart = !preconditionsExecuted;
+                    waitForPreconditions();
 
                     if (executeOnStart) notifyActorsOfStart(event);
 

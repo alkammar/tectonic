@@ -38,4 +38,6 @@ public interface UseCaseHandle {
     <D> void replyWithRandom(UUID key, Random<D> data);
 
     void clear(UUID... keys);
+
+    void reset();
 }

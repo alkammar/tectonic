@@ -276,8 +276,10 @@ public abstract class UseCase<R> implements PreconditionActor {
             try {
                 return synchronizer.get();
             } catch (ExecutionException e) {
-                if (e.getCause() instanceof InterruptedException) throw (InterruptedException) e.getCause();
-                if (UndoException.class.equals(e.getCause().getClass())) throw (UndoException) e.getCause();
+                if (e.getCause() instanceof InterruptedException)
+                    throw (InterruptedException) e.getCause();
+                if (UndoException.class.equals(e.getCause().getClass()))
+                    throw (UndoException) e.getCause();
                 throw e;
             }
         }
@@ -302,8 +304,10 @@ public abstract class UseCase<R> implements PreconditionActor {
             try {
                 return synchronizer.get();
             } catch (ExecutionException e) {
-                if (e.getCause() instanceof InterruptedException) throw (InterruptedException) e.getCause();
-                if (UndoException.class.equals(e.getCause().getClass())) throw (UndoException) e.getCause();
+                if (e.getCause() instanceof InterruptedException)
+                    throw (InterruptedException) e.getCause();
+                if (UndoException.class.equals(e.getCause().getClass()))
+                    throw (UndoException) e.getCause();
                 throw e;
             }
         }
@@ -533,21 +537,46 @@ public abstract class UseCase<R> implements PreconditionActor {
         ALIVE.clear();
     }
 
-    public void retry() {
+    public void retry() throws InterruptedException {
         retry(false);
     }
 
     @SuppressWarnings("WeakerAccess")
-    protected void retry(@SuppressWarnings("SameParameterValue") boolean withPreconditions) {
-        running = false;
+    protected void retry(@SuppressWarnings("SameParameterValue") boolean withPreconditions) throws InterruptedException {
         preconditionsExecuted = !withPreconditions;
-        execute(event);
+        throw new InterruptedException();
     }
 
     private void undo() {
         if (!cache.isEmpty())
             if (blockingSynchronizer != null)
                 blockingSynchronizer.setException(new UndoException());
+    }
+
+    @SuppressWarnings("SuspiciousMethodCalls")
+    private void reset() {
+        Step step = cache.peak();
+        Actor actor = cache.getActor(step);
+        if (primaryActors.contains(actor)) {
+            cache.reset(step);
+        } else if (!primaryActors.contains(actor)) {
+            cache.pop();
+
+            Actor original = actor;
+            step = cache.peak();
+            actor = cache.getActor(step);
+            boolean isPrimary = primaryActors.contains(actor);
+
+            while (!isPrimary) {
+                cache.pop();
+                step = cache.peak();
+                if (step == null) break;
+                actor = cache.getActor(step);
+                isPrimary = primaryActors.contains(actor);
+            }
+
+            if (step != null) cache.reset(step);
+        }
     }
 
     protected void abort() {
@@ -673,6 +702,11 @@ public abstract class UseCase<R> implements PreconditionActor {
         @Override
         public void clear(UUID... keys) {
             UseCase.this.clear(keys);
+        }
+
+        @Override
+        public void reset() {
+            UseCase.this.reset();
         }
     }
 

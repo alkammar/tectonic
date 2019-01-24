@@ -130,33 +130,6 @@ public class AbortTest extends ConcurrentTectonicTest {
 
 		FailingPreconditionsUseCase useCase = UseCase.fetch(FailingPreconditionsUseCase.class);
 		useCase.setExecutor(new SimpleTriggers());
-//		useCase.execute();
-
-//		assertFalse(useCase.isOnExecuteCalled());
-
-//		InterruptableUseCase useCase = UseCase.fetch(InterruptableUseCase.class);
-//		useCase.setPrimaryActors(new SimpleUseCase.SimpleActor() {
-//
-//			@Override
-//			public void onStart(UseCaseHandle handle) {
-//				AbortTest.this.handle = handle;
-//			}
-//
-//			@Override
-//			public void onComplete(Integer event, Void result) {
-//				onCompleteCalled = true;
-//			}
-//
-//			@Override
-//			public void onUndo(Step step) {
-//
-//			}
-//
-//			@Override
-//			public void onAbort(Integer event) {
-//				onAbortCalledCount++;
-//			}
-//		});
 		useCase.setPreconditionActor(new PreconditionActor<TectonicEvent>() {
 			@Override
 			public void onComplete(TectonicEvent event) {
@@ -168,18 +141,6 @@ public class AbortTest extends ConcurrentTectonicTest {
 				onAbortCalledCount++;
 			}
 		});
-//		useCase.addResultActor(new ResultActor<Integer, Void>() {
-//
-//			@Override
-//			public void onComplete(Integer event, Void result) {
-//
-//			}
-//
-//			@Override
-//			public void onAbort(Integer event) {
-//				onAbortCalledCount++;
-//			}
-//		});
 		useCase.execute();
 
 		sleep();

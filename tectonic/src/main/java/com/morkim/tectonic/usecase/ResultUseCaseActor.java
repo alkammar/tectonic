@@ -28,6 +28,6 @@
 //
 //    @Override
 //    public void onAbort(E e) {
-//        UseCase.replyWith(STEP, key, new AbortedUseCase(cls));
+//        UseCase.replyWith(STEP, key, new UseCaseAborted(cls));
 //    }
 //}

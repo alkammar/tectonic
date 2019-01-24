@@ -12,6 +12,7 @@ public class UndoUseCase extends SimpleUseCase {
 
     private PActor primaryActor;
     private SActor secondaryActor;
+    private boolean startWithSecondary;
 
     @Override
     protected void onAddPrimaryActors(Set<PrimaryActor> actors) {
@@ -32,14 +33,16 @@ public class UndoUseCase extends SimpleUseCase {
         super.onExecute();
 
         try {
-            Random<StepData> data1 = primaryActor.requestData1();
+            if (!startWithSecondary) {
+                Random<StepData> data1 = primaryActor.requestData1();
 
-            Random<StepData> data2 = primaryActor.requestData2();
+                Random<StepData> data2 = primaryActor.requestData2();
 
-            primaryActor.requestConfirmation();
+                primaryActor.requestConfirmation();
 
-            data1.value().access();
-            data2.value().access();
+                data1.value().access();
+                data2.value().access();
+            }
 
             StepData data3 = secondaryActor.requestData3();
             data3.access();
@@ -74,6 +77,10 @@ public class UndoUseCase extends SimpleUseCase {
 
     public void setSecondaryActor(SActor secondaryActor) {
         this.secondaryActor = secondaryActor;
+    }
+
+    public void startWithSecondary(boolean startWithSecondary) {
+        this.startWithSecondary = startWithSecondary;
     }
 
     public interface PActor extends PrimaryActor<Integer> {

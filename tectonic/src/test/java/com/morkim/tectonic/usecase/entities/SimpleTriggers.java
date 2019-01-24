@@ -1,16 +1,29 @@
 package com.morkim.tectonic.usecase.entities;
 
-import com.morkim.tectonic.usecase.AbortedUseCase;
+import com.morkim.tectonic.flow.Step;
+import com.morkim.tectonic.usecase.Builder;
+import com.morkim.tectonic.usecase.UseCaseAborted;
 import com.morkim.tectonic.usecase.PreconditionActor;
 import com.morkim.tectonic.usecase.PrimaryActor;
 import com.morkim.tectonic.usecase.ResultActor;
 import com.morkim.tectonic.usecase.TectonicEvent;
 import com.morkim.tectonic.usecase.Triggers;
 import com.morkim.tectonic.usecase.UseCase;
+import com.morkim.tectonic.usecase.UseCaseHandle;
 
 public class SimpleTriggers implements Triggers<TectonicEvent> {
     @Override
     public TectonicEvent trigger(TectonicEvent event, PreconditionActor preconditionActor, PrimaryActor primaryActor, ResultActor resultActor, TectonicEvent contextEvent) {
+        if (event == AbortedUseCase.EVENT) {
+            new Builder()
+                    .useCase(AbortedUseCase.class)
+                    .resultActor(resultActor)
+                    .preconditionActor(preconditionActor)
+                    .triggers(this)
+                    .build()
+                    .execute(event);
+        }
+
         return event;
     }
 
@@ -30,7 +43,8 @@ public class SimpleTriggers implements Triggers<TectonicEvent> {
     }
 
     @Override
-    public <R> TectonicEvent map(Class<? extends UseCase<R>> cls, TectonicEvent contextEvent) throws InterruptedException, AbortedUseCase {
+    public <R> TectonicEvent map(Class<? extends UseCase<R>> cls, TectonicEvent contextEvent) {
+        if (AbortedUseCase.class.equals(cls)) return com.morkim.tectonic.usecase.entities.AbortedUseCase.EVENT;
         return null;
     }
 

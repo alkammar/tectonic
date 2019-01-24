@@ -196,7 +196,7 @@ public class ErrorScenarioTest extends ConcurrentTectonicTest {
     }
 
     @Test
-    public void undo_secondary_actor__clears_to_previous() throws Throwable {
+    public void reset_secondary_actor__clears_to_previous() throws Throwable {
 
         final StepData data1 = new StepData();
         final StepData data2 = new StepData();
@@ -231,7 +231,7 @@ public class ErrorScenarioTest extends ConcurrentTectonicTest {
     }
 
     @Test
-    public void undo_cached__new_data_accessed_for_undone() throws Throwable {
+    public void reset_cached__new_data_accessed_for_reset() throws Throwable {
 
         final StepData data1 = new StepData();
         final StepData data2 = new StepData();

@@ -158,7 +158,6 @@ public abstract class UseCase<R> implements PreconditionActor {
                         onExecute();
                     } catch (UndoException e) {
                         if (running) notifyActorsOfUndo(e);
-                        throw e;
                     }
                 }
 
@@ -197,11 +196,11 @@ public abstract class UseCase<R> implements PreconditionActor {
 
     }
 
-    protected <r> r execute(Class<? extends UseCase<r>> cls) throws AbortedUseCase, InterruptedException {
+    protected <r> r execute(Class<? extends UseCase<r>> cls) throws UndoException, InterruptedException {
         return execute(null, cls);
     }
 
-    protected <r> r execute(final UUID key, final Class<? extends UseCase<r>> cls) throws AbortedUseCase, InterruptedException {
+    protected <r> r execute(final UUID key, final Class<? extends UseCase<r>> cls) throws UndoException, InterruptedException {
 
         if (cache.containsKey(key)) {
             return cache.getValue(key);
@@ -221,14 +220,14 @@ public abstract class UseCase<R> implements PreconditionActor {
 
                         @Override
                         public void onAbort(TectonicEvent event) {
-                            replyWith(finalKey, new AbortedUseCase(cls));
+                            replyWith(finalKey, new UndoException());
                         }
                     },
                     event);
             try {
-                return waitFor(ANONYMOUS_ACTOR, ANONYMOUS_STEP, finalKey, AbortedUseCase.class);
-            } catch (UnexpectedStep e) {
-                if (e.getCause() instanceof AbortedUseCase) throw (AbortedUseCase) e.getCause();
+                return waitFor(ANONYMOUS_ACTOR, ANONYMOUS_STEP, finalKey);
+            } catch (ExecutionException e) {
+                if (e.getCause() instanceof UndoException) throw (UndoException) e.getCause();
             }
         }
 
@@ -456,36 +455,42 @@ public abstract class UseCase<R> implements PreconditionActor {
     }
 
     @SuppressWarnings("SuspiciousMethodCalls")
-    private void notifyActorsOfUndo(UndoException e) {
+    private void notifyActorsOfUndo(UndoException e) throws UndoException {
 
         Step step = cache.peak();
         Actor actor = cache.pop();
-        actor.onUndo(step, true);
-        if (primaryActors.contains(actor)) {
-            Actor original = actor;
-            step = cache.peak();
-            while (step != null) {
-                actor = cache.getActor(step);
-                if (!primaryActors.contains(actor)) {
-                    cache.pop();
-                    actor.onUndo(step, true);
-                    step = cache.peak();
-                } else if (actor == original) {
-                    cache.reset(step);
-                    break;
+        if (cache.isEmpty() && !primaryActors.contains(actor))
+            abort();
+        else {
+            actor.onUndo(step, true);
+            if (primaryActors.contains(actor)) {
+                Actor original = actor;
+                step = cache.peak();
+                while (step != null) {
+                    actor = cache.getActor(step);
+                    if (!primaryActors.contains(actor)) {
+                        cache.pop();
+                        actor.onUndo(step, true);
+                        step = cache.peak();
+                    } else if (actor == original) {
+                        cache.reset(step);
+                        break;
+                    }
                 }
+
+            } else if (!primaryActors.contains(actor)) {
+                Actor original = actor;
+                boolean isPrimary;
+                do {
+                    step = cache.peak();
+                    if (step == null) break;
+                    actor = cache.pop();
+                    isPrimary = primaryActors.contains(actor);
+                    actor.onUndo(step, !isPrimary);
+                } while (isPrimary);
             }
 
-        } else if (!primaryActors.contains(actor)) {
-            Actor original = actor;
-            boolean isPrimary;
-            do {
-                step = cache.peak();
-                if (step == null) break;
-                actor = cache.pop();
-                isPrimary = primaryActors.contains(actor);
-                actor.onUndo(step, !isPrimary);
-            } while (isPrimary);
+            throw e;
         }
     }
 

@@ -10,7 +10,7 @@ public interface Triggers<E extends TectonicEvent> {
 
     E trigger(E event);
 
-    <R> E map(Class<? extends UseCase<R>> cls, TectonicEvent contextEvent) throws InterruptedException, AbortedUseCase;
+    <R> E map(Class<? extends UseCase<R>> cls, TectonicEvent contextEvent) throws InterruptedException, UndoException;
 
     E trigger(Class<? extends UseCase<?>> useCase, PreconditionActor preconditionActor);
 }

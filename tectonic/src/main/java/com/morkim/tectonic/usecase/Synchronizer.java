@@ -4,6 +4,7 @@ import com.google.common.util.concurrent.SettableFuture;
 
 import java.util.concurrent.ExecutionException;
 
+@SuppressWarnings("WeakerAccess")
 public class Synchronizer<D> {
 
     private SettableFuture<D> future = SettableFuture.create();

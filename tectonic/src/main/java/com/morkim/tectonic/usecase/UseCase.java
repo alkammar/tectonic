@@ -15,14 +15,38 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 
+import javax.annotation.Nonnull;
+
 
 @SuppressWarnings({"WeakerAccess", "unused"})
 @SuppressLint("UseSparseArrays")
 public abstract class UseCase<R> implements PreconditionActor {
 
-    public static final Step ANONYMOUS_STEP = new Step() {
+    private static final Step ANONYMOUS_STEP = new Step() {
         @Override
         public void terminate() {
+
+        }
+    };
+
+    private static final Actor ANONYMOUS_ACTOR = new Actor() {
+        @Override
+        public void onStart(Object event, UseCaseHandle handle) {
+
+        }
+
+        @Override
+        public void onUndo(Step step, boolean inclusive) {
+
+        }
+
+        @Override
+        public void onComplete(Object event) {
+
+        }
+
+        @Override
+        public void onAbort(Object event) {
 
         }
     };
@@ -202,7 +226,7 @@ public abstract class UseCase<R> implements PreconditionActor {
                     },
                     event);
             try {
-                return waitFor(null, ANONYMOUS_STEP, finalKey, AbortedUseCase.class);
+                return waitFor(ANONYMOUS_ACTOR, ANONYMOUS_STEP, finalKey, AbortedUseCase.class);
             } catch (UnexpectedStep e) {
                 if (e.getCause() instanceof AbortedUseCase) throw (AbortedUseCase) e.getCause();
             }
@@ -220,7 +244,7 @@ public abstract class UseCase<R> implements PreconditionActor {
         preconditionsExecuted = true;
         if (aborted) {
             abort();
-            waitForSafe(null, ANONYMOUS_STEP, UUID.randomUUID());
+            waitForSafe(ANONYMOUS_ACTOR, ANONYMOUS_STEP, UUID.randomUUID());
         }
     }
 
@@ -242,6 +266,7 @@ public abstract class UseCase<R> implements PreconditionActor {
         defaultThreadManager = threadManager;
     }
 
+    @SuppressWarnings("UnusedReturnValue")
     public static <D> D immediate(D data) {
         return data;
     }
@@ -250,7 +275,7 @@ public abstract class UseCase<R> implements PreconditionActor {
         return cache.containsKey(key) ? (Random<D>) cache.getValue(key) : new Random<D>();
     }
 
-    private <D> D waitForSafe(Actor actor, Step step, UUID key) throws InterruptedException, UndoException {
+    private <D> D waitForSafe(@Nonnull Actor actor, Step step, UUID key) throws InterruptedException, UndoException {
         try {
             return waitFor(actor, step, key);
         } catch (ExecutionException e) {
@@ -260,7 +285,7 @@ public abstract class UseCase<R> implements PreconditionActor {
         return null;
     }
 
-    private <D> D waitFor(Actor actor, Step step, UUID key) throws InterruptedException, ExecutionException, UndoException {
+    private <D> D waitFor(@Nonnull Actor actor, Step step, UUID key) throws InterruptedException, ExecutionException, UndoException {
 
         if (cache.containsKey(key)) {
             D d = cache.getValue(key);
@@ -285,7 +310,7 @@ public abstract class UseCase<R> implements PreconditionActor {
         }
     }
 
-    private <D> D waitFor(Actor actor, Step step, UUID key, Runnable runnable) throws InterruptedException, ExecutionException, UndoException {
+    private <D> D waitFor(@Nonnull Actor actor, Step step, UUID key, Runnable runnable) throws InterruptedException, ExecutionException, UndoException {
 
         if (cache.containsKey(key)) {
             D d = cache.getValue(key);
@@ -314,7 +339,7 @@ public abstract class UseCase<R> implements PreconditionActor {
     }
 
     @SuppressWarnings("unchecked")
-    private <D> D waitFor(Actor actor, Step step, UUID key, Class<? extends Exception>... exs) throws InterruptedException, UnexpectedStep {
+    private <D> D waitFor(@Nonnull Actor actor, Step step, UUID key, Class<? extends Exception>... exs) throws InterruptedException, UnexpectedStep {
 
         if (cache.containsKey(key)) {
             return cache.getValue(key);
@@ -342,7 +367,7 @@ public abstract class UseCase<R> implements PreconditionActor {
 
     private <D> void replyWith(UUID key, D data) {
 
-        Synchronizer synchronizer = thread == null ? null : cache.getAction(key);
+        Synchronizer<D> synchronizer = thread == null ? null : cache.getSynchronizer(key);
         Object cachedData = cache.getValue(key);
 
         if (synchronizer != null && cachedData != null) {
@@ -362,7 +387,7 @@ public abstract class UseCase<R> implements PreconditionActor {
 
     private <D> void replyWithRandom(UUID key, D data) {
 
-        Synchronizer synchronizer = cache.getAction(key);
+        Synchronizer synchronizer = cache.getSynchronizer(key);
         if (synchronizer == blockingSynchronizer) {
             cache.put(key, data);
             blockingSynchronizer.interrupt();
@@ -466,9 +491,11 @@ public abstract class UseCase<R> implements PreconditionActor {
 
     private void notifyActorsOfComplete(R result) {
         for (PrimaryActor actor : primaryActors)
+            //noinspection SuspiciousMethodCalls
             if (preconditionActor != actor && !resultActors.contains(actor) && actor != null)
                 actor.onComplete(event);
         for (SecondaryActor actor : secondaryActors)
+            //noinspection SuspiciousMethodCalls
             if (preconditionActor != actor && !resultActors.contains(actor) && actor != null)
                 actor.onComplete(event);
     }
@@ -640,42 +667,44 @@ public abstract class UseCase<R> implements PreconditionActor {
         }
 
         @Override
-        public <D> D waitFor(Actor actor, UUID key) throws ExecutionException, UndoException, InterruptedException {
+        public <D> D waitFor(@Nonnull Actor actor, UUID key) throws ExecutionException, UndoException, InterruptedException {
             return UseCase.this.waitFor(actor, new IsolatedStep(), key);
         }
 
         @Override
-        public <D> D waitFor(Actor actor, Step step, UUID key) throws ExecutionException, UndoException, InterruptedException {
+        public <D> D waitFor(@Nonnull Actor actor, Step step, UUID key) throws ExecutionException, UndoException, InterruptedException {
             return UseCase.this.waitFor(actor, step, key);
         }
 
         @Override
-        public <D> D waitForSafe(Actor actor, UUID key) throws UndoException, InterruptedException {
+        public <D> D waitForSafe(@Nonnull Actor actor, UUID key) throws UndoException, InterruptedException {
             return UseCase.this.waitForSafe(actor, new IsolatedStep(), key);
         }
 
         @Override
-        public <D> D waitForSafe(Actor actor, Step step, UUID key) throws UndoException, InterruptedException {
+        public <D> D waitForSafe(@Nonnull Actor actor, Step step, UUID key) throws UndoException, InterruptedException {
             return UseCase.this.waitForSafe(actor, step, key);
         }
 
         @Override
-        public <D> D waitFor(Actor actor, UUID key, Runnable runnable) throws InterruptedException, ExecutionException, UndoException {
+        public <D> D waitFor(@Nonnull Actor actor, UUID key, Runnable runnable) throws InterruptedException, ExecutionException, UndoException {
             return UseCase.this.waitFor(actor, new IsolatedStep(), key, runnable);
         }
 
         @Override
-        public <D> D waitFor(Actor actor, Step step, UUID key, Runnable runnable) throws InterruptedException, ExecutionException, UndoException {
+        public <D> D waitFor(@Nonnull Actor actor, Step step, UUID key, Runnable runnable) throws InterruptedException, ExecutionException, UndoException {
             return UseCase.this.waitFor(actor, step, key, runnable);
         }
 
+        @SafeVarargs
         @Override
-        public <D> D waitFor(Actor actor, UUID key, Class<? extends Exception>... exs) throws UnexpectedStep, InterruptedException {
+        public final <D> D waitFor(@Nonnull Actor actor, UUID key, Class<? extends Exception>... exs) throws UnexpectedStep, InterruptedException {
             return UseCase.this.waitFor(actor, new IsolatedStep(), key, exs);
         }
 
+        @SafeVarargs
         @Override
-        public <D> D waitFor(Actor actor, Step step, UUID key, Class<? extends Exception>... exs) throws UnexpectedStep, InterruptedException {
+        public final <D> D waitFor(@Nonnull Actor actor, Step step, UUID key, Class<? extends Exception>... exs) throws UnexpectedStep, InterruptedException {
             return UseCase.this.waitFor(actor, step, key, exs);
         }
 

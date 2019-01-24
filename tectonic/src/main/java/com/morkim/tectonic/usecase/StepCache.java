@@ -53,7 +53,7 @@ public class StepCache {
         synchronizers.clear();
     }
 
-    Synchronizer getAction(UUID key) {
+    Synchronizer getSynchronizer(UUID key) {
         return synchronizers.get(key);
     }
 

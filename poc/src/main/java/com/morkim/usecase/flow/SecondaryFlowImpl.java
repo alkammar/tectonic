@@ -69,7 +69,7 @@ public class SecondaryFlowImpl implements Secondary.Flow, SecondaryUseCase.UI<Us
     @Override
     public void showError(Exception e) {
         if (e instanceof InvalidValueException) {
-            handle.clear(DATA3);
+            handle.reset();
             screen3.showError(e);
         } else if (e instanceof SpecificBackendError) {
             screen3.showError(e);

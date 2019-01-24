@@ -700,11 +700,6 @@ public abstract class UseCase<R> implements PreconditionActor {
         }
 
         @Override
-        public void clear(UUID... keys) {
-            UseCase.this.clear(keys);
-        }
-
-        @Override
         public void reset() {
             UseCase.this.reset();
         }

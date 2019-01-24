@@ -124,14 +124,14 @@ public class RegistrationFlowImpl
         if (e5 != RegisterUser.UI.OK) { step1.showError(e5); }
 
         validStep1 = (e1 | e2 | e3 | e4 | e5) == RegisterUser.UI.OK;
-        if (!validStep1) handle.clear(NEXT);
+        if (!validStep1) handle.reset();
 
         int e6 = error & RegisterUser.UI.ERROR_EMPTY_MOBILE;
 
         if (validStep1 && step2 != null) if (e6 != RegisterUser.UI.OK) { step2.showError(e6); }
 
         boolean validStep2 = e6 == RegisterUser.UI.OK;
-        if (!validStep2) handle.clear(CONFIRM);
+        if (!validStep2) handle.reset();
     }
 
     @Override

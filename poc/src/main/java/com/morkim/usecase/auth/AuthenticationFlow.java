@@ -76,7 +76,7 @@ public class AuthenticationFlow
 
     @Override
     public void show(Exception e) {
-        handle.clear(PASSWORD);
+        handle.reset();
         login.handle(e);
     }
 

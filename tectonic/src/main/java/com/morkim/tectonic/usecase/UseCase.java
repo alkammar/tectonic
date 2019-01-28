@@ -57,7 +57,6 @@ public abstract class UseCase<R> implements PreconditionActor {
     private static ThreadManager defaultThreadManager;
     private Thread thread;
     private StepCache cache = new StepCache();
-    private static boolean waitingToRestart;
 
     private Synchronizer<?> blockingSynchronizer;
     private boolean running;
@@ -75,13 +74,25 @@ public abstract class UseCase<R> implements PreconditionActor {
     private Set<Class<? extends UseCase>> abortingWhenAbortedSet = new HashSet<>();
 
     private TectonicEvent event;
-    private volatile Set<Class<? extends UseCase<?>>> preconditions = new HashSet<>();
-    private volatile Map<TectonicEvent, Class<? extends UseCase<?>>> preconditionEvents = new HashMap<>();
+    private volatile Set<Class<? extends UseCase>> preconditions = new HashSet<>();
+    private volatile Map<TectonicEvent, Class<? extends UseCase>> preconditionEvents = new HashMap<>();
     private volatile boolean preconditionsExecuted;
+
     private volatile boolean aborted;
+
     private final UseCaseHandle primaryHandle;
     private final UseCaseHandle secondaryHandle;
 
+    /**
+     * Returns the current (only) instance that is alive of this {@code useCaseClass}. If no instance
+     * is running it will create one and returns it. If an exception is thrown during the creation of
+     * the use case a {@link UnableToInstantiateUseCase} runtime exception is thrown wrapping the
+     * original exception.
+     *
+     * @param useCaseClass the use case class to fetch
+     * @param <U> the use case type
+     * @return the use case instance
+     */
     public synchronized static <U extends UseCase> U fetch(Class<U> useCaseClass) {
 
         U useCase;
@@ -114,15 +125,30 @@ public abstract class UseCase<R> implements PreconditionActor {
         secondaryHandle = new Handle() {
             @Override
             public void abort() {
-
+                System.out.println("Secondary actors are not allowed to abort a use case");
             }
         };
     }
 
+    /**
+     * Version of {@link #execute(TectonicEvent)} without an event, which will associate this use case
+     * execution with a null event.
+     */
     public void execute() {
         execute((TectonicEvent) null);
     }
 
+    /**
+     * Executes the use case associating it with the {@code event}. This event is going to be passed
+     * in all the callbacks for all the actors. This will start with a call to {@link Actor#onStart(Object, UseCaseHandle)}
+     * and ends up with a call to either {@link Actor#onComplete(Object)} or {@link Actor#onAbort(Object)}
+     * for primary and secondary actors. {@link ResultActor#onComplete(Object, Object)} or {@link ResultActor#onAbort(Object)}
+     * will be called for all result actors.
+     * Executing a use case while it is still alive will do nothing, as in order to execute the use
+     * case again the use case thread has to terminate by either a completion or an abortion.
+     *
+     * @param event the event that triggered the use case
+     */
     public void execute(final TectonicEvent event) {
         this.event = event;
 
@@ -164,7 +190,8 @@ public abstract class UseCase<R> implements PreconditionActor {
                 @Override
                 public void onStop() {
                     if (running) {
-                        if (preconditionActor != null) preconditionActor.onAbort(event);
+                        if (preconditionActor != null) //noinspection unchecked
+                            preconditionActor.onAbort(event);
 
                         for (ResultActor<TectonicEvent, R> resultActor : resultActors)
                             if (resultActor != null) resultActor.onAbort(event);
@@ -192,25 +219,47 @@ public abstract class UseCase<R> implements PreconditionActor {
         }
     }
 
+    /**
+     *
+     */
     protected void onInitialize() {
 
     }
 
+    /**
+     * Version of {@link #execute(UUID, Class)} without a key. In this case the use case will generate
+     * its key for this step.
+     */
     protected <r> r execute(Class<? extends UseCase<r>> cls) throws UndoException, InterruptedException {
         return execute(null, cls);
     }
 
+    /**
+     * Executes another use case {@code cls} as a sub use case, blocking the current use case thread
+     * with the key {@code key}. If the sub use case was aborted an {@link UndoException} will be thrown.
+     * Once the sub use case is completed the current use case will resume its execution. The sub use
+     * case is considered a step in the use execution and will be assigned internally an anonymous actor
+     * and step.
+     *
+     * @param key the blocking key
+     * @param cls the sub use case class
+     * @param <r> the use case result type
+     * @return the use case result (TODO to be supported)
+     * @throws UndoException thrown if the sub use case was aborted
+     * @throws InterruptedException if the use case thread was interrupted while waiting for the
+     * sub use case to finish
+     */
     protected <r> r execute(final UUID key, final Class<? extends UseCase<r>> cls) throws UndoException, InterruptedException {
 
         if (cache.containsKey(key)) {
             return cache.getValue(key);
         } else {
+            //noinspection unchecked
             Triggers<TectonicEvent> triggers = (Triggers<TectonicEvent>) executor;
 
             final UUID finalKey = key == null ? UUID.randomUUID() : key;
             triggers.trigger(
-                    triggers.map(cls, event),
-                    null,
+                    triggers.map(cls),
                     null,
                     new ResultActor<TectonicEvent, r>() {
                         @Override
@@ -236,8 +285,11 @@ public abstract class UseCase<R> implements PreconditionActor {
 
     private void waitForPreconditions() throws InterruptedException, UndoException {
         if (!preconditionsExecuted) onAddPreconditions(preconditions);
-        for (Class<? extends UseCase<?>> precondition : preconditions)
-            preconditionEvents.put(executor.trigger(precondition, this), precondition);
+        //noinspection unchecked
+        Triggers<TectonicEvent> triggers = (Triggers<TectonicEvent>) executor;
+        for (Class<? extends UseCase> precondition : preconditions)
+            preconditionEvents.put(triggers.trigger(triggers.map(precondition), this, null, event), precondition);
+
         //noinspection StatementWithEmptyBody
         while (preconditions.size() > 0 && !aborted) ;
         preconditionsExecuted = true;
@@ -247,7 +299,13 @@ public abstract class UseCase<R> implements PreconditionActor {
         }
     }
 
-    protected void onAddPreconditions(Set<Class<? extends UseCase<?>>> useCases) {
+    /**
+     * Called before {@link #onExecute()} to add the precondition use cases that will run before this
+     * use case starts to execute.
+     *
+     * @param useCases the precondition set to add the use case class to
+     */
+    protected void onAddPreconditions(Set<Class<? extends UseCase>> useCases) {
 
     }
 
@@ -255,10 +313,31 @@ public abstract class UseCase<R> implements PreconditionActor {
         return defaultThreadManager == null ? threadManager : defaultThreadManager;
     }
 
+    /**
+     * Called before {@link #onExecute()} to add the primary actors to this use case. Actors added here
+     * will be able receive the callbacks for the {@link Actor} interface.
+     *
+     * @param actors the primary actors set to add the actor to
+     */
     protected abstract void onAddPrimaryActors(Set<PrimaryActor> actors);
 
+    /**
+     * Called before {@link #onExecute()} to add the secondary actors to this use case. Actors added here
+     * will be able receive the callbacks for the {@link Actor} interface.
+     *
+     * @param actors the secondary actors set to add the actor to
+     */
     protected abstract void onAddSecondaryActors(Set<SecondaryActor> actors);
 
+    /**
+     * Called when the use case starts to execute. You should write here all your use case business
+     * logic, including the main scenario and the alternate scenarios. This can be executed multiple
+     * times based on your implementation choices for the actors (e.g. using {@link UseCaseHandle#replyWithRandom(UUID, Random)})
+     * or the undo scenarios.
+     *
+     * @throws InterruptedException
+     * @throws UndoException
+     */
     protected abstract void onExecute() throws InterruptedException, UndoException;
 
     public static void defaultThreadManager(ThreadManager threadManager) {
@@ -271,6 +350,7 @@ public abstract class UseCase<R> implements PreconditionActor {
     }
 
     private <D> Random<D> waitForRandom(UUID key) {
+        //noinspection unchecked
         return cache.containsKey(key) ? (Random<D>) cache.getValue(key) : new Random<D>();
     }
 
@@ -366,6 +446,7 @@ public abstract class UseCase<R> implements PreconditionActor {
 
     private <D> void replyWith(UUID key, D data) {
 
+        //noinspection unchecked
         Synchronizer<D> synchronizer = thread == null ? null : cache.getSynchronizer(key);
         Object cachedData = cache.getValue(key);
 
@@ -416,18 +497,29 @@ public abstract class UseCase<R> implements PreconditionActor {
         D onNewData();
     }
 
-    protected void complete() throws InterruptedException {
+    /**
+     * Version of {@link #complete(Object)} without a result value
+     */
+    protected void complete() {
         complete(null);
     }
 
-    protected void complete(R result) throws InterruptedException {
+    /**
+     * Completes a use case execution triggering the {@link Actor#onComplete(Object)} and {@link ResultActor#onComplete(Object, Object)}
+     * callbacks and termination of the use case thread. The result is passed to all observing result
+     * actors. The completion of a use case will trigger the completion of abortion of other use cases
+     * added via {@link #completeWhenCompleted(Set)} and {@link #abortWhenCompleted(Set)}
+     *
+     * @param result the use case result
+     *
+     * @see PrimaryActor
+     * @see SecondaryActor
+     * @see ResultActor
+     */
+    protected void complete(R result) {
 
-        if (waitingToRestart) {
-            waitingToRestart = false;
-            throw new InterruptedException();
-        }
-
-        if (running && preconditionActor != null) preconditionActor.onComplete(event);
+        if (running && preconditionActor != null) //noinspection unchecked
+            preconditionActor.onComplete(event);
         if (running) {
             for (ResultActor<TectonicEvent, R> resultActor : resultActors) {
                 if (resultActor != null) resultActor.onComplete(event, result);
@@ -448,10 +540,12 @@ public abstract class UseCase<R> implements PreconditionActor {
     private void notifyActorsOfStart(TectonicEvent event) {
 
         for (Actor actor : primaryActors)
-            if (actor != null) actor.onStart(event, primaryHandle);
+            if (actor != null) //noinspection unchecked
+                actor.onStart(event, primaryHandle);
 
         for (Actor actor : secondaryActors)
-            if (actor != null) actor.onStart(event, secondaryHandle);
+            if (actor != null) //noinspection unchecked
+                actor.onStart(event, secondaryHandle);
     }
 
     @SuppressWarnings("SuspiciousMethodCalls")
@@ -490,7 +584,9 @@ public abstract class UseCase<R> implements PreconditionActor {
                 } while (isPrimary);
             }
 
-            throw e;
+
+            if (cache.isEmpty()) abort();
+            else throw e;
         }
     }
 
@@ -498,19 +594,23 @@ public abstract class UseCase<R> implements PreconditionActor {
         for (PrimaryActor actor : primaryActors)
             //noinspection SuspiciousMethodCalls
             if (preconditionActor != actor && !resultActors.contains(actor) && actor != null)
+                //noinspection unchecked
                 actor.onComplete(event);
         for (SecondaryActor actor : secondaryActors)
             //noinspection SuspiciousMethodCalls
             if (preconditionActor != actor && !resultActors.contains(actor) && actor != null)
+                //noinspection unchecked
                 actor.onComplete(event);
     }
 
     private void notifyActorsOfAbort(TectonicEvent event) {
         for (Actor actor : primaryActors)
-            if (preconditionActor != actor && actor != null) actor.onAbort(event);
+            if (preconditionActor != actor && actor != null) //noinspection unchecked
+                actor.onAbort(event);
 
         for (Actor actor : secondaryActors)
-            if (preconditionActor != actor && actor != null) actor.onAbort(event);
+            if (preconditionActor != actor && actor != null) //noinspection unchecked
+                actor.onAbort(event);
     }
 
     private void completeWhenCompleted(UseCase<R> uc) {
@@ -557,10 +657,6 @@ public abstract class UseCase<R> implements PreconditionActor {
         }
     }
 
-    public void clear(UUID... keys) {
-        for (UUID key : keys) cache.remove(key);
-    }
-
     public static void clearAll() {
 
         for (UseCase useCase : ALIVE.values())
@@ -569,10 +665,23 @@ public abstract class UseCase<R> implements PreconditionActor {
         ALIVE.clear();
     }
 
+    /**
+     * Version of {@link #onExecute()} that does not cause the precondition use cases to be re-executed
+     */
     public void retry() throws InterruptedException {
         retry(false);
     }
 
+    /**
+     * Forces the {@link #onExecute()} to be called again which will execute until it reaches the first
+     * blocking call by an actor. This method is typically used when handling alternate error scenarios
+     * in the use case to give actors another chance to alter their response. Error scenarios can be
+     * for example UI actor entered incorrect data or a secondary actor service that thrown an exception.
+     *
+     * @param withPreconditions if true causes the precondition use cases to be re-executed
+     * @throws InterruptedException always thrown to signal the thread to re-enter its loop resulting
+     * in a call to {@link #onExecute()}
+     */
     @SuppressWarnings("WeakerAccess")
     protected void retry(@SuppressWarnings("SameParameterValue") boolean withPreconditions) throws InterruptedException {
         preconditionsExecuted = !withPreconditions;
@@ -623,6 +732,9 @@ public abstract class UseCase<R> implements PreconditionActor {
         }
     }
 
+    /**
+     *
+     */
     protected void onDestroy() {
 
     }

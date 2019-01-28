@@ -114,6 +114,38 @@ public class UndoTest extends ConcurrentTectonicTest {
         assertEquals(0, undoSecondarySteps.size());
         assertEquals(stepP1, undoPrimarySteps.get(0));
         assertTrue(undoPrimaryInclusive.get(0));
+        assertTrue(onAbortCalled);
+    }
+
+    @Test
+    public void undo_first_primary_after_first_secondary__clears_first_primary_step() throws Throwable {
+
+        final StepData data1 = new StepData();
+        final StepData data2 = new StepData();
+        final StepData data3 = new StepData();
+        final StepData data4 = new StepData();
+        final StepData data5 = new StepData();
+        final StepData data6 = new StepData();
+
+        UndoUseCase useCase = UseCase.fetch(UndoUseCase.class);
+        useCase.startWithSecondary(true);
+        useCase.setPrimaryActor(new UndoPActor());
+        useCase.setSecondaryActor(new UndoSActor());
+        useCase.execute();
+
+        replySecondaryStep(ACTION_DATA_KEY_3, data3);
+        undo();
+        replyPrimaryStep2(new Random<>(data4), new Random<>(data5));
+        replyPrimaryStep3(new Random<>(new StepData()), new Random<>(new StepData()));
+        replySecondaryStep(ACTION_DATA_KEY_9, data6);
+
+        useCaseThread.join();
+
+        assertEquals(1, undoPrimarySteps.size());
+        assertEquals(1, undoSecondarySteps.size());
+        assertEquals(stepP2, undoPrimarySteps.get(0));
+        assertTrue(undoPrimaryInclusive.get(0));
+        assertTrue(onAbortCalled);
     }
 
     @Test

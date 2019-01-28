@@ -28,7 +28,7 @@ public class SimpleUseCase extends UseCase<Void> {
     }
 
     @Override
-    protected void onAddPreconditions(Set<Class<? extends UseCase<?>>> useCases) {
+    protected void onAddPreconditions(Set<Class<? extends UseCase>> useCases) {
         super.onAddPreconditions(useCases);
 
         onCheckPreconditionsCalled = true;

@@ -44,7 +44,7 @@ public class AuthenticationFlow
     @Override
     public void refreshAuthentication() throws InterruptedException, UndoException {
 
-        triggers.trigger(UseCaseExecutor.Event.REFRESH_AUTH, this);
+        triggers.trigger(UseCaseExecutor.Event.REFRESH_AUTH);
 
         try {
             handle.waitFor(this, login, REFRESH);

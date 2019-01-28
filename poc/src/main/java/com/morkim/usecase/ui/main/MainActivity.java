@@ -65,10 +65,10 @@ public class MainActivity extends AppCompatActivity implements MainUseCase.UI<Us
 
         // While refreshing you need the use case to overwrite its cached result, so here we use
         // non-cached execution
-        refresh.setOnClickListener(v -> trigger.trigger(UseCaseExecutor.Event.REFRESH_MAIN, this));
+        refresh.setOnClickListener(v -> trigger.trigger(UseCaseExecutor.Event.REFRESH_MAIN));
 
 
-        trigger.trigger(UseCaseExecutor.Event.LAUNCH_MAIN, this);
+        trigger.trigger(UseCaseExecutor.Event.LAUNCH_MAIN);
 //
         abort.setOnClickListener(v -> handle.abort());
 

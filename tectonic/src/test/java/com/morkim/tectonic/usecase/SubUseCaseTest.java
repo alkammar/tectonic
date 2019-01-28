@@ -1,12 +1,8 @@
 package com.morkim.tectonic.usecase;
 
 import com.morkim.tectonic.flow.Step;
-import com.morkim.tectonic.usecase.entities.CompletedUseCase;
 import com.morkim.tectonic.usecase.entities.ContainerUseCase;
-import com.morkim.tectonic.usecase.entities.FailingPreconditionsUseCase;
-import com.morkim.tectonic.usecase.entities.InterruptableUseCase;
 import com.morkim.tectonic.usecase.entities.SimpleTriggers;
-import com.morkim.tectonic.usecase.entities.SimpleUseCase;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -38,7 +34,7 @@ public class SubUseCaseTest extends ConcurrentTectonicTest {
         ContainerUseCase useCase = UseCase.fetch(ContainerUseCase.class);
         useCase.setExecutor(new SimpleTriggers() {
             @Override
-            public TectonicEvent trigger(final TectonicEvent event, PreconditionActor preconditionActor, PrimaryActor primaryActor, final ResultActor resultActor, TectonicEvent contextEvent) {
+            public TectonicEvent trigger(final TectonicEvent event, PreconditionActor preconditionActor, final ResultActor resultActor, TectonicEvent contextEvent) {
 
                 new Thread(new Runnable() {
                     @Override

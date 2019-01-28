@@ -10,7 +10,7 @@ public class FailingPreconditionsUseCase extends SimpleUseCase {
     public static final TectonicEvent FAILING_EVENT = new TectonicEvent() {};
 
     @Override
-    protected void onAddPreconditions(Set<Class<? extends UseCase<?>>> useCases) {
+    protected void onAddPreconditions(Set<Class<? extends UseCase>> useCases) {
         super.onAddPreconditions(useCases);
 
 //        useCases.add(FAILING_EVENT);

@@ -539,13 +539,13 @@ public abstract class UseCase<R> implements PreconditionActor {
 
     private void notifyActorsOfStart(TectonicEvent event) {
 
-        for (Actor actor : primaryActors)
-            if (actor != null) //noinspection unchecked
-                actor.onStart(event, primaryHandle);
-
         for (Actor actor : secondaryActors)
             if (actor != null) //noinspection unchecked
                 actor.onStart(event, secondaryHandle);
+
+        for (Actor actor : primaryActors)
+            if (actor != null) //noinspection unchecked
+                actor.onStart(event, primaryHandle);
     }
 
     @SuppressWarnings("SuspiciousMethodCalls")

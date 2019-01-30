@@ -578,10 +578,11 @@ public abstract class UseCase<R> implements PreconditionActor {
                 do {
                     step = cache.peak();
                     if (step == null) break;
-                    actor = cache.pop();
+                    actor = cache.getActor(step);
                     isPrimary = primaryActors.contains(actor);
+                    if (!isPrimary) cache.pop();
                     actor.onUndo(step, !isPrimary);
-                } while (isPrimary);
+                } while (!isPrimary);
             }
 
 

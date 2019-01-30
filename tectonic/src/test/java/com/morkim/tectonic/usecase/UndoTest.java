@@ -242,7 +242,7 @@ public class UndoTest extends ConcurrentTectonicTest {
     }
 
     @Test
-    public void undo_secondary_actor__clears_to_previous() throws Throwable {
+    public void undo_secondary_actor__clears_to_previous_primary() throws Throwable {
 
         final StepData data1 = new StepData();
         final StepData data2 = new StepData();
@@ -271,6 +271,7 @@ public class UndoTest extends ConcurrentTectonicTest {
         assertEquals(stepP1, undoPrimarySteps.get(0));
         assertFalse(undoPrimaryInclusive.get(0));
         assertEquals(stepS1, undoSecondarySteps.get(0));
+        assertFalse(onAbortCalled);
     }
 
     @Test

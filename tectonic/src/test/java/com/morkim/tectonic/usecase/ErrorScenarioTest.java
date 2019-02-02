@@ -1,8 +1,8 @@
 package com.morkim.tectonic.usecase;
 
 import com.morkim.tectonic.flow.Step;
+import com.morkim.tectonic.usecase.entities.ErrorUseCase;
 import com.morkim.tectonic.usecase.entities.StepData;
-import com.morkim.tectonic.usecase.entities.UndoUseCase;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -13,10 +13,8 @@ import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
-public class UndoTest extends ConcurrentTectonicTest {
+public class ErrorScenarioTest extends ConcurrentTectonicTest {
 
     private Step stepP1 = new Step() {
         @Override
@@ -72,8 +70,9 @@ public class UndoTest extends ConcurrentTectonicTest {
     private UUID ACTION_CONFIRMATION_KEY_3 = UUID.randomUUID();
 
     private UUID ACTION_DATA_KEY_9 = UUID.randomUUID();
-
-    private boolean onAbortCalled;
+    private int requestConfirmation1;
+    private int requestConfirmation2;
+    private int requestConfirmation3;
 
     @Before
     public void setup() {
@@ -83,11 +82,13 @@ public class UndoTest extends ConcurrentTectonicTest {
         undoPrimaryInclusive.clear();
         undoSecondarySteps.clear();
 
-        onAbortCalled = false;
+        requestConfirmation1 = 0;
+        requestConfirmation2 = 0;
+        requestConfirmation3 = 0;
     }
 
     @Test
-    public void undo_first_primary__clears_first_primary_step() throws Throwable {
+    public void reset_first__clears_one_step() throws Throwable {
 
         final StepData data1 = new StepData();
         final StepData data2 = new StepData();
@@ -96,12 +97,11 @@ public class UndoTest extends ConcurrentTectonicTest {
         final StepData data5 = new StepData();
         final StepData data6 = new StepData();
 
-        UndoUseCase useCase = UseCase.fetch(UndoUseCase.class);
+        ErrorUseCase useCase = UseCase.fetch(ErrorUseCase.class);
         useCase.setPrimaryActor(new UndoPActor());
         useCase.setSecondaryActor(new UndoSActor());
         useCase.execute();
 
-        undo();
         replyPrimaryStep1(new Random<>(data1), new Random<>(data2));
         replySecondaryStep(ACTION_DATA_KEY_3, data3);
         replyPrimaryStep2(new Random<>(data4), new Random<>(data5));
@@ -110,15 +110,19 @@ public class UndoTest extends ConcurrentTectonicTest {
 
         useCaseThread.join();
 
-        assertEquals(1, undoPrimarySteps.size());
-        assertEquals(0, undoSecondarySteps.size());
-        assertEquals(stepP1, undoPrimarySteps.get(0));
-        assertTrue(undoPrimaryInclusive.get(0));
-        assertTrue(onAbortCalled);
+        assertEquals(4, requestConfirmation1);
+        assertEquals(3, requestConfirmation2);
+        assertEquals(2, requestConfirmation3);
+        assertEquals(3, data1.getAccessCount());
+        assertEquals(3, data2.getAccessCount());
+        assertEquals(3, data3.getAccessCount());
+        assertEquals(2, data4.getAccessCount());
+        assertEquals(2, data5.getAccessCount());
+        assertEquals(1, data6.getAccessCount());
     }
 
     @Test
-    public void undo_first_primary_after_first_secondary__clears_first_primary_step() throws Throwable {
+    public void reset_primary_actor__clears_one_step() throws Throwable {
 
         final StepData data1 = new StepData();
         final StepData data2 = new StepData();
@@ -127,29 +131,34 @@ public class UndoTest extends ConcurrentTectonicTest {
         final StepData data5 = new StepData();
         final StepData data6 = new StepData();
 
-        UndoUseCase useCase = UseCase.fetch(UndoUseCase.class);
-        useCase.startWithSecondary(true);
+        ErrorUseCase useCase = UseCase.fetch(ErrorUseCase.class);
         useCase.setPrimaryActor(new UndoPActor());
         useCase.setSecondaryActor(new UndoSActor());
         useCase.execute();
 
+        replyPrimaryStep1(new Random<>(data1), new Random<>(data2));
+        replySecondaryStep(ACTION_DATA_KEY_3, new Exception());
+        replyPrimaryStep1(new Random<>(data1), new Random<>(data2));
         replySecondaryStep(ACTION_DATA_KEY_3, data3);
-        undo();
         replyPrimaryStep2(new Random<>(data4), new Random<>(data5));
         replyPrimaryStep3(new Random<>(new StepData()), new Random<>(new StepData()));
         replySecondaryStep(ACTION_DATA_KEY_9, data6);
 
         useCaseThread.join();
 
-        assertEquals(1, undoPrimarySteps.size());
-        assertEquals(1, undoSecondarySteps.size());
-        assertEquals(stepP2, undoPrimarySteps.get(0));
-        assertTrue(undoPrimaryInclusive.get(0));
-        assertTrue(onAbortCalled);
+        assertEquals(6, requestConfirmation1);
+        assertEquals(3, requestConfirmation2);
+        assertEquals(2, requestConfirmation3);
+        assertEquals(4, data1.getAccessCount());
+        assertEquals(4, data2.getAccessCount());
+        assertEquals(3, data3.getAccessCount());
+        assertEquals(2, data4.getAccessCount());
+        assertEquals(2, data5.getAccessCount());
+        assertEquals(1, data6.getAccessCount());
     }
 
     @Test
-    public void undo_first_secondary__aborts_use_case() throws Throwable {
+    public void consecutive_primary_reset_primary_actor__clears_top_step() throws Throwable {
 
         final StepData data1 = new StepData();
         final StepData data2 = new StepData();
@@ -158,27 +167,34 @@ public class UndoTest extends ConcurrentTectonicTest {
         final StepData data5 = new StepData();
         final StepData data6 = new StepData();
 
-        UndoUseCase useCase = UseCase.fetch(UndoUseCase.class);
-        useCase.startWithSecondary(true);
+        ErrorUseCase useCase = UseCase.fetch(ErrorUseCase.class);
         useCase.setPrimaryActor(new UndoPActor());
         useCase.setSecondaryActor(new UndoSActor());
         useCase.execute();
 
-        undo();
+        replyPrimaryStep1(new Random<>(data1), new Random<>(data2));
         replySecondaryStep(ACTION_DATA_KEY_3, data3);
+        replyPrimaryStep2(new Random<>(data4), null);
         replyPrimaryStep2(new Random<>(data4), new Random<>(data5));
         replyPrimaryStep3(new Random<>(new StepData()), new Random<>(new StepData()));
         replySecondaryStep(ACTION_DATA_KEY_9, data6);
 
         useCaseThread.join();
 
-        assertEquals(0, undoPrimarySteps.size());
-        assertEquals(0, undoSecondarySteps.size());
-        assertTrue(onAbortCalled);
+
+        assertEquals(6, requestConfirmation1);
+        assertEquals(5, requestConfirmation2);
+        assertEquals(2, requestConfirmation3);
+        assertEquals(5, data1.getAccessCount());
+        assertEquals(5, data2.getAccessCount());
+        assertEquals(5, data3.getAccessCount());
+        assertEquals(3, data4.getAccessCount());
+        assertEquals(2, data5.getAccessCount());
+        assertEquals(1, data6.getAccessCount());
     }
 
     @Test
-    public void undo_primary_actor__clears_to_previous_primary_step() throws Throwable {
+    public void reset_secondary_actor__clears_to_previous() throws Throwable {
 
         final StepData data1 = new StepData();
         final StepData data2 = new StepData();
@@ -187,14 +203,12 @@ public class UndoTest extends ConcurrentTectonicTest {
         final StepData data5 = new StepData();
         final StepData data6 = new StepData();
 
-        UndoUseCase useCase = UseCase.fetch(UndoUseCase.class);
+        ErrorUseCase useCase = UseCase.fetch(ErrorUseCase.class);
         useCase.setPrimaryActor(new UndoPActor());
         useCase.setSecondaryActor(new UndoSActor());
         useCase.execute();
 
-        replyPrimaryStep1(new Random<>(data1), new Random<>(data2));
-        replySecondaryStep(ACTION_DATA_KEY_3, data3);
-        undo();
+        replyPrimaryStep1(new Random<>(data1), null);
         replyPrimaryStep1(new Random<>(data1), new Random<>(data2));
         replySecondaryStep(ACTION_DATA_KEY_3, data3);
         replyPrimaryStep2(new Random<>(data4), new Random<>(data5));
@@ -203,79 +217,19 @@ public class UndoTest extends ConcurrentTectonicTest {
 
         useCaseThread.join();
 
-        assertEquals(1, undoPrimarySteps.size());
-        assertEquals(1, undoSecondarySteps.size());
-        assertEquals(stepP2, undoPrimarySteps.get(0));
-        assertTrue(undoPrimaryInclusive.get(0));
-        assertEquals(stepS1, undoSecondarySteps.get(0));
+        assertEquals(6, requestConfirmation1);
+        assertEquals(3, requestConfirmation2);
+        assertEquals(2, requestConfirmation3);
+        assertEquals(4, data1.getAccessCount());
+        assertEquals(3, data2.getAccessCount());
+        assertEquals(3, data3.getAccessCount());
+        assertEquals(2, data4.getAccessCount());
+        assertEquals(2, data5.getAccessCount());
+        assertEquals(1, data6.getAccessCount());
     }
 
     @Test
-    public void consecutive_primary_undo_primary_actor__clears_to_previous_primary_step() throws Throwable {
-
-        final StepData data1 = new StepData();
-        final StepData data2 = new StepData();
-        final StepData data3 = new StepData();
-        final StepData data4 = new StepData();
-        final StepData data5 = new StepData();
-        final StepData data6 = new StepData();
-
-        UndoUseCase useCase = UseCase.fetch(UndoUseCase.class);
-        useCase.setPrimaryActor(new UndoPActor());
-        useCase.setSecondaryActor(new UndoSActor());
-        useCase.execute();
-
-        replyPrimaryStep1(new Random<>(data1), new Random<>(data2));
-        replySecondaryStep(ACTION_DATA_KEY_3, data3);
-        replyPrimaryStep2(new Random<>(data4), new Random<>(data5));
-        undo();
-        replyPrimaryStep2(new Random<>(data4), new Random<>(data5));
-        replyPrimaryStep3(new Random<>(new StepData()), new Random<>(new StepData()));
-        replySecondaryStep(ACTION_DATA_KEY_9, data6);
-
-        useCaseThread.join();
-
-        assertEquals(1, undoPrimarySteps.size());
-        assertEquals(0, undoSecondarySteps.size());
-        assertEquals(stepP3, undoPrimarySteps.get(0));
-        assertTrue(undoPrimaryInclusive.get(0));
-    }
-
-    @Test
-    public void undo_secondary_actor__clears_to_previous_primary() throws Throwable {
-
-        final StepData data1 = new StepData();
-        final StepData data2 = new StepData();
-        final StepData data3 = new StepData();
-        final StepData data4 = new StepData();
-        final StepData data5 = new StepData();
-        final StepData data6 = new StepData();
-
-        UndoUseCase useCase = UseCase.fetch(UndoUseCase.class);
-        useCase.setPrimaryActor(new UndoPActor());
-        useCase.setSecondaryActor(new UndoSActor());
-        useCase.execute();
-
-        replyPrimaryStep1(new Random<>(data1), new Random<>(data2));
-        undo();
-        replyPrimaryStep1(new Random<>(data1), new Random<>(data2));
-        replySecondaryStep(ACTION_DATA_KEY_3, data3);
-        replyPrimaryStep2(new Random<>(data4), new Random<>(data5));
-        replyPrimaryStep3(new Random<>(new StepData()), new Random<>(new StepData()));
-        replySecondaryStep(ACTION_DATA_KEY_9, data6);
-
-        useCaseThread.join();
-
-        assertEquals(1, undoPrimarySteps.size());
-        assertEquals(1, undoSecondarySteps.size());
-        assertEquals(stepP1, undoPrimarySteps.get(0));
-        assertFalse(undoPrimaryInclusive.get(0));
-        assertEquals(stepS1, undoSecondarySteps.get(0));
-        assertFalse(onAbortCalled);
-    }
-
-    @Test
-    public void undo_cached__new_data_accessed_for_undone() throws Throwable {
+    public void reset_cached__new_data_accessed_for_reset() throws Throwable {
 
         final StepData data1 = new StepData();
         final StepData data2 = new StepData();
@@ -286,14 +240,13 @@ public class UndoTest extends ConcurrentTectonicTest {
         final StepData data1_ = new StepData();
         final StepData data2_ = new StepData();
 
-        UndoUseCase useCase = UseCase.fetch(UndoUseCase.class);
+        ErrorUseCase useCase = UseCase.fetch(ErrorUseCase.class);
         useCase.setPrimaryActor(new UndoPActor());
         useCase.setSecondaryActor(new UndoSActor());
         useCase.execute();
 
         replyPrimaryStep1(new Random<>(data1), new Random<>(data2));
         replySecondaryStep(ACTION_DATA_KEY_3, data3);
-        undo();
         replyPrimaryStep1(new Random<>(data1_), new Random<>(data2_));
         replySecondaryStep(ACTION_DATA_KEY_3, data3);
         replyPrimaryStep2(new Random<>(data4), new Random<>(data5));
@@ -310,20 +263,6 @@ public class UndoTest extends ConcurrentTectonicTest {
         assertEquals(1, data6.getAccessCount());
         assertEquals(3, data1_.getAccessCount());
         assertEquals(3, data2_.getAccessCount());
-    }
-
-    private void undo() throws Throwable {
-
-        Thread thread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                sleep();
-                useCaseHandle.undo();
-            }
-        });
-        thread.start();
-
-        thread.join();
     }
 
     private void replyPrimaryStep1(final Random<StepData> dataA, final Random<StepData> dataB) throws InterruptedException {
@@ -384,7 +323,7 @@ public class UndoTest extends ConcurrentTectonicTest {
         thread.join();
     }
 
-    private class UndoPActor implements UndoUseCase.PActor {
+    private class UndoPActor implements ErrorUseCase.PActor {
 
         @Override
         public void onStart(Integer event, UseCaseHandle handle) {
@@ -404,7 +343,7 @@ public class UndoTest extends ConcurrentTectonicTest {
 
         @Override
         public void onAbort(Integer event) {
-            onAbortCalled = true;
+
         }
 
         @Override
@@ -419,6 +358,7 @@ public class UndoTest extends ConcurrentTectonicTest {
 
         @Override
         public void requestConfirmation() throws InterruptedException, UndoException {
+            requestConfirmation1++;
             useCaseHandle.waitForSafe(this, stepP1, ACTION_CONFIRMATION_KEY_1);
         }
 
@@ -434,6 +374,7 @@ public class UndoTest extends ConcurrentTectonicTest {
 
         @Override
         public void requestAnotherConfirmation() throws UndoException, InterruptedException {
+            requestConfirmation2++;
             useCaseHandle.waitForSafe(this, stepP2, ACTION_CONFIRMATION_KEY_2);
         }
 
@@ -449,11 +390,17 @@ public class UndoTest extends ConcurrentTectonicTest {
 
         @Override
         public void requestYetAnotherConfirmation() throws InterruptedException, UndoException {
+            requestConfirmation3++;
             useCaseHandle.waitForSafe(this, stepP3, ACTION_CONFIRMATION_KEY_3);
+        }
+
+        @Override
+        public void handleError(Exception e) {
+            useCaseHandle.reset();
         }
     }
 
-    private class UndoSActor implements UndoUseCase.SActor {
+    private class UndoSActor implements ErrorUseCase.SActor {
 
         @Override
         public void onStart(Integer event, UseCaseHandle handle) {

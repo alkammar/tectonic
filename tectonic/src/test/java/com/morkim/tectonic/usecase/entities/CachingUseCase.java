@@ -10,12 +10,12 @@ public class CachingUseCase extends SimpleUseCase {
     protected void onExecute() throws InterruptedException, UndoException {
         super.onExecute();
 
-        StepData data = step(Actor.STEP_DATA_KEY_1, new CacheDataListener<StepData>() {
-            @Override
-            public StepData onNewData() { return actor.requestData();
-            }
-        });
-        data.access();
+//        StepData data = step(Actor.STEP_DATA_KEY_1, new CacheDataListener<StepData>() {
+//            @Override
+//            public StepData onNewData() { return actor.requestData();
+//            }
+//        });
+//        data.access();
     }
 
     public void setActor(Actor actor) {

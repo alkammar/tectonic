@@ -8,11 +8,10 @@ import com.morkim.tectonic.usecase.UndoException;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
-public class UndoUseCase extends SimpleUseCase {
+public class ErrorUseCase extends SimpleUseCase {
 
     private PActor primaryActor;
     private SActor secondaryActor;
-    private boolean startWithSecondary;
 
     @Override
     protected void onAddPrimaryActors(Set<PrimaryActor> actors) {
@@ -33,16 +32,14 @@ public class UndoUseCase extends SimpleUseCase {
         super.onExecute();
 
         try {
-            if (!startWithSecondary) {
-                Random<StepData> data1 = primaryActor.requestData1();
+            Random<StepData> data1 = primaryActor.requestData1();
 
-                Random<StepData> data2 = primaryActor.requestData2();
+            Random<StepData> data2 = primaryActor.requestData2();
 
-                primaryActor.requestConfirmation();
+            primaryActor.requestConfirmation();
 
-                data1.value().access();
-                data2.value().access();
-            }
+            data1.value().access();
+            data2.value().access();
 
             StepData data3 = secondaryActor.requestData3();
             data3.access();
@@ -64,8 +61,9 @@ public class UndoUseCase extends SimpleUseCase {
 
             StepData data9 = secondaryActor.requestData9();
             data9.access();
-        } catch (ExecutionException e) {
-
+        } catch (ExecutionException | NullPointerException e) {
+            primaryActor.handleError(e);
+            retry();
         }
 
         complete();
@@ -77,10 +75,6 @@ public class UndoUseCase extends SimpleUseCase {
 
     public void setSecondaryActor(SActor secondaryActor) {
         this.secondaryActor = secondaryActor;
-    }
-
-    public void startWithSecondary(boolean startWithSecondary) {
-        this.startWithSecondary = startWithSecondary;
     }
 
     public interface PActor extends PrimaryActor<Integer> {
@@ -102,6 +96,8 @@ public class UndoUseCase extends SimpleUseCase {
         Random<StepData> requestData8() throws InterruptedException, UndoException;
 
         void requestYetAnotherConfirmation() throws InterruptedException, UndoException;
+
+        void handleError(Exception e);
     }
 
     public interface SActor extends SecondaryActor<Integer> {

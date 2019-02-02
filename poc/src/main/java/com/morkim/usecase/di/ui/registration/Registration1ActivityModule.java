@@ -1,7 +1,6 @@
 package com.morkim.usecase.di.ui.registration;
 
 import com.morkim.usecase.contract.Registration;
-import com.morkim.usecase.contract.Secondary;
 import com.morkim.usecase.di.PerActivity;
 
 import dagger.Module;

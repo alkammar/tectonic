@@ -46,19 +46,19 @@ public class SecondaryFlowImpl implements Secondary.Flow, SecondaryUseCase.UI<Us
     @Override
     public String askForData1() throws InterruptedException, UndoException {
         if (screen1 == null) screen1 = stepFactory.create(Secondary.Screen1.class);
-        return UseCase.waitForSafe(DATA1);
+        return handle.waitForSafe(this, screen1, DATA1);
     }
 
     @Override
     public String askForData2() throws InterruptedException, UndoException {
         if (screen2 == null) screen2 = stepFactory.create(Secondary.Screen2.class);
-        return UseCase.waitForSafe(DATA2);
+        return handle.waitForSafe(this, screen2, DATA2);
     }
 
     @Override
     public Double askForData3() throws InterruptedException, UndoException {
         if (screen3 == null) screen3 = stepFactory.create(Secondary.Screen3.class);
-        return UseCase.waitForSafe(DATA3);
+        return handle.waitForSafe(this, screen3, DATA3);
     }
 
     @Override
@@ -69,7 +69,7 @@ public class SecondaryFlowImpl implements Secondary.Flow, SecondaryUseCase.UI<Us
     @Override
     public void showError(Exception e) {
         if (e instanceof InvalidValueException) {
-            UseCase.clear(DATA3);
+            handle.reset();
             screen3.showError(e);
         } else if (e instanceof SpecificBackendError) {
             screen3.showError(e);
@@ -88,40 +88,38 @@ public class SecondaryFlowImpl implements Secondary.Flow, SecondaryUseCase.UI<Us
 
     @Override
     public void submitData1(String data1) {
-        UseCase.replyWith(DATA1, data1);
+        handle.replyWith(DATA1, data1);
     }
 
     @Override
     public void submitData2(String data2) {
-        UseCase.replyWith(DATA2, data2);
+        handle.replyWith(DATA2, data2);
     }
 
     @Override
     public void confirm(double value) {
-        UseCase.replyWith(DATA3, value);
+        handle.replyWith(DATA3, value);
     }
 
     @Override
     public void goBack(Step step) {
         step.terminate();
         if (step instanceof Secondary.Screen1) handle.abort();
-        else handle.undo(step);
+        else handle.undo();
     }
 
     @Override
-    public void onComplete(UseCaseExecutor.Event event, SecondaryModel result) {
+    public void onComplete(UseCaseExecutor.Event event) {
         screen1.terminate();
         screen2.terminate();
         screen3.terminate();
-
-        UseCase.clear(DATA1, DATA2, DATA3);
     }
 
     @Override
-    public void onUndo(Step step) {
-        if (step == screen1) { screen1 = null; UseCase.clear(DATA1); }
-        if (step == screen2) { screen2 = null; UseCase.clear(DATA1, DATA2);}
-        if (step == screen3) { screen3 = null; UseCase.clear(DATA2, DATA3); }
+    public void onUndo(Step step, boolean inclusive) {
+        if (step == screen1) screen1 = null;
+        if (step == screen2) screen2 = null;
+        if (step == screen3) screen3 = null;
     }
 
     @Override

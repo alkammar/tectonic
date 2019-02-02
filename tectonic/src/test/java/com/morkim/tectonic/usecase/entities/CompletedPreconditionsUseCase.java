@@ -11,7 +11,7 @@ public class CompletedPreconditionsUseCase extends SimpleUseCase {
     public static final TectonicEvent SUCCESSFUL_EVENT = new TectonicEvent() {};
 
     @Override
-    protected void onAddPreconditions(Set<Class<? extends UseCase<?>>> useCases) {
+    protected void onAddPreconditions(Set<Class<? extends UseCase>> useCases) {
         super.onAddPreconditions(useCases);
 
 //        useCases.add(SUCCESSFUL_EVENT);

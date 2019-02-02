@@ -1,10 +1,10 @@
 package com.morkim.usecase.uc;
 
 import com.morkim.tectonic.usecase.PrimaryActor;
+import com.morkim.tectonic.usecase.SecondaryActor;
 import com.morkim.tectonic.usecase.UndoException;
-import com.morkim.tectonic.usecase.UseCase;
-import com.morkim.usecase.app.UseCaseExecutor;
 import com.morkim.tectonic.usecase.UnexpectedStep;
+import com.morkim.tectonic.usecase.UseCase;
 import com.morkim.usecase.di.AppInjector;
 
 import java.util.Set;
@@ -28,8 +28,13 @@ public class LoginUser extends UseCase<Void> {
     }
 
     @Override
-    protected void onAddPreconditions(Set<Class<? extends UseCase<?>>> useCases) {
-        super.onAddPreconditions(useCases);
+    protected void onAddPrimaryActors(Set<PrimaryActor> actors) {
+        actors.add(ui);
+    }
+
+    @Override
+    protected void onAddSecondaryActors(Set<SecondaryActor> actors) {
+        actors.add(backend);
     }
 
     @Override
@@ -52,14 +57,14 @@ public class LoginUser extends UseCase<Void> {
         }
     }
 
-    public interface Backend {
+    public interface Backend<E> extends SecondaryActor<E> {
 
         void validateCredentials(String password) throws InvalidLogin;
 
         void register() throws InterruptedException, UndoException;
     }
 
-    public interface UI extends PrimaryActor<UseCaseExecutor.Event, Void> {
+    public interface UI<E> extends PrimaryActor<E> {
 
         String askForPassword() throws InterruptedException, UnexpectedStep;
 

@@ -10,8 +10,8 @@ import android.widget.TextView;
 
 import com.morkim.tectonic.flow.Step;
 import com.morkim.tectonic.flow.StepFactory;
-import com.morkim.tectonic.usecase.Triggers;
 import com.morkim.tectonic.usecase.UseCaseHandle;
+import com.morkim.tectonic.usecase.Triggers;
 import com.morkim.usecase.R;
 import com.morkim.usecase.app.UseCaseExecutor;
 import com.morkim.usecase.di.AppInjector;
@@ -22,7 +22,7 @@ import com.morkim.usecase.uc.MainUseCase;
 import javax.inject.Inject;
 
 
-public class MainActivity extends AppCompatActivity implements MainUseCase.UI {
+public class MainActivity extends AppCompatActivity implements MainUseCase.UI<UseCaseExecutor.Event> {
 
     @Inject
     Triggers<UseCaseExecutor.Event> trigger;
@@ -65,10 +65,10 @@ public class MainActivity extends AppCompatActivity implements MainUseCase.UI {
 
         // While refreshing you need the use case to overwrite its cached result, so here we use
         // non-cached execution
-        refresh.setOnClickListener(v -> trigger.trigger(UseCaseExecutor.Event.REFRESH_MAIN, this));
+        refresh.setOnClickListener(v -> trigger.trigger(UseCaseExecutor.Event.REFRESH_MAIN));
 
 
-        trigger.trigger(UseCaseExecutor.Event.LAUNCH_MAIN, this);
+        trigger.trigger(UseCaseExecutor.Event.LAUNCH_MAIN);
 //
         abort.setOnClickListener(v -> handle.abort());
 
@@ -110,20 +110,20 @@ public class MainActivity extends AppCompatActivity implements MainUseCase.UI {
     }
 
     @Override
-    public void onComplete(UseCaseExecutor.Event event, String result) {
+    public void onComplete(UseCaseExecutor.Event event) {
 
         runOnUiThread(() -> {
             // use case has completed
             refresh.setEnabled(true);
             progress.setVisibility(View.GONE);
-            updateResult(result);
+            updateResult("completed");
             Log.i("MainActivity", "onComplete");
         });
 
     }
 
     @Override
-    public void onUndo(Step step) {
+    public void onUndo(Step step, boolean inclusive) {
 
     }
 

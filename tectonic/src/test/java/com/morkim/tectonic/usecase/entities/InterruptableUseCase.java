@@ -22,7 +22,7 @@ public class InterruptableUseCase extends SimpleUseCase {
         this.actor = actor;
     }
 
-    public interface Actor extends PrimaryActor<TectonicEvent, Void>, PreconditionActor<TectonicEvent> {
+    public interface Actor extends PrimaryActor<TectonicEvent>, PreconditionActor<TectonicEvent> {
 
     }
 }

@@ -4,10 +4,10 @@ import com.morkim.tectonic.flow.StepFactory;
 import com.morkim.usecase.contract.Secondary;
 import com.morkim.usecase.di.PerUseCase;
 import com.morkim.usecase.flow.SecondaryFlowImpl;
-import lib.morkim.uc.SecondaryUseCase;
 
 import dagger.Module;
 import dagger.Provides;
+import lib.morkim.uc.SecondaryUseCase;
 
 @Module
 public class SecondaryFlowModule {

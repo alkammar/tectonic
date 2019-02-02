@@ -1,9 +1,9 @@
 package com.morkim.tectonic.usecase;
 
-public class AbortedUseCase extends Exception {
+public class UseCaseAborted extends Exception {
     private Class<? extends UseCase> useCaseClass;
 
-    public AbortedUseCase(Class<? extends UseCase> cls) {
+    public UseCaseAborted(Class<? extends UseCase> cls) {
         useCaseClass = cls;
     }
 

@@ -18,26 +18,26 @@ public class AbortableByOtherTest {
 	@Before
 	public void setup() {
 		UseCase.clearAll();
-		UseCase.defaultThreadManager(null);
+		UseCase.setGlobalThreadManager(null);
 	}
 
 	@Test
 	public void complete_use_case__aborts_another_use_case() throws InterruptedException {
 
 		AbortableByOtherCompletionUseCase abortableByOther = UseCase.fetch(AbortableByOtherCompletionUseCase.class);
-		abortableByOther.setPrimaryActor(new SimpleUseCase.Actor() {
+		abortableByOther.addPrimaryActor(new SimpleUseCase.SimpleActor() {
 			@Override
 			public void onStart(Integer event, UseCaseHandle handle) {
 
 			}
 
 			@Override
-			public void onUndo(Step step) {
+			public void onUndo(Step step, boolean inclusive) {
 
 			}
 
 			@Override
-			public void onComplete(Integer event, Void result) {
+			public void onComplete(Integer event) {
 
 			}
 
@@ -64,19 +64,19 @@ public class AbortableByOtherTest {
 	public void abort_use_case__aborts_another_use_case() throws InterruptedException {
 
 		AbortableByOtherAbortionUseCase abortableByOther = UseCase.fetch(AbortableByOtherAbortionUseCase.class);
-		abortableByOther.setPrimaryActor(new SimpleUseCase.Actor() {
+		abortableByOther.addPrimaryActor(new SimpleUseCase.SimpleActor() {
 			@Override
 			public void onStart(Integer event, UseCaseHandle handle) {
 
 			}
 
 			@Override
-			public void onUndo(Step step) {
+			public void onUndo(Step step, boolean inclusive) {
 
 			}
 
 			@Override
-			public void onComplete(Integer event, Void result) {
+			public void onComplete(Integer event) {
 
 			}
 

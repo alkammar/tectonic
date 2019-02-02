@@ -23,7 +23,7 @@ public class CompleteTest extends ConcurrentTectonicTest {
 	@Test
 	public void start_completed_use_case__new_use_instance() {
 
-		UseCase.defaultThreadManager(new ThreadManager() {
+		UseCase.setGlobalThreadManager(new ThreadManager() {
 			@Override
 			public boolean isRunning() {
 				return true;

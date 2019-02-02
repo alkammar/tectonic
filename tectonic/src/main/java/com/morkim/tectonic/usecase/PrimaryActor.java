@@ -1,10 +1,10 @@
 package com.morkim.tectonic.usecase;
 
-import com.morkim.tectonic.flow.Step;
+/**
+ * The primary actor for a use case.
+ *
+ * @param <E> the event type used by the system
+ */
+public interface PrimaryActor<E> extends Actor<E> {
 
-public interface PrimaryActor<E, R> extends ResultActor<E, R> {
-
-    void onStart(E event, UseCaseHandle handle);
-
-    void onUndo(Step step);
 }

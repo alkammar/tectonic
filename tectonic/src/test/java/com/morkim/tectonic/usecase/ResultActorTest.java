@@ -32,16 +32,16 @@ public class ResultActorTest extends TectonicTest {
 	public void no_result_actor__callbacks_not_called() {
 
 		CompletedUseCase useCase = UseCase.fetch(CompletedUseCase.class);
-		useCase.setActor(new CompletedUseCase.Actor() {
+		useCase.setUnknownActor(new CompletedUseCase.Actor() {
+
+			@Override
+			public void doSomething() {
+
+			}
 
 			@Override
 			public void onStart(TectonicEvent event, UseCaseHandle handle) {
 				onStartCalled = true;
-			}
-
-			@Override
-			public void onComplete(TectonicEvent event, Void result) {
-
 			}
 
 			@Override
@@ -50,7 +50,7 @@ public class ResultActorTest extends TectonicTest {
 			}
 
 			@Override
-			public void onUndo(Step step) {
+			public void onUndo(Step step, boolean inclusive) {
 
 			}
 
@@ -72,14 +72,13 @@ public class ResultActorTest extends TectonicTest {
 		CompletedUseCase.Actor actor = new CompletedUseCase.Actor() {
 
 			@Override
-			public void onStart(TectonicEvent event, UseCaseHandle handle) {
-				onStartCalled = true;
+			public void doSomething() {
+
 			}
 
 			@Override
-			public void onComplete(TectonicEvent event, Void result) {
-				onCompleteCalled = true;
-				onCompleteCalledCount++;
+			public void onStart(TectonicEvent event, UseCaseHandle handle) {
+				onStartCalled = true;
 			}
 
 			@Override
@@ -89,7 +88,7 @@ public class ResultActorTest extends TectonicTest {
 			}
 
 			@Override
-			public void onUndo(Step step) {
+			public void onUndo(Step step, boolean inclusive) {
 
 			}
 
@@ -98,8 +97,19 @@ public class ResultActorTest extends TectonicTest {
 				onAbortCalled = true;
 			}
 		};
-		useCase.addResultActor(actor);
-		useCase.setActor(actor);
+		useCase.addResultActor(new ResultActor<TectonicEvent, Void>() {
+			@Override
+			public void onComplete(TectonicEvent event, Void result) {
+				onCompleteCalled = true;
+				onCompleteCalledCount++;
+			}
+
+			@Override
+			public void onAbort(TectonicEvent event) {
+				onAbortCalled = true;
+			}
+		});
+		useCase.setUnknownActor(actor);
 		useCase.execute();
 
 		assertTrue(onCompleteCalled);
@@ -110,60 +120,28 @@ public class ResultActorTest extends TectonicTest {
 	public void multiple_result_actors__all_actors_receive_complete_callback() {
 
 		CompletedUseCase useCase = UseCase.fetch(CompletedUseCase.class);
-		CompletedUseCase.Actor actor1 = new CompletedUseCase.Actor() {
-
-			@Override
-			public void onStart(TectonicEvent event, UseCaseHandle handle) {
-			}
-
+		useCase.addResultActor(new ResultActor<TectonicEvent, Void>() {
 			@Override
 			public void onComplete(TectonicEvent event, Void result) {
 				onCompleteCalledCount++;
 			}
 
 			@Override
-			public void onComplete(TectonicEvent event) {
-				onCompleteCalledCount++;
-			}
-
-			@Override
-			public void onUndo(Step step) {
-
-			}
-
-			@Override
 			public void onAbort(TectonicEvent event) {
 				onAbortCalled = true;
 			}
-		};
-		CompletedUseCase.Actor actor2 = new CompletedUseCase.Actor() {
-
-			@Override
-			public void onStart(TectonicEvent event, UseCaseHandle handle) {
-			}
-
+		});
+		useCase.addResultActor(new ResultActor<TectonicEvent, Void>() {
 			@Override
 			public void onComplete(TectonicEvent event, Void result) {
 				onCompleteCalledCount++;
 			}
 
 			@Override
-			public void onComplete(TectonicEvent event) {
-				onCompleteCalledCount++;
-			}
-
-			@Override
-			public void onUndo(Step step) {
-
-			}
-
-			@Override
 			public void onAbort(TectonicEvent event) {
 				onAbortCalled = true;
 			}
-		};
-		useCase.addResultActor(actor1);
-		useCase.addResultActor(actor2);
+		});
 		useCase.execute();
 
 		assertEquals(2, onCompleteCalledCount);

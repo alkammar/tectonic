@@ -4,6 +4,7 @@ import com.morkim.tectonic.usecase.PreconditionActor;
 import com.morkim.tectonic.usecase.PrimaryActor;
 import com.morkim.tectonic.usecase.TectonicEvent;
 import com.morkim.tectonic.usecase.UndoException;
+import com.morkim.tectonic.usecase.UseCase;
 
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
@@ -12,6 +13,7 @@ public class ContainerUseCase extends SimpleUseCase {
 
     public static final UUID SUB_KEY = UUID.randomUUID();
     private Actor actor;
+    private Class<? extends UseCase<Void>> subUseCase;
 
     public void addPrimaryActor(Actor primaryActor) {
         super.addPrimaryActor(primaryActor);
@@ -24,20 +26,29 @@ public class ContainerUseCase extends SimpleUseCase {
         super.onExecute();
 
         try {
-            actor.doSomething();
+            actor.doBeforeSubUseCase();
 
-            execute(SUB_KEY, AbortedUseCase.class);
+            execute(SUB_KEY, subUseCase);
+
+            actor.doAfterSubUseCase();
+
+            complete();
 
         } catch (ExecutionException e) {
             e.printStackTrace();
         }
+    }
 
-
-        complete();
+    public void setSubUseCase(Class<? extends UseCase<Void>> subUseCase) {
+        this.subUseCase = subUseCase;
     }
 
     public interface Actor extends PrimaryActor<TectonicEvent>, PreconditionActor<TectonicEvent> {
 
-        void doSomething() throws InterruptedException, ExecutionException, UndoException;
+        void doBeforeSubUseCase() throws InterruptedException, ExecutionException, UndoException;
+
+        void doAfterSubUseCase() throws InterruptedException, UndoException, ExecutionException;
+
     }
+
 }

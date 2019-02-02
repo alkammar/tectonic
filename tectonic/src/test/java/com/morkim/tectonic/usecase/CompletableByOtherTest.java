@@ -18,7 +18,7 @@ public class CompletableByOtherTest {
 	@Before
 	public void setup() {
 		UseCase.clearAll();
-		UseCase.defaultThreadManager(null);
+		UseCase.setGlobalThreadManager(null);
 
 		completed = false;
 	}

@@ -70,6 +70,11 @@ public class PrimaryActorTest extends TectonicTest {
 		CompletedUseCase.Actor actor = new CompletedUseCase.Actor() {
 
 			@Override
+			public void doSomething() {
+
+			}
+
+			@Override
 			public void onStart(TectonicEvent event, UseCaseHandle handle) {
 				PrimaryActorTest.this.handle = handle;
 				onStartCalled = true;
@@ -106,7 +111,12 @@ public class PrimaryActorTest extends TectonicTest {
 		CompletedUseCase useCase = UseCase.fetch(CompletedUseCase.class);
 		useCase.addPrimaryActor(new CompletedUseCase.Actor() {
 
-            @Override
+			@Override
+			public void doSomething() {
+
+			}
+
+			@Override
             public void onStart(TectonicEvent event, UseCaseHandle handle) {
                 PrimaryActorTest.this.handle = handle;
                 onStartCount++;
@@ -129,7 +139,12 @@ public class PrimaryActorTest extends TectonicTest {
         });
 		useCase.addPrimaryActor(new CompletedUseCase.Actor() {
 
-            @Override
+			@Override
+			public void doSomething() {
+
+			}
+
+			@Override
             public void onStart(TectonicEvent event, UseCaseHandle handle) {
                 PrimaryActorTest.this.handle = handle;
                 onStartCount++;

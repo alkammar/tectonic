@@ -9,6 +9,8 @@ public class Builder {
     private PreconditionActor preconditionActor;
     private ResultActor[] resultActors;
     private Triggers triggers;
+    private UseCase container;
+    private ResultActor containerResultActor;
 
     /**
      * The use case to build
@@ -61,6 +63,30 @@ public class Builder {
     }
 
     /**
+     * Configure the container/context use case that the use case is being run as part of its execution
+     *
+     * @param container the container/context use case
+     * @return builder
+     */
+    Builder container(UseCase container) {
+        this.container = container;
+
+        return this;
+    }
+
+    /**
+     * Configure the container/context result actor that will observe the use case termination callbacks
+     *
+     * @param containerResultActor the container/context result actor
+     * @return builder
+     */
+    Builder containerResultActor(ResultActor containerResultActor) {
+        this.containerResultActor = containerResultActor;
+
+        return this;
+    }
+
+    /**
      * Builds the use case with the selected configurations
      *
      * @return the use case ready for execution
@@ -70,6 +96,8 @@ public class Builder {
         if (resultActors != null)
             for (ResultActor resultActor : resultActors) useCase.addResultActor(resultActor);
         useCase.setExecutor(triggers);
+        useCase.setContainer(container);
+        useCase.setContainerResultActor(containerResultActor);
         return useCase;
     }
 }

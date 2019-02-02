@@ -28,7 +28,7 @@ public class ConcurrentTectonicTest {
                 ConcurrentTectonicTest.this.useCaseThread = threadManager.thread;
             }
         };
-        UseCase.defaultThreadManager(threadManager);
+        UseCase.setGlobalThreadManager(threadManager);
     }
 
     void sleep() {

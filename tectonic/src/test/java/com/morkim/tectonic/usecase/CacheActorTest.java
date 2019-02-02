@@ -1,7 +1,6 @@
 package com.morkim.tectonic.usecase;
 
 import com.morkim.tectonic.flow.Step;
-import com.morkim.tectonic.usecase.entities.ActorCachingUseCase;
 import com.morkim.tectonic.usecase.entities.MultipleActionUseCase;
 import com.morkim.tectonic.usecase.entities.StepData;
 

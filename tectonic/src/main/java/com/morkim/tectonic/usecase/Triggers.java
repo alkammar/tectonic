@@ -13,6 +13,7 @@ import java.util.UUID;
  *
  * @param <E> application event type
  *
+ * @see UseCase#execute(TectonicEvent) and its versions
  * @see UseCase#execute(UUID, Class) and its versions
  * @see UseCase#onAddPreconditions(Set)
  */

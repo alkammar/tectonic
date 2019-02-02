@@ -13,7 +13,7 @@ public abstract class TectonicTest {
     @Before
     public void setup() {
         UseCase.clearAll();
-        UseCase.defaultThreadManager(new ThreadManager() {
+        UseCase.setGlobalThreadManager(new ThreadManager() {
             @Override
             public boolean isRunning() {
                 return true;

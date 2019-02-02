@@ -18,7 +18,7 @@ public class AbortableByOtherTest {
 	@Before
 	public void setup() {
 		UseCase.clearAll();
-		UseCase.defaultThreadManager(null);
+		UseCase.setGlobalThreadManager(null);
 	}
 
 	@Test

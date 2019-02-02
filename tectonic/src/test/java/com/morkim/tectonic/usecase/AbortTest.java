@@ -164,6 +164,11 @@ public class AbortTest extends ConcurrentTectonicTest {
 		useCase.addPrimaryActor(new CompletedUseCase.Actor() {
 
 			@Override
+			public void doSomething() {
+
+			}
+
+			@Override
 			public void onStart(TectonicEvent event, UseCaseHandle handle) {
 				AbortTest.this.handle = handle;
 			}

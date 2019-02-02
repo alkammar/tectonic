@@ -35,6 +35,11 @@ public class PreconditionActorTest extends TectonicTest {
 		useCase.setUnknownActor(new CompletedUseCase.Actor() {
 
 			@Override
+			public void doSomething() {
+
+			}
+
+			@Override
 			public void onStart(TectonicEvent event, UseCaseHandle handle) {
 				onStartCalled = true;
 			}
@@ -65,6 +70,11 @@ public class PreconditionActorTest extends TectonicTest {
 
 		CompletedUseCase useCase = UseCase.fetch(CompletedUseCase.class);
 		CompletedUseCase.Actor actor = new CompletedUseCase.Actor() {
+
+			@Override
+			public void doSomething() {
+
+			}
 
 			@Override
 			public void onStart(TectonicEvent event, UseCaseHandle handle) {

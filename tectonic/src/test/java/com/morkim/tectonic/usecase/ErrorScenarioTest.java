@@ -1,8 +1,8 @@
 package com.morkim.tectonic.usecase;
 
 import com.morkim.tectonic.flow.Step;
-import com.morkim.tectonic.usecase.entities.StepData;
 import com.morkim.tectonic.usecase.entities.ErrorUseCase;
+import com.morkim.tectonic.usecase.entities.StepData;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -13,8 +13,6 @@ import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 public class ErrorScenarioTest extends ConcurrentTectonicTest {
 

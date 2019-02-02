@@ -29,7 +29,7 @@ public abstract class UseCase<R> implements PreconditionActor {
         }
     };
 
-    private static final Actor ANONYMOUS_ACTOR = new Actor() {
+    private static final PrimaryActor ANONYMOUS_ACTOR = new PrimaryActor() {
         @Override
         public void onStart(Object event, UseCaseHandle handle) {
 
@@ -51,17 +51,19 @@ public abstract class UseCase<R> implements PreconditionActor {
         }
     };
 
+
     private Triggers<?> executor;
 
     private static final Map<Class<? extends UseCase>, UseCase> ALIVE = new ConcurrentHashMap<>();
-    private static ThreadManager defaultThreadManager;
+
     private Thread thread;
     private StepCache cache = new StepCache();
 
     private Synchronizer<?> blockingSynchronizer;
     private boolean running;
 
-    private ThreadManager threadManager = new ThreadManagerImpl();
+    private ThreadManager threadManager;
+    private ThreadManager defaultThreadManager = new ThreadManagerImpl();
 
     private Set<PrimaryActor> primaryActors = new LinkedHashSet<>();
     private Set<SecondaryActor> secondaryActors = new LinkedHashSet<>();
@@ -82,6 +84,9 @@ public abstract class UseCase<R> implements PreconditionActor {
 
     private final UseCaseHandle primaryHandle;
     private final UseCaseHandle secondaryHandle;
+    private static ThreadManager globalThreadManager;
+    private UseCase container;
+    private ResultActor<TectonicEvent, R> containerResultActor;
 
     /**
      * Returns the current (only) instance that is alive of this {@code useCaseClass}. If no instance
@@ -166,6 +171,11 @@ public abstract class UseCase<R> implements PreconditionActor {
                     completeWhenAborted(completingWhenAbortedSet);
                     abortWhenAborted(abortingWhenAbortedSet);
 
+                    if (container != null) {
+                        completingWhenCompletedSet.add(container.getClass());
+                        abortingWhenAbortedSet.add(container.getClass());
+                    }
+
                     onInitialize();
 
                     primaryActors.clear();
@@ -244,7 +254,7 @@ public abstract class UseCase<R> implements PreconditionActor {
      * @param key the blocking key
      * @param cls the sub use case class
      * @param <r> the use case result type
-     * @return the use case result (TODO to be supported)
+     * @return the use case result
      * @throws UndoException thrown if the sub use case was aborted
      * @throws InterruptedException if the use case thread was interrupted while waiting for the
      * sub use case to finish
@@ -258,23 +268,54 @@ public abstract class UseCase<R> implements PreconditionActor {
             Triggers<TectonicEvent> triggers = (Triggers<TectonicEvent>) executor;
 
             final UUID finalKey = key == null ? UUID.randomUUID() : key;
-            triggers.trigger(
-                    triggers.map(cls),
-                    null,
-                    new ResultActor<TectonicEvent, r>() {
-                        @Override
-                        public void onComplete(TectonicEvent event, r result) {
-                            replyWith(finalKey, result);
-                        }
+            ResultActor<TectonicEvent, ?> subResultActor = new ResultActor<TectonicEvent, r>() {
+                @Override
+                public void onComplete(TectonicEvent event, r result) {
+                    replyWith(finalKey, result);
+                }
 
-                        @Override
-                        public void onAbort(TectonicEvent event) {
-                            replyWith(finalKey, new UndoException());
-                        }
-                    },
-                    event);
+                @Override
+                public void onAbort(TectonicEvent event) {
+                    replyWith(finalKey, new UndoException());
+                }
+            };
+
+            final UseCase<?> useCase = new Builder()
+                    .useCase(cls)
+                    .containerResultActor(subResultActor)
+                    .container(this)
+                    .triggers(executor)
+                    .build();
+
+            PrimaryActor subPrimaryActor = new PrimaryActor() {
+                @Override
+                public void onStart(Object event, UseCaseHandle handle) {
+
+                }
+
+                @Override
+                public void onUndo(Step step, boolean inclusive) {
+                    useCase.reset();
+                    useCase.getThreadManager().restart();
+                }
+
+                @Override
+                public void onComplete(Object event) {
+
+                }
+
+                @Override
+                public void onAbort(Object event) {
+
+                }
+            };
+
+            primaryActors.add(subPrimaryActor);
+
+            useCase.execute();
+
             try {
-                return waitFor(ANONYMOUS_ACTOR, ANONYMOUS_STEP, finalKey);
+                return waitFor(subPrimaryActor, ANONYMOUS_STEP, finalKey);
             } catch (ExecutionException e) {
                 if (e.getCause() instanceof UndoException) throw (UndoException) e.getCause();
             }
@@ -310,7 +351,15 @@ public abstract class UseCase<R> implements PreconditionActor {
     }
 
     private ThreadManager getThreadManager() {
-        return defaultThreadManager == null ? threadManager : defaultThreadManager;
+        return threadManager == null ? globalThreadManager == null ? defaultThreadManager : globalThreadManager : threadManager;
+    }
+
+    protected void setThreadManager(ThreadManager threadManager) {
+        this.threadManager = threadManager;
+    }
+
+    static void setGlobalThreadManager(ThreadManager threadManager) {
+        globalThreadManager = threadManager;
     }
 
     /**
@@ -339,10 +388,6 @@ public abstract class UseCase<R> implements PreconditionActor {
      * @throws UndoException
      */
     protected abstract void onExecute() throws InterruptedException, UndoException;
-
-    public static void defaultThreadManager(ThreadManager threadManager) {
-        defaultThreadManager = threadManager;
-    }
 
     @SuppressWarnings("UnusedReturnValue")
     public static <D> D immediate(D data) {
@@ -493,178 +538,16 @@ public abstract class UseCase<R> implements PreconditionActor {
         return new Builder();
     }
 
+    void setContainer(UseCase container) {
+        this.container = container;
+    }
+
+    public void setContainerResultActor(ResultActor<TectonicEvent, R> containerResultActor) {
+        this.containerResultActor = containerResultActor;
+    }
+
     protected interface CacheDataListener<D> {
         D onNewData();
-    }
-
-    /**
-     * Version of {@link #complete(Object)} without a result value
-     */
-    protected void complete() {
-        complete(null);
-    }
-
-    /**
-     * Completes a use case execution triggering the {@link Actor#onComplete(Object)} and {@link ResultActor#onComplete(Object, Object)}
-     * callbacks and termination of the use case thread. The result is passed to all observing result
-     * actors. The completion of a use case will trigger the completion of abortion of other use cases
-     * added via {@link #completeWhenCompleted(Set)} and {@link #abortWhenCompleted(Set)}
-     *
-     * @param result the use case result
-     *
-     * @see PrimaryActor
-     * @see SecondaryActor
-     * @see ResultActor
-     */
-    protected void complete(R result) {
-
-        if (running && preconditionActor != null) //noinspection unchecked
-            preconditionActor.onComplete(event);
-        if (running) {
-            for (ResultActor<TectonicEvent, R> resultActor : resultActors) {
-                if (resultActor != null) resultActor.onComplete(event, result);
-            }
-            notifyActorsOfComplete(result);
-        }
-
-        running = false;
-        preconditionsExecuted = false;
-        onDestroy();
-        ALIVE.remove(getClass());
-        getThreadManager().stop();
-
-        completeWhenCompleted(this);
-        abortWhenCompleted(this);
-    }
-
-    private void notifyActorsOfStart(TectonicEvent event) {
-
-        for (Actor actor : secondaryActors)
-            if (actor != null) //noinspection unchecked
-                actor.onStart(event, secondaryHandle);
-
-        for (Actor actor : primaryActors)
-            if (actor != null) //noinspection unchecked
-                actor.onStart(event, primaryHandle);
-    }
-
-    @SuppressWarnings("SuspiciousMethodCalls")
-    private void notifyActorsOfUndo(UndoException e) throws UndoException {
-
-        Step step = cache.peak();
-        Actor actor = cache.pop();
-        if (cache.isEmpty() && !primaryActors.contains(actor))
-            abort();
-        else {
-            actor.onUndo(step, true);
-            if (primaryActors.contains(actor)) {
-                Actor original = actor;
-                step = cache.peak();
-                while (step != null) {
-                    actor = cache.getActor(step);
-                    if (!primaryActors.contains(actor)) {
-                        cache.pop();
-                        actor.onUndo(step, true);
-                        step = cache.peak();
-                    } else if (actor == original) {
-                        cache.reset(step);
-                        break;
-                    }
-                }
-
-            } else if (!primaryActors.contains(actor)) {
-                Actor original = actor;
-                boolean isPrimary;
-                do {
-                    step = cache.peak();
-                    if (step == null) break;
-                    actor = cache.getActor(step);
-                    isPrimary = primaryActors.contains(actor);
-                    if (!isPrimary) cache.pop();
-                    else cache.reset(step);
-                    actor.onUndo(step, !isPrimary);
-                } while (!isPrimary);
-            }
-
-
-            if (cache.isEmpty()) abort();
-            else throw e;
-        }
-    }
-
-    private void notifyActorsOfComplete(R result) {
-        for (PrimaryActor actor : primaryActors)
-            //noinspection SuspiciousMethodCalls
-            if (preconditionActor != actor && !resultActors.contains(actor) && actor != null)
-                //noinspection unchecked
-                actor.onComplete(event);
-        for (SecondaryActor actor : secondaryActors)
-            //noinspection SuspiciousMethodCalls
-            if (preconditionActor != actor && !resultActors.contains(actor) && actor != null)
-                //noinspection unchecked
-                actor.onComplete(event);
-    }
-
-    private void notifyActorsOfAbort(TectonicEvent event) {
-        for (Actor actor : primaryActors)
-            if (preconditionActor != actor && actor != null) //noinspection unchecked
-                actor.onAbort(event);
-
-        for (Actor actor : secondaryActors)
-            if (preconditionActor != actor && actor != null) //noinspection unchecked
-                actor.onAbort(event);
-    }
-
-    private void completeWhenCompleted(UseCase<R> uc) {
-
-        synchronized (ALIVE) {
-            List<UseCase> useCases = new ArrayList<>(ALIVE.values());
-            for (UseCase useCase : useCases) {
-                if (uc != useCase && useCase.completingWhenCompletedSet.contains(uc.getClass()))
-                    useCase.getThreadManager().complete();
-            }
-        }
-    }
-
-    private void abortWhenCompleted(UseCase<R> uc) {
-
-        synchronized (ALIVE) {
-            List<UseCase> useCases = new ArrayList<>(ALIVE.values());
-            for (UseCase useCase : useCases) {
-                if (uc != useCase && useCase.abortingWhenCompletedSet.contains(uc.getClass()))
-                    useCase.abort();
-            }
-        }
-    }
-
-    private void completeWhenAborted(UseCase<R> uc) {
-
-        synchronized (ALIVE) {
-            List<UseCase> useCases = new ArrayList<>(ALIVE.values());
-            for (UseCase useCase : useCases) {
-                if (uc != useCase && useCase.completingWhenAbortedSet.contains(uc.getClass()))
-                    useCase.getThreadManager().complete();
-            }
-        }
-    }
-
-    private void abortWhenAborted(UseCase<R> uc) {
-
-        synchronized (ALIVE) {
-            List<UseCase> useCases = new ArrayList<>(ALIVE.values());
-            for (UseCase useCase : useCases) {
-                if (uc != useCase && useCase.abortingWhenAbortedSet.contains(uc.getClass()))
-                    useCase.abort();
-            }
-        }
-    }
-
-    public static void clearAll() {
-
-        for (UseCase useCase : ALIVE.values())
-            useCase.cache.clear();
-
-        ALIVE.clear();
     }
 
     /**
@@ -722,6 +605,53 @@ public abstract class UseCase<R> implements PreconditionActor {
         }
     }
 
+    /**
+     * Version of {@link #complete(Object)} without a result value
+     */
+    protected void complete() {
+        complete(null);
+    }
+
+    /**
+     * Completes a use case execution triggering the {@link Actor#onComplete(Object)} and {@link ResultActor#onComplete(Object, Object)}
+     * callbacks and termination of the use case thread. The result is passed to all observing result
+     * actors. The completion of a use case will trigger the completion of abortion of other use cases
+     * added via {@link #completeWhenCompleted(Set)} and {@link #abortWhenCompleted(Set)}
+     *
+     * @param result the use case result
+     *
+     * @see PrimaryActor
+     * @see SecondaryActor
+     * @see ResultActor
+     */
+    protected void complete(R result) {
+
+        if (container != null && ALIVE.containsKey(container.getClass())) {
+            if (running) {
+                //noinspection unchecked
+                containerResultActor.onComplete(event, result);
+            }
+        } else {
+            if (running && preconditionActor != null) //noinspection unchecked
+                preconditionActor.onComplete(event);
+            if (running) {
+                for (ResultActor<TectonicEvent, R> resultActor : resultActors) {
+                    if (resultActor != null) resultActor.onComplete(event, result);
+                }
+                notifyActorsOfComplete(result);
+            }
+
+            running = false;
+            preconditionsExecuted = false;
+            onDestroy();
+            ALIVE.remove(getClass());
+            getThreadManager().stop();
+
+            completeWhenCompleted(this);
+            abortWhenCompleted(this);
+        }
+    }
+
     protected void abort() {
         if (preconditionsExecuted) {
             synchronized (ALIVE) {
@@ -732,6 +662,148 @@ public abstract class UseCase<R> implements PreconditionActor {
         } else {
             aborted = true;
         }
+    }
+
+    private void notifyActorsOfStart(TectonicEvent event) {
+
+        for (Actor actor : secondaryActors)
+            if (actor != null) //noinspection unchecked
+                actor.onStart(event, secondaryHandle);
+
+        for (Actor actor : primaryActors)
+            if (actor != null) //noinspection unchecked
+                actor.onStart(event, primaryHandle);
+    }
+
+    @SuppressWarnings("SuspiciousMethodCalls")
+    private void notifyActorsOfUndo(UndoException e) throws UndoException {
+
+        Step step = cache.peak();
+        Actor actor = cache.pop();
+        if (cache.isEmpty() && !primaryActors.contains(actor))
+            abort();
+        else {
+            actor.onUndo(step, true);
+            if (primaryActors.contains(actor)) {
+                Actor original = actor;
+                step = cache.peak();
+                while (step != null) {
+                    actor = cache.getActor(step);
+                    if (!primaryActors.contains(actor)) {
+                        cache.pop();
+                        actor.onUndo(step, true);
+                        step = cache.peak();
+                    } else if (actor == original) {
+                        cache.reset(step);
+                        break;
+                    } else {
+                        cache.reset(step);
+                        actor.onUndo(step, false);
+                        break;
+                    }
+                }
+
+            } else if (!primaryActors.contains(actor)) {
+                Actor original = actor;
+                boolean isPrimary;
+                do {
+                    step = cache.peak();
+                    if (step == null) break;
+                    actor = cache.getActor(step);
+                    isPrimary = primaryActors.contains(actor);
+                    if (!isPrimary) cache.pop();
+                    else cache.reset(step);
+                    actor.onUndo(step, !isPrimary);
+                } while (!isPrimary);
+            }
+
+
+            if (cache.isEmpty()) abort();
+            else throw e;
+        }
+    }
+
+    private void notifyActorsOfComplete(R result) {
+
+        for (PrimaryActor actor : primaryActors)
+            //noinspection SuspiciousMethodCalls
+            if (preconditionActor != actor && !resultActors.contains(actor) && actor != null)
+                //noinspection unchecked
+                actor.onComplete(event);
+
+        for (SecondaryActor actor : secondaryActors)
+            //noinspection SuspiciousMethodCalls
+            if (preconditionActor != actor && !resultActors.contains(actor) && actor != null)
+                //noinspection unchecked
+                actor.onComplete(event);
+
+        if (containerResultActor != null)
+            containerResultActor.onComplete(event, result);
+    }
+
+    private void notifyActorsOfAbort(TectonicEvent event) {
+        for (Actor actor : primaryActors)
+            if (preconditionActor != actor && actor != null) //noinspection unchecked
+                actor.onAbort(event);
+
+        for (Actor actor : secondaryActors)
+            if (preconditionActor != actor && actor != null) //noinspection unchecked
+                actor.onAbort(event);
+
+        if (containerResultActor != null)
+            containerResultActor.onAbort(event);
+    }
+
+    private void completeWhenCompleted(UseCase<R> uc) {
+
+        synchronized (ALIVE) {
+            List<UseCase> useCases = new ArrayList<>(ALIVE.values());
+            for (UseCase useCase : useCases) {
+                if (uc != useCase && useCase.completingWhenCompletedSet.contains(uc.getClass()))
+                    useCase.getThreadManager().complete();
+            }
+        }
+    }
+
+    private void abortWhenCompleted(UseCase<R> uc) {
+
+        synchronized (ALIVE) {
+            List<UseCase> useCases = new ArrayList<>(ALIVE.values());
+            for (UseCase useCase : useCases) {
+                if (uc != useCase && useCase.abortingWhenCompletedSet.contains(uc.getClass()))
+                    useCase.abort();
+            }
+        }
+    }
+
+    private void completeWhenAborted(UseCase<R> uc) {
+
+        synchronized (ALIVE) {
+            List<UseCase> useCases = new ArrayList<>(ALIVE.values());
+            for (UseCase useCase : useCases) {
+                if (uc != useCase && useCase.completingWhenAbortedSet.contains(uc.getClass()))
+                    useCase.getThreadManager().complete();
+            }
+        }
+    }
+
+    private void abortWhenAborted(UseCase<R> uc) {
+
+        synchronized (ALIVE) {
+            List<UseCase> useCases = new ArrayList<>(ALIVE.values());
+            for (UseCase useCase : useCases) {
+                if (uc != useCase && useCase.abortingWhenAbortedSet.contains(uc.getClass()))
+                    useCase.abort();
+            }
+        }
+    }
+
+    public static void clearAll() {
+
+        for (UseCase useCase : ALIVE.values())
+            useCase.cache.clear();
+
+        ALIVE.clear();
     }
 
     /**

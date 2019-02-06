@@ -684,6 +684,7 @@ public abstract class UseCase<R> implements PreconditionActor {
             abort();
         else {
             actor.onUndo(step, true);
+            boolean abortIfEmpty = true;
             if (primaryActors.contains(actor)) {
                 Actor original = actor;
                 step = cache.peak();
@@ -697,7 +698,8 @@ public abstract class UseCase<R> implements PreconditionActor {
                         cache.reset(step);
                         break;
                     } else {
-                        cache.reset(step);
+                        cache.pop();
+                        abortIfEmpty = false;
                         actor.onUndo(step, false);
                         break;
                     }
@@ -718,7 +720,7 @@ public abstract class UseCase<R> implements PreconditionActor {
             }
 
 
-            if (cache.isEmpty()) abort();
+            if (cache.isEmpty() && abortIfEmpty) abort();
             else throw e;
         }
     }

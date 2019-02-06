@@ -11,7 +11,6 @@ import java.util.concurrent.ExecutionException;
 
 public class ContainerUseCase extends SimpleUseCase {
 
-    public static final UUID SUB_KEY = UUID.randomUUID();
     private Actor actor;
     private Class<? extends UseCase<Void>> subUseCase;
 
@@ -28,7 +27,7 @@ public class ContainerUseCase extends SimpleUseCase {
         try {
             actor.doBeforeSubUseCase();
 
-            execute(SUB_KEY, subUseCase);
+            execute(subUseCase);
 
             actor.doAfterSubUseCase();
 

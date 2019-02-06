@@ -31,6 +31,7 @@ public class SubUseCaseTest extends ConcurrentTectonicTest {
     private volatile boolean onActorCompleteCalled;
     private long containerCompleteTimestamp;
     private long subCompleteTimestamp;
+    private long subOnStartCount;
     private long subOnCompleteCount;
     private long containerResultOnCompleteCount;
     private int doBeforeSubUseCaseCalled;
@@ -53,6 +54,7 @@ public class SubUseCaseTest extends ConcurrentTectonicTest {
         onSubAbortedCalled = false;
         containerCompleteTimestamp = 0;
         subCompleteTimestamp = 0;
+        subOnStartCount = 0;
         subOnCompleteCount = 0;
         containerResultOnCompleteCount = 0;
         doBeforeSubUseCaseCalled = 0;
@@ -75,13 +77,28 @@ public class SubUseCaseTest extends ConcurrentTectonicTest {
         sleep();
 
         reply(CK1);
-        sleep(300);
+
+        sleep();
+        subThreadManager.thread.join();
+
+        sub = UseCase.fetch(AbortedUseCase.class);
+        sub.addPrimaryActor(subCompletedActor);
+        subThreadManager = new ThreadManagerImpl();
+        sub.setThreadManager(subThreadManager);
+
+        reply(CK1);
+
+        sleep();
+        subThreadManager.thread.join();
+
         abort();
 
         useCaseThread.join();
 
         assertTrue(onUndoCalled);
         assertFalse(onSubCompleteCalled);
+        assertEquals(3, doBeforeSubUseCaseCalled);
+        assertEquals(2, subOnStartCount);
     }
 
     @Test
@@ -273,6 +290,7 @@ public class SubUseCaseTest extends ConcurrentTectonicTest {
         @Override
         public void onStart(TectonicEvent event, UseCaseHandle handle) {
             subHandle = handle;
+            subOnStartCount++;
         }
 
         @Override

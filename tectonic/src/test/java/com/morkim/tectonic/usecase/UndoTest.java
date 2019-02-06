@@ -203,7 +203,7 @@ public class UndoTest extends ConcurrentTectonicTest {
 
         useCaseThread.join();
 
-        assertEquals(1, undoPrimarySteps.size());
+        assertEquals(2, undoPrimarySteps.size());
         assertEquals(1, undoSecondarySteps.size());
         assertEquals(stepP2, undoPrimarySteps.get(0));
         assertTrue(undoPrimaryInclusive.get(0));
@@ -235,7 +235,7 @@ public class UndoTest extends ConcurrentTectonicTest {
 
         useCaseThread.join();
 
-        assertEquals(1, undoPrimarySteps.size());
+        assertEquals(2, undoPrimarySteps.size());
         assertEquals(0, undoSecondarySteps.size());
         assertEquals(stepP3, undoPrimarySteps.get(0));
         assertTrue(undoPrimaryInclusive.get(0));

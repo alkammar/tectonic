@@ -694,9 +694,6 @@ public abstract class UseCase<R> implements PreconditionActor {
                         cache.pop();
                         actor.onUndo(step, true);
                         step = cache.peak();
-                    } else if (actor == original) {
-                        cache.reset(step);
-                        break;
                     } else {
                         cache.pop();
                         abortIfEmpty = false;

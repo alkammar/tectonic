@@ -162,32 +162,39 @@ public abstract class UseCase<R> implements PreconditionActor {
             running = true;
 
             getThreadManager().start(new ThreadManager.UseCaseExecution() {
+
+                boolean initialized = false;
+
                 @Override
                 public void run() throws InterruptedException, UndoException {
 
-                    UseCase.this.thread = Thread.currentThread();
-                    completeWhenCompleted(completingWhenCompletedSet);
-                    abortWhenCompleted(abortingWhenCompletedSet);
-                    completeWhenAborted(completingWhenAbortedSet);
-                    abortWhenAborted(abortingWhenAbortedSet);
+                    if (!initialized) {
+                        UseCase.this.thread = Thread.currentThread();
+                        completeWhenCompleted(completingWhenCompletedSet);
+                        abortWhenCompleted(abortingWhenCompletedSet);
+                        completeWhenAborted(completingWhenAbortedSet);
+                        abortWhenAborted(abortingWhenAbortedSet);
 
-                    if (container != null) {
-                        completingWhenCompletedSet.add(container.getClass());
-                        abortingWhenAbortedSet.add(container.getClass());
+                        if (container != null) {
+                            completingWhenCompletedSet.add(container.getClass());
+                            abortingWhenAbortedSet.add(container.getClass());
+                        }
+
+                        onInitialize();
+
+                        primaryActors.clear();
+                        secondaryActors.clear();
+
+                        onAddSecondaryActors(secondaryActors);
+                        onAddPrimaryActors(primaryActors);
+
+                        boolean executeOnStart = !preconditionsExecuted;
+                        waitForPreconditions();
+
+                        if (executeOnStart) notifyActorsOfStart(event);
+
+                        initialized = true;
                     }
-
-                    onInitialize();
-
-                    primaryActors.clear();
-                    secondaryActors.clear();
-
-                    onAddSecondaryActors(secondaryActors);
-                    onAddPrimaryActors(primaryActors);
-
-                    boolean executeOnStart = !preconditionsExecuted;
-                    waitForPreconditions();
-
-                    if (executeOnStart) notifyActorsOfStart(event);
 
                     // TODO move the above calls to a new method that is only called once
                     try {

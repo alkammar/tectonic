@@ -17,6 +17,8 @@ public class StepCache {
 
     private Map<UUID, Object> values = new HashMap<>();
     private Map<UUID, Synchronizer> synchronizers = new HashMap<>();
+    private Map<Class<? extends UseCase>, UUID> subUseCaseKeys = new HashMap<>();
+    private Map<Step, Class<? extends UseCase>> subUseCases = new HashMap<>();
 
     <D> void put(Actor actor, Step step, UUID key, Synchronizer<D> synchronizer) {
         synchronizers.put(key, synchronizer);
@@ -76,6 +78,8 @@ public class StepCache {
         removeKeys(step);
         this.keys.remove(step);
         this.actors.remove(step);
+        Class<? extends UseCase> subUseCase = this.subUseCases.remove(step);
+        if (subUseCase != null) subUseCaseKeys.remove(subUseCase);
     }
 
     private void removeKeys(Step step) {
@@ -91,5 +95,20 @@ public class StepCache {
 
     void reset(Step step) {
         removeKeys(step);
+    }
+
+    boolean contains(Class<? extends UseCase> cls) {
+        return subUseCaseKeys.containsKey(cls);
+    }
+
+    @SuppressWarnings("unchecked")
+    <r> r getValue(Class<? extends UseCase<r>> cls) {
+        UUID key = subUseCaseKeys.get(cls);
+        return key != null ? (r) getValue(key) : null;
+    }
+
+    void put(Class<? extends UseCase> cls, Step step, UUID key) {
+        subUseCaseKeys.put(cls, key);
+        subUseCases.put(step, cls);
     }
 }

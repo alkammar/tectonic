@@ -11,6 +11,8 @@ import java.util.concurrent.ExecutionException;
 
 public class ContainerUseCase extends SimpleUseCase {
 
+    private static final UUID KEY = UUID.randomUUID();
+
     private Actor actor;
     private Class<? extends UseCase<Void>> subUseCase;
 

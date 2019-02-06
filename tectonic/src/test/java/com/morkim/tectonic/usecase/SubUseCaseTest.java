@@ -76,7 +76,7 @@ public class SubUseCaseTest extends ConcurrentTectonicTest {
 
         sleep();
 
-        reply(CK1);
+        reply1();
 
         sleep();
         subThreadManager.thread.join();
@@ -86,7 +86,7 @@ public class SubUseCaseTest extends ConcurrentTectonicTest {
         subThreadManager = new ThreadManagerImpl();
         sub.setThreadManager(subThreadManager);
 
-        reply(CK1);
+        reply1();
 
         sleep();
         subThreadManager.thread.join();
@@ -117,9 +117,9 @@ public class SubUseCaseTest extends ConcurrentTectonicTest {
 
         sleep();
 
-        reply(CK1);
+        reply1();
         replySub();
-        reply(CK2);
+        reply2();
 
         useCaseThread.join();
 
@@ -150,7 +150,7 @@ public class SubUseCaseTest extends ConcurrentTectonicTest {
 
         sleep();
 
-        reply(CK1);
+        reply1();
         replySub();
         abort();
 
@@ -181,27 +181,43 @@ public class SubUseCaseTest extends ConcurrentTectonicTest {
 
         sleep();
 
-        reply(CK1);
+        reply1();
         replySub();
+        sleep();
         undo();
         replySub();
-        reply(CK2);
+        reply2();
+        replySub();
 
         useCaseThread.join();
 
         subThreadManager.thread.join();
 
-        assertEquals(2, doBeforeSubUseCaseCalled);
+        assertEquals(3, doBeforeSubUseCaseCalled);
         assertFalse(onSubUndoCalled);
         assertEquals(2, subDoSomethingCalled);
+        assertEquals(1, subOnStartCount);
     }
 
-    private void reply(final UUID key) throws InterruptedException {
+    private void reply1() throws InterruptedException {
         Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
                 sleep();
-                useCaseHandle.replyWith(key);
+                useCaseHandle.replyWith(CK1);
+            }
+        });
+        thread.start();
+
+        thread.join();
+    }
+
+    private void reply2() throws InterruptedException {
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                sleep();
+                useCaseHandle.replyWithRandom(CK2);
             }
         });
         thread.start();

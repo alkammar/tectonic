@@ -261,8 +261,8 @@ public abstract class UseCase<R> implements PreconditionActor {
      */
     protected <r> r execute(final UUID key, final Class<? extends UseCase<r>> cls) throws UndoException, InterruptedException {
 
-        if (cache.containsKey(key)) {
-            return cache.getValue(key);
+        if (cache.contains(cls)) {
+            return cache.getValue(cls);
         } else {
             //noinspection unchecked
             Triggers<TectonicEvent> triggers = (Triggers<TectonicEvent>) executor;
@@ -315,7 +315,9 @@ public abstract class UseCase<R> implements PreconditionActor {
             useCase.execute();
 
             try {
-                return waitFor(subPrimaryActor, ANONYMOUS_STEP, finalKey);
+                r result = waitFor(subPrimaryActor, ANONYMOUS_STEP, finalKey);
+                cache.put(cls, ANONYMOUS_STEP, finalKey);
+                return result;
             } catch (ExecutionException e) {
                 if (e.getCause() instanceof UndoException) throw (UndoException) e.getCause();
             }
@@ -695,8 +697,7 @@ public abstract class UseCase<R> implements PreconditionActor {
                         actor.onUndo(step, true);
                         step = cache.peak();
                     } else {
-                        cache.pop();
-                        abortIfEmpty = false;
+                        cache.reset(step);
                         actor.onUndo(step, false);
                         break;
                     }

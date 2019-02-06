@@ -76,10 +76,9 @@ public class StepCache {
 
     private void remove(Step step) {
         removeKeys(step);
+        clearSubUseCase(step);
         this.keys.remove(step);
         this.actors.remove(step);
-        Class<? extends UseCase> subUseCase = this.subUseCases.remove(step);
-        if (subUseCase != null) subUseCaseKeys.remove(subUseCase);
     }
 
     private void removeKeys(Step step) {
@@ -89,12 +88,18 @@ public class StepCache {
                 values.remove(key);
     }
 
+    private void clearSubUseCase(Step step) {
+        Class<? extends UseCase> subUseCase = this.subUseCases.remove(step);
+        if (subUseCase != null) subUseCaseKeys.remove(subUseCase);
+    }
+
     Actor getActor(Step step) {
         return actors.get(step);
     }
 
     void reset(Step step) {
         removeKeys(step);
+        clearSubUseCase(step);
     }
 
     boolean contains(Class<? extends UseCase> cls) {

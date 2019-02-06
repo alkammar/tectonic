@@ -302,7 +302,7 @@ public abstract class UseCase<R> implements PreconditionActor {
 
                 @Override
                 public void onUndo(Step step, boolean inclusive) {
-                    useCase.reset();
+                    useCase.cache.pop();
                     useCase.getThreadManager().restart();
                 }
 

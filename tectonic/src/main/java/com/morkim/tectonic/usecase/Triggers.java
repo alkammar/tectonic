@@ -5,9 +5,9 @@ import java.util.UUID;
 
 /**
  * Implement this interface to receive the application events in order to trigger the corresponding
- * use cases. This interface is also used by the use case internally to execute precondition use cases
- * and the sub use cases. If a precondition or sub is executed it will call the {@link #map(Class)}
- * method first before a call is made to any version of {@link #trigger(TectonicEvent, PreconditionActor, ResultActor, TectonicEvent)}.
+ * use cases. This interface is also used by the use case internally to execute precondition use cases.
+ * If a precondition or sub is executed it will call the {@link #map(Class)} method first before a call
+ * is made to any version of {@link #trigger(TectonicEvent, PreconditionActor, ResultActor, TectonicEvent)}.
  * So make sure that you do the all use cases executions inside {@link #trigger(TectonicEvent, PreconditionActor, ResultActor, TectonicEvent)}
  * and the other versions of it just calling it providing null values to the parameters that it does not have.
  *

@@ -17,7 +17,151 @@ import java.util.concurrent.ExecutionException;
 
 import javax.annotation.Nonnull;
 
-
+/**
+ * <p>
+ * - The whole idea this framework is built on the assumption that business logic does not change
+ * frequently in a mature industry. Definitely not as frequent as the IOs logic of the software,
+ * like UI designs, backend services ... etc. Acknowledging the differences in the frequency of
+ * change between business logic and IOs logic lead to the creating of this framework to try to
+ * provide a good way of separation with still a good way of interaction. The most elegant way of
+ * defining business logic (in my opinion) is use cases. Currently not used as much in application
+ * design, this framework aims to bring back use case design in applications by mirroring the use
+ * case in code.
+ * </p>
+ * <p>
+ * - The use case abstraction aims to provide a way to mirror a use cases in code, providing means
+ * to define essential parts of it like triggers, primary actors, secondary actors, preconditions,
+ * main scenario and alternate scenarios. It is a different perspective of clean architecture, with
+ * a main goal to encapsulate business flow independent on the platform. Achieving that will allow shipping
+ * the use cases as separate module(s) that can preserve business logic from IOs changes (e.g. UI,
+ * backend, storage ... etc). A more ambitious goal is to reuse the use case logic across different
+ * applications and clients who operate within the same industry.
+ * </p>
+ * <p>
+ * - To use the use case abstraction, there are a set of rules it is built on that you need to know
+ * first to understand its behaviors and limitations.
+ * </p>
+ * <p>
+ * - A use case is an orchestrator of actions/steps from Actors that needs to be executed in a specific
+ * sequence (the main scenario) to fulfill the use case functionality. Actors can reply to the requested
+ * actions with Exceptions (alternate/error scenarios) that should be handled by the use case implementation
+ * to steer them in the desired direction (e.g. by requesting the UI actor to show an error message
+ * and give it a chance to try again).
+ * </p>
+ * <p>
+ * - An actor is a component of the use case logic that is essential to complete its functionality.
+ * The use case requests an action from the actors and the actors can reply immediately or block
+ * the use case thread to send a delayed reply. Actors will mainly implement IO operations like UI
+ * (e.g. showing a screen or waiting for a user action), backend integration (REST APIs), local
+ * file system or database, sensors ... etc. The typical way to define actors is to define them as
+ * inner interfaces in the use case class.
+ * </p>
+ * <p>
+ * - A use case interacts with a set of actors defined in its implementation. Actor can be one of
+ * 3 kinds. {@link PrimaryActor}, {@link SecondaryActor>} or undefined. Primary and secondary actors
+ * will receive the callbacks {@link Actor#onStart(Object, UseCaseHandle)}, {@link Actor#onUndo(Step, boolean)},
+ * {@link Actor#onComplete(Object)} and {@link Actor#onAbort(Object)}, undefined actors will receive
+ * none. Primary actor can {@link UseCaseHandle#undo()} and {@link UseCaseHandle#abort()} a use case.
+ * Secondary actor can only {@link UseCaseHandle#undo()}. To add a primary actor to the use case
+ * the actor must implement {@link PrimaryActor} and be added to the set passed by {@link #onAddPrimaryActors(Set)}
+ * override. To add a secondary actor to the use case the actor must implement {@link SecondaryActor}
+ * and be added to the set passed by {@link #onAddSecondaryActors(Set)} override. Nothing special
+ * needs to be done for undefined actors (that is why they are undefined).
+ * </p>
+ * <p>
+ * - A use case can have a dynamic number of added actors observing its state and result. These actors are
+ * called {@link ResultActor}s. They can be added at creation time through {@link Builder#resultActor(ResultActor[])}.
+ * Result actors can receive {@link ResultActor#onComplete(Object, Object)} and {@link ResultActor#onAbort(Object)}
+ * </p>
+ * <p>
+ * - A use case can have another use case defined as its precondition by overriding {@link #onAddPreconditions(Set)}
+ * and add the precondition use case class(es) to the passed set. Preconditions will be executed
+ * before the use case starts its execution and the use case will be blocked until all the preconditions
+ * are completed.
+ * </p>
+ * <p>
+ * - Currently the framework supports one use case instance at a time. So if you implemented
+ * use case A and use case B, you can execute one instance of A and one instance of B simultaneously,
+ * but you cannot execute multiple instances of A or B at the same time. If you wish to re-execute
+ * a use case you have to wait for the current instance to terminate to be able to execute another
+ * instance.
+ * </p>
+ * <p>
+ * - Each use case instance runs in its own worker thread, where the life of the thread is managed
+ * by a {@link ThreadManager}. The use case has a default thread manager implementation {@link ThreadManagerImpl}
+ * which should not be replaced in production. But a way to replace the thread manager is provided
+ * to replace the default behavior for testing purposes through {@link #setGlobalThreadManager(ThreadManager)}
+ * and {@link #setThreadManager(ThreadManager)}.
+ * </p>
+ * <p>
+ * - A use case scenario is meant to be executed in sequence. In other words the use case abstraction
+ * is not designed to execute steps in parallel. Although this looks like a limitation, it is not.
+ * It is a fundamental rule of the abstraction to imitate use case design. With that said, you
+ * still can run parallel code inside the use case, but at that point from a design perspective,
+ * it is deviating from being a use case and you need to handle that on your own.
+ * </p>
+ * <p>
+ * - The use case body will typically request a sequence of actions from actors defined by the
+ * use case. These actions in a normal environment will mostly be asynchronous in nature. The
+ * asynchronous/synchronous nature of the actors actions is left to the actor's methods implementation.
+ * So the use case abstraction provides a set of tools to synchronize asynchronous the actors
+ * calls to be able to achieve the previous point. The synchronization is the responsibility
+ * of the actors and not the use case. Typically the actors should call a pair of {@link UseCaseHandle#waitFor(Actor, Step, UUID)}
+ * (or one of its derivatives) and {@link UseCaseHandle#replyWith(UUID)} (or one of its derivatives).
+ * The {@code waitFor} will cause the use case thread to block until it is unblocked by the
+ * call to {@code replyWith}. This will achieve the sense of a use case executing in sequence
+ * although calling asynchronous actor's methods.
+ * </p>
+ * <p>
+ * - The use case holds a stack of executed {@link Step}s. A step is defined by a call to one
+ * of {@link UseCaseHandle#waitFor(Actor, Step, UUID)}. Each time an actor blocks a use case
+ * with this method the use case adds the step to the top of the stack. This is used to provide
+ * the ability for actors to undo their steps.
+ * </p>
+ * <p>
+ * - The abstraction supports the undo feature. Think of a UI actor that displays multiple screens
+ * to the user as part of its flow, and the user wants to go back in the UI flow. Or a REST API
+ * call that triggered a challenge action that the user decided to cancel that challenge for
+ * any reason. The undo feature allows the use case to clear its top step of the stack to allow
+ * the actor to retry the action again. Undo is explained in details in {@link UseCaseHandle#undo()}.
+ * </p>
+ * <p>
+ * - A use case can be executed by calling one of the {@link #execute()} method versions.
+ * A Use cases can be executed a sub use case for a container use case using any of the versions
+ * of {@link #execute(Class)}.
+ * </p>
+ * <p>
+ * - For the use case to terminate it must end with one of either {@link #complete()}, {@link #complete(Object)},
+ * {@link #abort()}, {@link #retry(boolean)} or {@link #retry()}. The calls to these methods
+ * should be inside the {@link #onExecute()} override which you use to implement the use case
+ * main body of execution and its alternate/error scenarios. Failure to do so the use case thread
+ * will stay alive and will result in some problems like the inability to re-execute the use
+ * case again. Alternatively actors can decide to terminate a use case prematurely through {@link UseCaseHandle#abort()}.
+ * Other ways for the use case to terminate is when another use case's completion or abortion is
+ * configured to complete or abort the current use case through the overriding of {@link #completeWhenCompleted(Set)},
+ * {@link #completeWhenAborted(Set)}, {@link #abortWhenCompleted(Set)} and {@link #abortWhenAborted(Set)} (Set)}.
+ * </p>
+ * <p>
+ * - To create/build a use case instance it is recommended to use {@link Builder} class, which
+ * provides a set of methods to configure the use case. Alternatively you can use {@link #fetch(Class)}
+ * plus any combination of the methods used by {@link Builder#build()} implementation.
+ * </p>
+ * <p>
+ * - For setting the use case dependencies (e.g. actors), override the {@link #onInitialize()}
+ * method if you are using dependency injection. If you are not using dependency injection get
+ * a hold on the use case instance before execution either at creation time or by calling {@link #fetch(Class)}
+ * and set your dependencies on that instance.
+ * </p>
+ * <p>
+ * - A use case can return a result object. This is useful for example for sub use cases. To
+ * return a result set the result type in the {@link R} generic parameter and call the method
+ * {@link #complete(Object)} at the end of the use case flow. The result will be delivered to
+ * any {@link ResultActor} observing this use case via {@link ResultActor#onComplete(Object, Object)}
+ * and will be returned by a call to {@link #execute(UUID, Class)} for executing a sub use case.
+ * </p>
+ *
+ * @param <R> the use case result type
+ */
 @SuppressWarnings({"WeakerAccess", "unused"})
 @SuppressLint("UseSparseArrays")
 public abstract class UseCase<R> implements PreconditionActor {
@@ -95,7 +239,7 @@ public abstract class UseCase<R> implements PreconditionActor {
      * original exception.
      *
      * @param useCaseClass the use case class to fetch
-     * @param <U> the use case type
+     * @param <U>          the use case type
      * @return the use case instance
      */
     public synchronized static <U extends UseCase> U fetch(Class<U> useCaseClass) {
@@ -196,7 +340,6 @@ public abstract class UseCase<R> implements PreconditionActor {
                         initialized = true;
                     }
 
-                    // TODO move the above calls to a new method that is only called once
                     try {
                         onExecute();
                     } catch (UndoException e) {
@@ -237,7 +380,8 @@ public abstract class UseCase<R> implements PreconditionActor {
     }
 
     /**
-     *
+     * Called before {@link #onExecute()} once in the life of the use case. It provides a good spot
+     * to initialize the use case (e.g. injecting dependencies);
      */
     protected void onInitialize() {
 
@@ -262,9 +406,9 @@ public abstract class UseCase<R> implements PreconditionActor {
      * @param cls the sub use case class
      * @param <r> the use case result type
      * @return the use case result
-     * @throws UndoException thrown if the sub use case was aborted
+     * @throws UndoException        thrown if the sub use case was aborted
      * @throws InterruptedException if the use case thread was interrupted while waiting for the
-     * sub use case to finish
+     *                              sub use case to finish
      */
     protected <r> r execute(final UUID key, final Class<? extends UseCase<r>> cls) throws UndoException, InterruptedException {
 
@@ -363,11 +507,21 @@ public abstract class UseCase<R> implements PreconditionActor {
         return threadManager == null ? globalThreadManager == null ? defaultThreadManager : globalThreadManager : threadManager;
     }
 
+    /**
+     * For testing purposes only. Sets this use case's instance custom thread manager. Pass null to clear.
+     *
+     * @param threadManager thread manager implementation
+     */
     protected void setThreadManager(ThreadManager threadManager) {
         this.threadManager = threadManager;
     }
 
-    static void setGlobalThreadManager(ThreadManager threadManager) {
+    /**
+     * For testing purposes only. Sets a global custom thread manager for all use cases. Pass null to clear.
+     *
+     * @param threadManager thread manager implementation
+     */
+    public static void setGlobalThreadManager(ThreadManager threadManager) {
         globalThreadManager = threadManager;
     }
 
@@ -388,13 +542,48 @@ public abstract class UseCase<R> implements PreconditionActor {
     protected abstract void onAddSecondaryActors(Set<SecondaryActor> actors);
 
     /**
+     * <p>
      * Called when the use case starts to execute. You should write here all your use case business
      * logic, including the main scenario and the alternate scenarios. This can be executed multiple
      * times based on your implementation choices for the actors (e.g. using {@link UseCaseHandle#replyWithRandom(UUID, Random)})
-     * or the undo scenarios.
+     * or the undo scenarios. Multiple execution should be handled by the actors since the use case will
+     * be caching all its steps objects returned by any of {@link #waitFor(Actor, Step, UUID)} derivatives.
+     * For example for a UI actor an action implementation can create a new screen, you will need to
+     * make sure that that screen is not created multiple times. The execution of the use case can throw
+     * {@link InterruptedException} which is going to be caught by the use case {@link ThreadManager}.
+     * It can also throw {@link UndoException} which can be thrown by any undo scenario.
+     * </p>
+     * <p>
+     * A recommended implementation is to write the main scenario in a try block and other alternate
+     * scenarios in the catch blocks. For example
      *
-     * @throws InterruptedException
-     * @throws UndoException
+     * <p> try { </p>
+     * <ul>
+     * <p>      actor1.action1(); </p>
+     * <p>      actor1.action2(); </p>
+     * <p>      actor2.action1(); </p>
+     * <p>      actor1.action3(); </p>
+     * <p>      complete(); </p>
+     * </ul>
+     * <p> } catch (Exception a11) { </p>
+     * <ul>
+     * <p>      actor1.handleError(); </p>
+     * <p>      retry(); </p>
+     * </ul>
+     * <p> } catch (Exception a21) { </p>
+     * <ul>
+     * <p>      actor1.handleAnotherError(); </p>
+     * <p>      retry(); </p>
+     * </ul>
+     * <p> } catch (Exception a13) { </p>
+     * <ul>
+     * <p>      abort(); </p>
+     * </ul>
+     * <p> } </p>
+     * </p>
+     *
+     * @throws InterruptedException thrown if the use case thread is interrupted
+     * @throws UndoException        thrown when an actor requests to undo the top step
      */
     protected abstract void onExecute() throws InterruptedException, UndoException;
 
@@ -560,7 +749,7 @@ public abstract class UseCase<R> implements PreconditionActor {
     }
 
     /**
-     * Version of {@link #onExecute()} that does not cause the precondition use cases to be re-executed
+     * Version of {@link #retry(boolean)} that does not cause the precondition use cases to be re-executed
      */
     public void retry() throws InterruptedException {
         retry(false);
@@ -574,7 +763,7 @@ public abstract class UseCase<R> implements PreconditionActor {
      *
      * @param withPreconditions if true causes the precondition use cases to be re-executed
      * @throws InterruptedException always thrown to signal the thread to re-enter its loop resulting
-     * in a call to {@link #onExecute()}
+     *                              in a call to {@link #onExecute()}
      */
     @SuppressWarnings("WeakerAccess")
     protected void retry(@SuppressWarnings("SameParameterValue") boolean withPreconditions) throws InterruptedException {
@@ -628,7 +817,6 @@ public abstract class UseCase<R> implements PreconditionActor {
      * added via {@link #completeWhenCompleted(Set)} and {@link #abortWhenCompleted(Set)}
      *
      * @param result the use case result
-     *
      * @see PrimaryActor
      * @see SecondaryActor
      * @see ResultActor
@@ -661,6 +849,10 @@ public abstract class UseCase<R> implements PreconditionActor {
         }
     }
 
+    /**
+     * Causes the use case to abort prematurely terminating its thread and triggering the {@link Actor#onAbort(Object)}
+     * callback for primary and secondary actors and {@link ResultActor#onAbort(Object)} for result actors.
+     */
     protected void abort() {
         if (preconditionsExecuted) {
             synchronized (ALIVE) {
@@ -814,7 +1006,8 @@ public abstract class UseCase<R> implements PreconditionActor {
     }
 
     /**
-     *
+     * Called after the use case is either completed or aborted to provide a chance for cleanup code
+     * to be executed.
      */
     protected void onDestroy() {
 

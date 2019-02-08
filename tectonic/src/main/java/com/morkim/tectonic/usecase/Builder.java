@@ -50,7 +50,7 @@ public class Builder {
     }
 
     /**
-     * Configure the triggers used by the system to trigger the use cases. This is use to trigger
+     * Configure the triggers used by the system to trigger the use cases. This is used to trigger
      * sub use cases
      *
      * @param triggers system triggers

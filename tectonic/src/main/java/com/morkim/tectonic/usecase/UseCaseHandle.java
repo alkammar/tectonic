@@ -19,49 +19,61 @@ import javax.annotation.Nonnull;
 public interface UseCaseHandle {
 
     /**
-     * Signals the use case to undoe the top step in the use case. The steps are added to the use case
-     * in a form stack. {@link Actor#onUndo(Step, boolean)} callback of the use case actors will be
-     * triggered until it reaches the next top primary actor step or the stack is cleared which will
+     * <p>
+     * Signals the use case to undo the top step in the use case. The steps are added to the use case
+     * in a form of a stack. {@link Actor#onUndo(Step, boolean)} callback of the use case actors will
+     * be triggered until it reaches the next top primary actor step or the stack is cleared which will
      * cause the use case to abort.
-     *
+     * </p>
+     * <p>
      * For example we have a use case with steps Ps1 - Ss2 - Ps3 - Ss4 - Ss5 - Ps6 - Ps7 - Ss8 - Ps9,
      * where Ps is for primary actor step and Ss is for secondary actor step.
-     *
+     * </p>
+     * <p>
      * If undo called while waiting for Ss2 {@link Actor#onUndo(Step, boolean)} will be called for
      * secondary actor step Ss2 inclusive
      * and primary actor step Ps1 exclusive
-     *
+     * </p>
+     * <p>
      * If undo called while waiting for Ss5 {@link Actor#onUndo(Step, boolean)} will be called for
      * secondary actor step Ss5 and Ss4 inclusive
      * and primary actor step Ps3 exclusive
-     *
+     * </p>
+     * <p>
      * If undo called while waiting for Ps6 {@link Actor#onUndo(Step, boolean)} will be called for
      * primary actor step Ps6 inclusive
      * and secondary actor Ss5 and Ss4 inclusive
      * and primary actor Ps3 exclusive
-     *
+     * </p>
+     * <p>
      * If undo called while waiting for Ps8 {@link Actor#onUndo(Step, boolean)} will be called for
      * primary actor step Ps8 inclusive
      * and primary actor Ps7 exclusive
-     *
+     * </p>
+     * <p>
      * If undo called while waiting for Ps1 {@link Actor#onUndo(Step, boolean)} will be called for
      * primary actor step Ps1 inclusive
      * then the use case will abort calling the {@link Actor#onAbort(Object)}
-     *
+     * </p>
+     * <p>
      * For example we have a use case with steps Ss1 - Ss2 - Ps3
-     *
+     * </p>
+     * <p>
      * If undo called while waiting for Ps3 {@link Actor#onUndo(Step, boolean)} will be called for
      * primary actor step Ps3 inclusive
      * and secondary actor Ss2 and Ss1 inclusive
      * then the use case will abort calling the {@link Actor#onAbort(Object)}
-     *
+     * </p>
+     * <p>
      * If undo called while waiting for Ss2 {@link Actor#onUndo(Step, boolean)} will be called for
      * secondary actor Ss2 and Ss1 inclusive
      * then the use case will abort calling the {@link Actor#onAbort(Object)}
-     *
+     * </p>
+     * <p>
      * If undo called while waiting for Ss1 {@link Actor#onUndo(Step, boolean)} will be called for
      * secondary actor Ss1 inclusive
      * then the use case will abort calling the {@link Actor#onAbort(Object)}
+     * </p>
      */
     void undo();
 

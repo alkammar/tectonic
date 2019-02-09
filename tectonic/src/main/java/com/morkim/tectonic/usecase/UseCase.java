@@ -467,7 +467,7 @@ public abstract class UseCase<R> implements PreconditionActor {
 
             primaryActors.add(subPrimaryActor);
 
-            useCase.execute();
+            useCase.execute(subEvent);
 
             try {
                 r result = waitFor(subPrimaryActor, ANONYMOUS_STEP, finalKey);

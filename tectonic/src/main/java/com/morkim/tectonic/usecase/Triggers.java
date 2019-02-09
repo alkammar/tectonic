@@ -80,9 +80,10 @@ public interface Triggers<E extends TectonicEvent> {
      * here. Return a result actor to know when the use case will finish so dependencies can be cleared.
      * If not using dependency injection set the dependencies using the {@code useCase} instance.
      *
+     * @param contextEvent the context event of the container use case use case
      * @param implicitEvent the event triggered the implicit use case
      * @param useCase the use case instance
      * @return a result actor to observe the use case state
      */
-    ResultActor<E, ?> observe(E implicitEvent, UseCase<?> useCase);
+    ResultActor<E, ?> observe(E contextEvent, E implicitEvent, UseCase<?> useCase);
 }

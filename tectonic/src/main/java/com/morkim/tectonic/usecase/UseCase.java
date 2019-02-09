@@ -440,7 +440,7 @@ public abstract class UseCase<R> implements PreconditionActor {
                     .triggers(triggers)
                     .build();
 
-            useCase.addResultActor((ResultActor) triggers.observe(subEvent, useCase));
+            useCase.addResultActor((ResultActor) triggers.observe(event, subEvent, useCase));
 
             PrimaryActor subPrimaryActor = new PrimaryActor() {
                 @Override

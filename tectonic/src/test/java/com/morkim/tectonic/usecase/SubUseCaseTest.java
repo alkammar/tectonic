@@ -343,7 +343,7 @@ public class SubUseCaseTest extends ConcurrentTectonicTest {
     private class TestExecutor extends SimpleTriggers {
 
         @Override
-        public ResultActor<TectonicEvent, ?> observe(TectonicEvent subEvent, UseCase<?> useCase) {
+        public ResultActor<TectonicEvent, ?> observe(TectonicEvent contextEvent, TectonicEvent subEvent, UseCase<?> useCase) {
             return new ResultActor<TectonicEvent, Object>() {
                 @Override
                 public void onComplete(TectonicEvent event, Object result) {

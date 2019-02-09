@@ -42,7 +42,7 @@ public class SimpleTriggers implements Triggers<TectonicEvent>, ResultActor<Tect
     }
 
     @Override
-    public ResultActor<TectonicEvent, ?> observe(TectonicEvent subEvent, UseCase<?> useCase) {
+    public ResultActor<TectonicEvent, ?> observe(TectonicEvent contextEvent, TectonicEvent subEvent, UseCase<?> useCase) {
         return this;
     }
 

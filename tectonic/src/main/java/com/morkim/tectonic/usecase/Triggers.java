@@ -6,7 +6,7 @@ import java.util.UUID;
 /**
  * Implement this interface to receive the application events in order to trigger the corresponding
  * use cases. This interface is also used by the use case internally to execute precondition use cases.
- * If a precondition or sub is executed it will call the {@link #map(Class)} method first before a call
+ * If a precondition or sub is executed it will call the {@link #map(Class, TectonicEvent)} method first before a call
  * is made to any version of {@link #trigger(TectonicEvent, PreconditionActor, ResultActor, TectonicEvent)}.
  * So make sure that you do the all use cases executions inside {@link #trigger(TectonicEvent, PreconditionActor, ResultActor, TectonicEvent)}
  * and the other versions of it just calling it providing null values to the parameters that it does not have.
@@ -66,10 +66,23 @@ public interface Triggers<E extends TectonicEvent> {
      * the execution of B.
      *
      * @param cls the use case class
+     * @param contextEvent context event of the triggering use case
      * @return the event to use to trigger the use case {@code cls}
      *
      * @see UseCase#execute(Class)
      * @see UseCase#execute(UUID, Class)
      */
-    E map(Class<? extends UseCase> cls);
+    E map(Class<? extends UseCase> cls, E contextEvent);
+
+    /**
+     * Allows to observe the execution of implicit (sub and precondition) use case, giving the system
+     * the ability to create, set and clear dependencies. If using dependency injection create the dependencies
+     * here. Return a result actor to know when the use case will finish so dependencies can be cleared.
+     * If not using dependency injection set the dependencies using the {@code useCase} instance.
+     *
+     * @param implicitEvent the event triggered the implicit use case
+     * @param useCase the use case instance
+     * @return a result actor to observe the use case state
+     */
+    ResultActor<E, ?> observe(E implicitEvent, UseCase<?> useCase);
 }

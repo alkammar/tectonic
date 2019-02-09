@@ -36,8 +36,13 @@ public class UseCaseExecutor implements Triggers<UseCaseExecutor.Event> {
     }
 
     @Override
-    public Event map(Class<? extends UseCase> cls) {
+    public Event map(Class<? extends UseCase> cls, Event contextEvent) {
         if (MainUseCase.class.equals(cls)) return Event.PRE_CONDITION_MAIN;
+        return null;
+    }
+
+    @Override
+    public ResultActor<Event, ?> observe(Event implicitEvent, UseCase<?> useCase) {
         return null;
     }
 

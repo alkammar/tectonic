@@ -415,8 +415,6 @@ public abstract class UseCase<R> implements PreconditionActor {
         if (cache.contains(cls)) {
             return cache.getValue(cls);
         } else {
-            //noinspection unchecked
-            Triggers<TectonicEvent> triggers = (Triggers<TectonicEvent>) executor;
 
             final UUID finalKey = key == null ? UUID.randomUUID() : key;
             ResultActor<TectonicEvent, ?> subResultActor = new ResultActor<TectonicEvent, r>() {
@@ -431,12 +429,18 @@ public abstract class UseCase<R> implements PreconditionActor {
                 }
             };
 
+            //noinspection unchecked
+            Triggers<TectonicEvent> triggers = (Triggers<TectonicEvent>) executor;
+            TectonicEvent subEvent = triggers.map(cls, event);
+
             final UseCase<?> useCase = new Builder()
                     .useCase(cls)
                     .containerResultActor(subResultActor)
                     .container(this)
-                    .triggers(executor)
+                    .triggers(triggers)
                     .build();
+
+            useCase.addResultActor((ResultActor) triggers.observe(subEvent, useCase));
 
             PrimaryActor subPrimaryActor = new PrimaryActor() {
                 @Override
@@ -482,7 +486,7 @@ public abstract class UseCase<R> implements PreconditionActor {
         //noinspection unchecked
         Triggers<TectonicEvent> triggers = (Triggers<TectonicEvent>) executor;
         for (Class<? extends UseCase> precondition : preconditions)
-            preconditionEvents.put(triggers.trigger(triggers.map(precondition), this, null, event), precondition);
+            preconditionEvents.put(triggers.trigger(triggers.map(precondition, event), this, null, event), precondition);
 
         //noinspection StatementWithEmptyBody
         while (preconditions.size() > 0 && !aborted) ;

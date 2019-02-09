@@ -29,6 +29,8 @@ public class SubUseCaseTest extends ConcurrentTectonicTest {
     private volatile boolean onSubCompleteCalled;
     private volatile boolean onSubAbortedCalled;
     private volatile boolean onActorCompleteCalled;
+    private volatile boolean onSubObserverCompleteCalled;
+    private volatile boolean onSubObserverAbortedCalled;
     private long containerCompleteTimestamp;
     private long subCompleteTimestamp;
     private long subOnStartCount;
@@ -52,6 +54,8 @@ public class SubUseCaseTest extends ConcurrentTectonicTest {
         onActorCompleteCalled = false;
         onSubCompleteCalled = false;
         onSubAbortedCalled = false;
+        onSubObserverCompleteCalled = false;
+        onSubObserverAbortedCalled = false;
         containerCompleteTimestamp = 0;
         subCompleteTimestamp = 0;
         subOnStartCount = 0;
@@ -65,7 +69,7 @@ public class SubUseCaseTest extends ConcurrentTectonicTest {
     public void abort_sub_use_case__undo_thrown_in_main_use_case() throws InterruptedException {
 
         ContainerUseCase container = UseCase.fetch(ContainerUseCase.class);
-        container.setExecutor(new SimpleTriggers());
+        container.setExecutor(new TestExecutor());
         AbortedUseCase sub = UseCase.fetch(AbortedUseCase.class);
         sub.addPrimaryActor(subCompletedActor);
         subThreadManager = new ThreadManagerImpl();
@@ -97,6 +101,7 @@ public class SubUseCaseTest extends ConcurrentTectonicTest {
 
         assertTrue(onUndoCalled);
         assertFalse(onSubCompleteCalled);
+        assertTrue(onSubObserverAbortedCalled);
         assertEquals(3, doBeforeSubUseCaseCalled);
         assertEquals(2, subOnStartCount);
     }
@@ -105,7 +110,7 @@ public class SubUseCaseTest extends ConcurrentTectonicTest {
     public void complete_container__sub_use_case_completed_after_container_use_case() throws InterruptedException {
 
         final ContainerUseCase container = UseCase.fetch(ContainerUseCase.class);
-        container.setExecutor(new SimpleTriggers());
+        container.setExecutor(new TestExecutor());
         CompletedUseCase sub = UseCase.fetch(CompletedUseCase.class);
         sub.addPrimaryActor(subCompletedActor);
         subThreadManager = new ThreadManagerImpl();
@@ -127,6 +132,7 @@ public class SubUseCaseTest extends ConcurrentTectonicTest {
 
         assertTrue(onActorCompleteCalled);
         assertTrue(onSubCompleteCalled);
+        assertTrue(onSubObserverCompleteCalled);
         assertEquals(1, subOnCompleteCount);
         assertEquals(0, containerResultOnCompleteCount);
         assertNotEquals(0, subCompleteTimestamp);
@@ -138,7 +144,7 @@ public class SubUseCaseTest extends ConcurrentTectonicTest {
     public void abort_container__sub_use_case_aborted() throws InterruptedException {
 
         final ContainerUseCase container = UseCase.fetch(ContainerUseCase.class);
-        container.setExecutor(new SimpleTriggers());
+        container.setExecutor(new TestExecutor());
         CompletedUseCase sub = UseCase.fetch(CompletedUseCase.class);
         sub.addPrimaryActor(subCompletedActor);
         subThreadManager = new ThreadManagerImpl();
@@ -161,6 +167,7 @@ public class SubUseCaseTest extends ConcurrentTectonicTest {
         assertFalse(onActorCompleteCalled);
         assertFalse(onSubCompleteCalled);
         assertTrue(onSubAbortedCalled);
+        assertTrue(onSubObserverAbortedCalled);
         assertEquals(0, subOnCompleteCount);
         assertEquals(0, containerResultOnCompleteCount);
     }
@@ -169,7 +176,7 @@ public class SubUseCaseTest extends ConcurrentTectonicTest {
     public void undo_after_sub_use_case__sub_use_case_last_step_reset() throws InterruptedException {
 
         final ContainerUseCase container = UseCase.fetch(ContainerUseCase.class);
-        container.setExecutor(new SimpleTriggers());
+        container.setExecutor(new TestExecutor());
         CompletedUseCase sub = UseCase.fetch(CompletedUseCase.class);
         sub.addPrimaryActor(subCompletedActor);
         subThreadManager = new ThreadManagerImpl();
@@ -330,6 +337,24 @@ public class SubUseCaseTest extends ConcurrentTectonicTest {
         public void doSomething() throws InterruptedException, ExecutionException, UndoException {
             subDoSomethingCalled++;
             subHandle.waitFor(this, SK1);
+        }
+    }
+
+    private class TestExecutor extends SimpleTriggers {
+
+        @Override
+        public ResultActor<TectonicEvent, ?> observe(TectonicEvent subEvent, UseCase<?> useCase) {
+            return new ResultActor<TectonicEvent, Object>() {
+                @Override
+                public void onComplete(TectonicEvent event, Object result) {
+                    onSubObserverCompleteCalled = true;
+                }
+
+                @Override
+                public void onAbort(TectonicEvent event) {
+                    onSubObserverAbortedCalled = true;
+                }
+            };
         }
     }
 }

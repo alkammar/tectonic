@@ -340,7 +340,7 @@ public abstract class UseCase<R> {
                         }
                     }
 
-                    if (initialized) {
+                    if (!aborted && initialized) {
                         try {
                             onExecute();
                         } catch (UndoException e) {
@@ -911,6 +911,9 @@ public abstract class UseCase<R> {
      * callback for primary and secondary actors and {@link ResultActor#onAbort(Object)} for result actors.
      */
     protected void abort() {
+
+        aborted = true;
+
         synchronized (ALIVE) {
             onDestroy();
             ALIVE.remove(getClass());

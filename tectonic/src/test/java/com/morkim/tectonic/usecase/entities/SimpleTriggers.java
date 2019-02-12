@@ -1,7 +1,6 @@
 package com.morkim.tectonic.usecase.entities;
 
 import com.morkim.tectonic.usecase.Builder;
-import com.morkim.tectonic.usecase.PreconditionActor;
 import com.morkim.tectonic.usecase.ResultActor;
 import com.morkim.tectonic.usecase.TectonicEvent;
 import com.morkim.tectonic.usecase.Triggers;
@@ -9,12 +8,11 @@ import com.morkim.tectonic.usecase.UseCase;
 
 public class SimpleTriggers implements Triggers<TectonicEvent>, ResultActor<TectonicEvent, Object> {
     @Override
-    public TectonicEvent trigger(TectonicEvent event, PreconditionActor preconditionActor, ResultActor resultActor, TectonicEvent contextEvent) {
+    public TectonicEvent trigger(TectonicEvent event, ResultActor resultActor, TectonicEvent contextEvent) {
         if (event == AbortedUseCase.EVENT) {
             new Builder()
                     .useCase(AbortedUseCase.class)
                     .resultActor(resultActor)
-                    .preconditionActor(preconditionActor)
                     .triggers(this)
                     .build()
                     .execute(event);
@@ -25,12 +23,12 @@ public class SimpleTriggers implements Triggers<TectonicEvent>, ResultActor<Tect
 
     @Override
     public TectonicEvent trigger(TectonicEvent event, ResultActor resultActor) {
-        return trigger(event, null, resultActor, null);
+        return trigger(event, resultActor, null);
     }
 
     @Override
     public TectonicEvent trigger(TectonicEvent event) {
-        return trigger(event, null, null, null);
+        return trigger(event, null, null);
     }
 
     @Override

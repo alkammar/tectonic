@@ -97,8 +97,8 @@ public class PreconditionActorTest extends TectonicTest {
 				onAbortCalled = true;
 			}
 		};
-		useCase.setPreconditionActor(actor);
-		useCase.setUnknownActor(actor);
+		useCase.addPrimaryActor(actor);
+//		useCase.setUnknownActor(actor);
 		useCase.execute();
 
 		assertTrue(onCompleteCalled);

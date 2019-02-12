@@ -1,7 +1,6 @@
 package com.morkim.usecase.app;
 
 import com.morkim.tectonic.usecase.Builder;
-import com.morkim.tectonic.usecase.PreconditionActor;
 import com.morkim.tectonic.usecase.ResultActor;
 import com.morkim.tectonic.usecase.TectonicEvent;
 import com.morkim.tectonic.usecase.Triggers;
@@ -32,7 +31,7 @@ public class UseCaseExecutor implements Triggers<UseCaseExecutor.Event> {
 
     @Override
     public Event trigger(Event event) {
-        return trigger(event, null, null, null);
+        return trigger(event, null, null);
     }
 
     @Override
@@ -42,17 +41,17 @@ public class UseCaseExecutor implements Triggers<UseCaseExecutor.Event> {
     }
 
     @Override
-    public ResultActor<Event, ?> observe(Event implicitEvent, UseCase<?> useCase) {
+    public ResultActor<Event, ?> observe(Event contextEvent, Event implicitEvent, UseCase<?> useCase) {
         return null;
     }
 
     @Override
     public Event trigger(Event event, ResultActor resultActor) {
-        return trigger(event, null, resultActor, null);
+        return trigger(event, resultActor, null);
     }
 
     @Override
-    public Event trigger(Event event, PreconditionActor preconditionActor, ResultActor resultActor, Event contextEvent) {
+    public Event trigger(Event event, ResultActor resultActor, Event contextEvent) {
 
         switch (event) {
 
@@ -67,7 +66,7 @@ public class UseCaseExecutor implements Triggers<UseCaseExecutor.Event> {
                                 .build()
                 );
 
-                execute(MainUseCase.class, event, preconditionActor, resultActor);
+                execute(MainUseCase.class, event, resultActor);
                 break;
             case REFRESH_AUTH:
 
@@ -77,7 +76,7 @@ public class UseCaseExecutor implements Triggers<UseCaseExecutor.Event> {
                                 .loginUserModule(new LoginUserModule())
                                 .build());
 
-                execute(LoginUser.class, event, preconditionActor, resultActor);
+                execute(LoginUser.class, event, resultActor);
                 break;
             case DO_SECONDARY_THING:
 
@@ -94,7 +93,7 @@ public class UseCaseExecutor implements Triggers<UseCaseExecutor.Event> {
                                 .secondaryUseCaseModule(new SecondaryUseCaseModule())
                                 .build());
 
-                execute(SecondaryUseCase.class, event, preconditionActor, resultActor);
+                execute(SecondaryUseCase.class, event, resultActor);
                 break;
 
             case USER_LOGOUT:
@@ -105,7 +104,7 @@ public class UseCaseExecutor implements Triggers<UseCaseExecutor.Event> {
                                 .logoutUserModule(new LogoutUserModule())
                                 .build());
 
-                execute(LogoutUser.class, event, preconditionActor, resultActor);
+                execute(LogoutUser.class, event, resultActor);
 
                 break;
             case REGISTER:
@@ -123,7 +122,7 @@ public class UseCaseExecutor implements Triggers<UseCaseExecutor.Event> {
                                 .registerUserModule(new RegisterUserModule(AppInjector.getRegistrationFlowComponent().ui()))
                                 .build());
 
-                execute(RegisterUser.class, event, preconditionActor, resultActor);
+                execute(RegisterUser.class, event, resultActor);
 
                 break;
         }
@@ -131,11 +130,10 @@ public class UseCaseExecutor implements Triggers<UseCaseExecutor.Event> {
         return event;
     }
 
-    private void execute(Class<? extends UseCase> cls, TectonicEvent event, PreconditionActor preconditionActor, ResultActor resultActor) {
+    private void execute(Class<? extends UseCase> cls, TectonicEvent event, ResultActor resultActor) {
         new Builder()
                 .useCase(cls)
                 .resultActor(resultActor)
-                .preconditionActor(preconditionActor)
                 .triggers(this)
                 .build()
                 .execute(event);

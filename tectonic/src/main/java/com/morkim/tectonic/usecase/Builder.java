@@ -6,7 +6,7 @@ package com.morkim.tectonic.usecase;
 public class Builder {
 
     private UseCase<?> useCase;
-    private PreconditionActor preconditionActor;
+    private SecondaryActor preconditionActor;
     private ResultActor[] resultActors;
     private Triggers triggers;
     private UseCase container;
@@ -30,7 +30,7 @@ public class Builder {
      * @param preconditionActor the actor
      * @return builder
      */
-    public Builder preconditionActor(PreconditionActor preconditionActor) {
+    Builder preconditionActor(SecondaryActor preconditionActor) {
         this.preconditionActor = preconditionActor;
 
         return this;

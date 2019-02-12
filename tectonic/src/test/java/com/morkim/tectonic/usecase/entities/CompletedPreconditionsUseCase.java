@@ -22,6 +22,8 @@ public class CompletedPreconditionsUseCase extends SimpleUseCase {
     protected void onExecute() throws InterruptedException, UndoException {
         super.onExecute();
 
+        Thread.sleep(200);
+
         complete();
     }
 }

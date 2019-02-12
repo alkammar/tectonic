@@ -981,13 +981,13 @@ public abstract class UseCase<R> {
 
         for (PrimaryActor actor : primaryActors)
             //noinspection SuspiciousMethodCalls
-            if (!resultActors.contains(actor) && actor != null)
+            if (actor != null)
                 //noinspection unchecked
                 actor.onComplete(event);
 
         for (SecondaryActor actor : secondaryActors)
             //noinspection SuspiciousMethodCalls
-            if (!resultActors.contains(actor) && actor != null)
+            if (actor != null)
                 //noinspection unchecked
                 actor.onComplete(event);
 
@@ -997,11 +997,11 @@ public abstract class UseCase<R> {
 
     private void notifyActorsOfAbort(TectonicEvent event) {
         for (Actor actor : primaryActors)
-            if (preconditionActor != actor && actor != null) //noinspection unchecked
+            if (actor != null && !resultActors.contains(actor) && preconditionActor != actor) //noinspection unchecked
                 actor.onAbort(event);
 
         for (Actor actor : secondaryActors)
-            if (preconditionActor != actor && actor != null) //noinspection unchecked
+            if (actor != null && !resultActors.contains(actor) && preconditionActor != actor) //noinspection unchecked
                 actor.onAbort(event);
 
         if (containerResultActor != null)

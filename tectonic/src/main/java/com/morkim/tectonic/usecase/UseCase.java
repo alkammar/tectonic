@@ -19,10 +19,12 @@ import javax.annotation.Nonnull;
 
 /**
  * <p>
- * - The whole idea this framework is built on the assumption that business logic does not change frequently
+ * - The whole idea of this framework is built on the assumption that business logic does not change frequently
  * in a mature industry. At least not as frequent as the IO logic, like UI designs, backend services ... etc.
- * Understand that lead to the creation of this framework to try to provide a good way of separation
- * without compromising on interaction.
+ * This where the name "Tectonic" comes from, since the earth tectonic plates are moving but relatively
+ * very slow, allowing us to build our civilization on top of it which on the other hand is developing
+ * way faster than the tectonic plates are shifting. This understanding lead to the creation of this
+ * framework to try to provide a good way of separation without compromising on interaction.
  * </p>
  * <p>
  * - The most elegant way of defining business logic (in my opinion) is (and always was) use cases.

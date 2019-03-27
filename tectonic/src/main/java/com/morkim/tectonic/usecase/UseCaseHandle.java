@@ -215,4 +215,12 @@ public interface UseCaseHandle {
      * @see #waitForRandom(UUID)
      */
     <D> void replyWithRandom(UUID key, Random<D> data);
+
+    <D> D immediate(@Nonnull Actor actor, UUID key);
+
+    <D> D immediate(@Nonnull Actor actor, UUID key, D data);
+
+    <D> D immediate(@Nonnull Actor actor, Step step, UUID key);
+
+    <D> D immediate(@Nonnull Actor actor, Step step, UUID key, D data);
 }

@@ -650,9 +650,12 @@ public abstract class UseCase<R> {
      */
     protected abstract void onExecute() throws InterruptedException, UndoException;
 
-    @SuppressWarnings("UnusedReturnValue")
-    public static <D> D immediate(D data) {
-        return data;
+    private <D> D immediate(Actor actor, Step step, UUID key, D data) {
+        return cache.push(actor, step, key, data);
+    }
+
+    private <D> D immediate(Actor actor, Step step, UUID key) {
+        return immediate(actor, step, key, null);
     }
 
     private <D> Random<D> waitForRandom(UUID key) {
@@ -1167,6 +1170,26 @@ public abstract class UseCase<R> {
         @Override
         public <D> void replyWithRandom(UUID key, Random<D> data) {
             UseCase.this.replyWithRandom(key, data);
+        }
+
+        @Override
+        public <D> D immediate(@Nonnull Actor actor, UUID key) {
+            return UseCase.this.immediate(actor, new IsolatedStep(), key);
+        }
+
+        @Override
+        public <D> D immediate(@Nonnull Actor actor, UUID key, D data) {
+            return UseCase.this.immediate(actor, new IsolatedStep(), key, data);
+        }
+
+        @Override
+        public <D> D immediate(@Nonnull Actor actor, Step step, UUID key) {
+            return UseCase.this.immediate(actor, step, key);
+        }
+
+        @Override
+        public <D> D immediate(@Nonnull Actor actor, Step step, UUID key, D data) {
+            return UseCase.this.immediate(actor, step, key, data);
         }
 
         @Override

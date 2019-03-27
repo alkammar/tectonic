@@ -74,6 +74,20 @@ public class StepCache {
         return actor;
     }
 
+    <r> r push(Actor actor, Step step, UUID key, r value) {
+
+        Set<UUID> stepKeys = keys.get(step);
+        if (stepKeys == null) stepKeys = new HashSet<>();
+        stepKeys.add(key);
+        if (keys.put(step, stepKeys) == null)
+            stack.push(step);
+        this.actors.put(step, actor);
+
+        values.put(key, value);
+
+        return value;
+    }
+
     private void remove(Step step) {
         removeKeys(step);
         clearSubUseCase(step);

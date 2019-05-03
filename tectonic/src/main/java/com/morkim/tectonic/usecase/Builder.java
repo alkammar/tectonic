@@ -1,11 +1,15 @@
 package com.morkim.tectonic.usecase;
 
+import javax.annotation.Nonnull;
+
 /**
  * Convenient builder for a configuring and executing a use case
  */
 public class Builder {
 
-    private UseCase<?> useCase;
+    private String instanceId;
+    private Class<? extends UseCase> cls;
+
     private SecondaryActor preconditionActor;
     private ResultActor[] resultActors;
     private Triggers triggers;
@@ -19,7 +23,19 @@ public class Builder {
      * @return builder
      */
     public Builder useCase(Class<? extends UseCase> cls) {
-        useCase = UseCase.fetch(cls);
+        this.cls = cls;
+
+        return this;
+    }
+
+    /**
+     * The use case ID for multi execution
+     *
+     * @param instanceId the use case ID
+     * @return builder
+     */
+    public Builder instanceId(@Nonnull String instanceId) {
+        this.instanceId = instanceId;
 
         return this;
     }
@@ -92,12 +108,16 @@ public class Builder {
      * @return the use case ready for execution
      */
     public UseCase<?> build() {
+
+        UseCase<?> useCase = UseCase.fetch(cls, instanceId);
+
         useCase.setPreconditionActor(preconditionActor);
         if (resultActors != null)
             for (ResultActor resultActor : resultActors) useCase.addResultActor(resultActor);
         useCase.setExecutor(triggers);
         useCase.setContainer(container);
         useCase.setContainerResultActor(containerResultActor);
+
         return useCase;
     }
 }

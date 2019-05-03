@@ -63,7 +63,7 @@ public class SecondaryFlowImpl implements Secondary.Flow, SecondaryUseCase.UI<Us
 
     @Override
     public void askToConfirm() throws InterruptedException {
-        UseCase.immediate(null);
+        handle.immediate(this, DATA1);
     }
 
     @Override

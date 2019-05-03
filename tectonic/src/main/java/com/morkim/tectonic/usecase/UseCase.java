@@ -201,7 +201,7 @@ public abstract class UseCase<R> {
         }
     };
 
-    private static final Map<Class<? extends UseCase>, UseCase> ALIVE = new ConcurrentHashMap<>();
+    private static final Map<String, UseCase> ALIVE = new ConcurrentHashMap<>();
     public static final UUID PRECONDITION_KEY = UUID.randomUUID();
 
     private Triggers<?> executor;
@@ -236,6 +236,7 @@ public abstract class UseCase<R> {
     private static ThreadManager globalThreadManager;
     private UseCase container;
     private ResultActor<TectonicEvent, R> containerResultActor;
+    private String instanceId;
 
     /**
      * Returns the current (only) instance that is alive of this {@code useCaseClass}. If no instance
@@ -248,16 +249,20 @@ public abstract class UseCase<R> {
      * @return the use case instance
      */
     public synchronized static <U extends UseCase> U fetch(Class<U> useCaseClass) {
+        return fetch(useCaseClass, "");
+    }
+
+    public synchronized static <U extends UseCase> U fetch(Class<U> useCaseClass, @Nonnull String instanceId) {
 
         U useCase;
         synchronized (ALIVE) {
             //noinspection unchecked
-            useCase = (U) ALIVE.get(useCaseClass);
+            useCase = (U) ALIVE.get(useCaseClass.getName() + instanceId);
             if (useCase == null) {
                 try {
                     useCase = useCaseClass.newInstance();
-                    ALIVE.put(useCaseClass, useCase);
                     useCase.onCreate();
+                    ALIVE.put(useCase.getId(), useCase);
                 } catch (Exception e) {
                     e.printStackTrace();
                     throw new UnableToInstantiateUseCase(e.getCause());
@@ -266,6 +271,10 @@ public abstract class UseCase<R> {
         }
 
         return useCase;
+    }
+
+    String getId() {
+        return getClass().getName() + instanceId;
     }
 
     protected void onCreate() {
@@ -306,7 +315,7 @@ public abstract class UseCase<R> {
     public void execute(final TectonicEvent event) {
         this.event = event;
 
-        if (ALIVE.containsKey(getClass()) && !running) {
+        if (ALIVE.containsKey(getId()) && !running) {
 
             running = true;
 
@@ -891,7 +900,7 @@ public abstract class UseCase<R> {
      */
     protected void complete(R result) {
 
-        if (container != null && ALIVE.containsKey(container.getClass())) {
+        if (container != null && ALIVE.containsKey(container.getId())) {
             if (running) {
                 //noinspection unchecked
                 containerResultActor.onComplete(event, result);
@@ -909,7 +918,7 @@ public abstract class UseCase<R> {
             running = false;
             preconditionsExecuted = false;
             onDestroy();
-            ALIVE.remove(getClass());
+            ALIVE.remove(getId());
             getThreadManager().stop();
 
             completeWhenCompleted(this);
@@ -927,7 +936,7 @@ public abstract class UseCase<R> {
 
         synchronized (ALIVE) {
             onDestroy();
-            ALIVE.remove(getClass());
+            ALIVE.remove(getId());
         }
         getThreadManager().stop();
     }

@@ -374,7 +374,7 @@ public abstract class UseCase<R> {
                 }
 
                 @Override
-                public void onComplete() throws InterruptedException {
+                public void onComplete() {
                     UseCase.this.complete();
                 }
 
@@ -453,6 +453,7 @@ public abstract class UseCase<R> {
                 .triggers(triggers)
                 .build();
 
+        //noinspection unchecked
         useCase.addResultActor((ResultActor) triggers.observe(event, subEvent, useCase));
 
         PrimaryActor subPrimaryActor = new PrimaryActor() {
@@ -493,7 +494,7 @@ public abstract class UseCase<R> {
         return null;
     }
 
-    private boolean executePreconditions() throws InterruptedException, UndoException {
+    private boolean executePreconditions() throws UndoException {
 
         if (!preconditionsExecuted) onAddPreconditions(preconditions);
 
@@ -539,6 +540,7 @@ public abstract class UseCase<R> {
                     .triggers(triggers)
                     .build();
 
+            //noinspection unchecked
             useCase.addResultActor((ResultActor) triggers.observe(event, preconditionEvent, useCase));
 
             useCase.execute(preconditionEvent);
@@ -1006,10 +1008,12 @@ public abstract class UseCase<R> {
 
     private void notifyActorsOfAbort(TectonicEvent event) {
         for (Actor actor : primaryActors)
+            //noinspection SuspiciousMethodCalls
             if (actor != null && !resultActors.contains(actor) && preconditionActor != actor) //noinspection unchecked
                 actor.onAbort(event);
 
         for (Actor actor : secondaryActors)
+            //noinspection SuspiciousMethodCalls
             if (actor != null && !resultActors.contains(actor) && preconditionActor != actor) //noinspection unchecked
                 actor.onAbort(event);
 

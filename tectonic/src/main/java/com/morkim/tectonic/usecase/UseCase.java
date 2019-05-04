@@ -258,10 +258,10 @@ public abstract class UseCase<R> {
         synchronized (ALIVE) {
             //noinspection unchecked
             useCase = (U) ALIVE.get(useCaseClass.getName() + instanceId);
-            useCase.setInstanceId(instanceId);
             if (useCase == null) {
                 try {
                     useCase = useCaseClass.newInstance();
+                    useCase.setInstanceId(instanceId);
                     useCase.onCreate();
                     ALIVE.put(useCase.getId(), useCase);
                 } catch (Exception e) {

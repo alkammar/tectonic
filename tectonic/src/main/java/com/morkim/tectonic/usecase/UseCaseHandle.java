@@ -223,4 +223,6 @@ public interface UseCaseHandle {
     <D> D immediate(@Nonnull Actor actor, Step step, UUID key);
 
     <D> D immediate(@Nonnull Actor actor, Step step, UUID key, D data);
+
+    String getInstanceId();
 }

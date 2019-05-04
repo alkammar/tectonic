@@ -35,6 +35,11 @@ public class UseCaseExecutor implements Triggers<UseCaseExecutor.Event> {
     }
 
     @Override
+    public Event trigger(Event event, String instanceId) {
+        return null;
+    }
+
+    @Override
     public Event map(Class<? extends UseCase> cls, Event contextEvent) {
         if (MainUseCase.class.equals(cls)) return Event.PRE_CONDITION_MAIN;
         return null;
@@ -128,6 +133,11 @@ public class UseCaseExecutor implements Triggers<UseCaseExecutor.Event> {
         }
 
         return event;
+    }
+
+    @Override
+    public Event trigger(Event event, String instanceId, ResultActor resultActor, Event contextEvent) {
+        return null;
     }
 
     private void execute(Class<? extends UseCase> cls, TectonicEvent event, ResultActor resultActor) {

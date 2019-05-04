@@ -1206,6 +1206,11 @@ public abstract class UseCase<R> {
         }
 
         @Override
+        public String getInstanceId() {
+            return UseCase.this.getId();
+        }
+
+        @Override
         public void reset() {
             UseCase.this.reset();
         }

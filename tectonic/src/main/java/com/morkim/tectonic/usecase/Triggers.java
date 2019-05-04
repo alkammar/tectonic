@@ -37,6 +37,8 @@ public interface Triggers<E extends TectonicEvent> {
      */
     E trigger(E event, ResultActor resultActor, E contextEvent);
 
+    E trigger(E event, String instanceId, ResultActor resultActor, E contextEvent);
+
     /**
      * Version of {@link #trigger(TectonicEvent, ResultActor, TectonicEvent)} but without {@code contextEvent}
      */
@@ -47,6 +49,8 @@ public interface Triggers<E extends TectonicEvent> {
      * without {@code resultActor} or {@code contextEvent}
      */
     E trigger(E event);
+
+    E trigger(E event, String instanceId);
 
     /**
      * Maps the use case {@code cls} to be executed to a system trigger event {@code E}, passing a

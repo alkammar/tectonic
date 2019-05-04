@@ -1216,7 +1216,7 @@ public abstract class UseCase<R> {
 
         @Override
         public String getInstanceId() {
-            return UseCase.this.getId();
+            return UseCase.this.getInstanceId();
         }
 
         @Override

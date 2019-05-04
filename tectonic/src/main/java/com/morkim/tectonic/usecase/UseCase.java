@@ -277,6 +277,10 @@ public abstract class UseCase<R> {
         return getClass().getName() + instanceId;
     }
 
+    protected String getInstanceId() {
+        return instanceId;
+    }
+
     protected void onCreate() {
 
     }

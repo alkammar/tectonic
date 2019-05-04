@@ -258,6 +258,7 @@ public abstract class UseCase<R> {
         synchronized (ALIVE) {
             //noinspection unchecked
             useCase = (U) ALIVE.get(useCaseClass.getName() + instanceId);
+            useCase.setInstanceId(instanceId);
             if (useCase == null) {
                 try {
                     useCase = useCaseClass.newInstance();
@@ -271,6 +272,10 @@ public abstract class UseCase<R> {
         }
 
         return useCase;
+    }
+
+    void setInstanceId(String instanceId) {
+        this.instanceId = instanceId;
     }
 
     String getId() {

@@ -29,6 +29,11 @@ public class StepFactoryImpl implements StepFactory {
 
     @Override
     public <S> S create(Class<S> aClass) {
+        return create(aClass, "");
+    }
+
+    @Override
+    public <S> S create(Class<S> aClass, String instanceId) {
         try {
             if (aClass == Logout.LoginScreen.class) {
                 return createActivity(MainActivity.class,

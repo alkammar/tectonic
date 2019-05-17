@@ -7,7 +7,7 @@ import javax.annotation.Nonnull;
  */
 public class Builder {
 
-    private String instanceId;
+    private String instanceId = "";
     private Class<? extends UseCase> cls;
 
     private SecondaryActor preconditionActor;

@@ -22,6 +22,11 @@ public class SimpleTriggers implements Triggers<TectonicEvent>, ResultActor<Tect
     }
 
     @Override
+    public TectonicEvent trigger(TectonicEvent event, String instanceId, ResultActor resultActor, TectonicEvent contextEvent) {
+        return null;
+    }
+
+    @Override
     public TectonicEvent trigger(TectonicEvent event, ResultActor resultActor) {
         return trigger(event, resultActor, null);
     }
@@ -29,6 +34,11 @@ public class SimpleTriggers implements Triggers<TectonicEvent>, ResultActor<Tect
     @Override
     public TectonicEvent trigger(TectonicEvent event) {
         return trigger(event, null, null);
+    }
+
+    @Override
+    public TectonicEvent trigger(TectonicEvent event, String instanceId) {
+        return null;
     }
 
     @Override

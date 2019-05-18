@@ -207,7 +207,87 @@ public class UndoTest extends ConcurrentTectonicTest {
         assertEquals(1, undoSecondarySteps.size());
         assertEquals(stepP2, undoPrimarySteps.get(0));
         assertTrue(undoPrimaryInclusive.get(0));
+        assertFalse(undoPrimaryInclusive.get(1));
         assertEquals(stepS1, undoSecondarySteps.get(0));
+    }
+
+    @Test
+    public void undo_primary_actor_to_step__clears_to_that_step() throws Throwable {
+
+        final StepData data1 = new StepData();
+        final StepData data2 = new StepData();
+        final StepData data3 = new StepData();
+        final StepData data4 = new StepData();
+        final StepData data5 = new StepData();
+        final StepData data6 = new StepData();
+
+        UndoUseCase useCase = UseCase.fetch(UndoUseCase.class);
+        useCase.setPrimaryActor(new UndoPActor());
+        useCase.setSecondaryActor(new UndoSActor());
+        useCase.execute();
+
+        replyPrimaryStep1(new Random<>(data1), new Random<>(data2));
+        replySecondaryStep(ACTION_DATA_KEY_3, data3);
+        replyPrimaryStep2(new Random<>(data4), new Random<>(data5));
+        undo(stepP2);
+
+        replyPrimaryStep1(new Random<>(data1), new Random<>(data2));
+        replySecondaryStep(ACTION_DATA_KEY_3, data3);
+        replyPrimaryStep2(new Random<>(data4), new Random<>(data5));
+        replyPrimaryStep3(new Random<>(new StepData()), new Random<>(new StepData()));
+        replySecondaryStep(ACTION_DATA_KEY_9, data6);
+
+        useCaseThread.join();
+
+        assertEquals(3, undoPrimarySteps.size());
+        assertEquals(1, undoSecondarySteps.size());
+        assertEquals(stepP3, undoPrimarySteps.get(0));
+        assertEquals(stepP2, undoPrimarySteps.get(1));
+        assertEquals(stepP1, undoPrimarySteps.get(2));
+        assertTrue(undoPrimaryInclusive.get(0));
+        assertTrue(undoPrimaryInclusive.get(1));
+        assertFalse(undoPrimaryInclusive.get(2));
+        assertEquals(stepS1, undoSecondarySteps.get(0));
+    }
+
+    @Test
+    public void undo_primary_actor_to_first_step__aborts() throws Throwable {
+
+        final StepData data1 = new StepData();
+        final StepData data2 = new StepData();
+        final StepData data3 = new StepData();
+        final StepData data4 = new StepData();
+        final StepData data5 = new StepData();
+        final StepData data6 = new StepData();
+
+        UndoUseCase useCase = UseCase.fetch(UndoUseCase.class);
+        useCase.setPrimaryActor(new UndoPActor());
+        useCase.setSecondaryActor(new UndoSActor());
+        useCase.execute();
+
+        replyPrimaryStep1(new Random<>(data1), new Random<>(data2));
+        replySecondaryStep(ACTION_DATA_KEY_3, data3);
+        replyPrimaryStep2(new Random<>(data4), new Random<>(data5));
+        undo(stepP1);
+
+        replyPrimaryStep1(new Random<>(data1), new Random<>(data2));
+        replySecondaryStep(ACTION_DATA_KEY_3, data3);
+        replyPrimaryStep2(new Random<>(data4), new Random<>(data5));
+        replyPrimaryStep3(new Random<>(new StepData()), new Random<>(new StepData()));
+        replySecondaryStep(ACTION_DATA_KEY_9, data6);
+
+        useCaseThread.join();
+
+        assertEquals(3, undoPrimarySteps.size());
+        assertEquals(1, undoSecondarySteps.size());
+        assertEquals(stepP3, undoPrimarySteps.get(0));
+        assertEquals(stepP2, undoPrimarySteps.get(1));
+        assertEquals(stepP1, undoPrimarySteps.get(2));
+        assertTrue(undoPrimaryInclusive.get(0));
+        assertTrue(undoPrimaryInclusive.get(1));
+        assertTrue(undoPrimaryInclusive.get(2));
+        assertEquals(stepS1, undoSecondarySteps.get(0));
+        assertTrue(onAbortCalled);
     }
 
     @Test
@@ -314,11 +394,19 @@ public class UndoTest extends ConcurrentTectonicTest {
 
     private void undo() throws Throwable {
 
+        undo(null);
+    }
+
+    private void undo(final Step step) throws Throwable {
+
         Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
                 sleep();
-                useCaseHandle.undo();
+                if (step == null)
+                    useCaseHandle.undo();
+                else
+                    useCaseHandle.undo(step);
             }
         });
         thread.start();

@@ -75,6 +75,8 @@ public interface UseCaseHandle {
      * then the use case will abort calling the {@link Actor#onAbort(Object)}
      * </p>
      */
+    void undo(Step step);
+
     void undo();
 
     /**

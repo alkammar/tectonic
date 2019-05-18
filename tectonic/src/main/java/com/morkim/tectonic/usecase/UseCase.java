@@ -237,6 +237,7 @@ public abstract class UseCase<R> {
     private UseCase container;
     private ResultActor<TectonicEvent, R> containerResultActor;
     private String instanceId;
+    private Step targetStep;
 
     /**
      * Returns the current (only) instance that is alive of this {@code useCaseClass}. If no instance
@@ -857,6 +858,11 @@ public abstract class UseCase<R> {
         throw new InterruptedException();
     }
 
+    private void undo(Step step) {
+        targetStep = step;
+        undo();
+    }
+
     private void undo() {
         if (!cache.isEmpty())
             if (blockingSynchronizer != null)
@@ -976,6 +982,11 @@ public abstract class UseCase<R> {
                 while (step != null) {
                     actor = cache.getActor(step);
                     if (!primaryActors.contains(actor)) {
+                        cache.pop();
+                        actor.onUndo(step, true);
+                        step = cache.peak();
+                    } else if (targetStep != null) {
+                        if (targetStep == step) targetStep = null;
                         cache.pop();
                         actor.onUndo(step, true);
                         step = cache.peak();
@@ -1116,6 +1127,11 @@ public abstract class UseCase<R> {
     }
 
     private class Handle implements UseCaseHandle {
+
+        @Override
+        public void undo(Step step) {
+            UseCase.this.undo(step);
+        }
 
         @Override
         public void undo() {

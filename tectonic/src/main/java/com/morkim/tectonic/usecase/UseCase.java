@@ -86,13 +86,6 @@ import javax.annotation.Nonnull;
  * are completed.
  * </p>
  * <p>
- * - Currently the framework supports one use case instance at a time. So if you implemented
- * use case A and use case B, you can execute one instance of A and one instance of B simultaneously,
- * but you cannot execute multiple instances of A or B at the same time. If you wish to re-execute
- * a use case you have to wait for the current instance to terminate to be able to execute another
- * instance.
- * </p>
- * <p>
  * - Each use case instance runs in its own worker thread, where the life of the thread is managed
  * by a {@link ThreadManager}. The use case has a default thread manager implementation {@link ThreadManagerImpl}
  * which should not be replaced in production. But a way to replace the thread manager is provided
@@ -240,19 +233,29 @@ public abstract class UseCase<R> {
     private Step targetStep;
 
     /**
-     * Returns the current (only) instance that is alive of this {@code useCaseClass}. If no instance
-     * is running it will create one and returns it. If an exception is thrown during the creation of
-     * the use case a {@link UnableToInstantiateUseCase} runtime exception is thrown wrapping the
-     * original exception.
-     *
-     * @param useCaseClass the use case class to fetch
-     * @param <U>          the use case type
-     * @return the use case instance
+     * Same as {@link UseCase#fetch(Class, String)} but without instance ID. This means we are only
+     * interested in running one instance at a time of this use case, which is the normal case. If you
+     * wish to run multiple instances of the same use case simultaneously use the {@link UseCase#fetch(Class, String)}
+     * with a unique instance ID per use case.
      */
     public synchronized static <U extends UseCase> U fetch(Class<U> useCaseClass) {
         return fetch(useCaseClass, "");
     }
 
+    /**
+     * Returns the current (only) instance that is alive of this {@code useCaseClass}. If no instance
+     * is running it will create one and returns it. If an exception is thrown during the creation of
+     * the use case a {@link UnableToInstantiateUseCase} runtime exception is thrown wrapping the
+     * original exception.
+     * The param {@code instanceId} is used to uniquely identify the use case instance while running
+     * multiple instance of the same use case class. Use {@link UseCaseHandle#getInstanceId()} to know
+     * which instance of the use case you are working with at the moment.
+     *
+     * @param useCaseClass the use case class to fetch
+     * @param instanceId an instance ID
+     * @param <U>          the use case type
+     * @return the use case instance
+     */
     public synchronized static <U extends UseCase> U fetch(Class<U> useCaseClass, @Nonnull String instanceId) {
 
         U useCase;

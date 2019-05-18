@@ -218,13 +218,44 @@ public interface UseCaseHandle {
      */
     <D> void replyWithRandom(UUID key, Random<D> data);
 
+    /**
+     * Same as {@link #immediate(Actor, Step, UUID, Object)} but without specifying the associated step
+     * and data
+     */
     <D> D immediate(@Nonnull Actor actor, UUID key);
 
+    /**
+     * Same as {@link #immediate(Actor, Step, UUID, Object)} but without specifying the associated step
+     */
     <D> D immediate(@Nonnull Actor actor, UUID key, D data);
 
+    /**
+     * Same as {@link #immediate(Actor, Step, UUID, Object)} but without data
+     */
     <D> D immediate(@Nonnull Actor actor, Step step, UUID key);
 
+    /**
+     * Does not block the use case thread, but creates a step in the cache stack so undoing a use case
+     * can stop at this step.
+     *
+     * @param actor actor the actor requesting the block
+     * @param step the step that the requested data is associated with. If null is passed the requested
+     *             data will be associated with an anonymous step.
+     * @param key the key for the step
+     * @param data the data value
+     * @param <D> the value data type
+     * @return the data entered in {@code data}
+     */
     <D> D immediate(@Nonnull Actor actor, Step step, UUID key, D data);
 
+    /**
+     * Returns the instance ID of this use case. If the use case is run as part of multiple instances
+     * of the same use case, this should return a unique ID per use case. The ID is passed while creating
+     * the use case, either by calling {@link UseCase#fetch(Class, String)} or building with {@link Builder}
+     * and using {@link Builder#instanceId(String)}. If the use case is not part of multiple instances,
+     * this will return empty string.
+     *
+     * @return the use case instance ID or empty string if not running as part of multiple instances
+     */
     String getInstanceId();
 }

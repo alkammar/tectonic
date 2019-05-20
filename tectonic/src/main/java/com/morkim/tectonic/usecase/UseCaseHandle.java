@@ -75,9 +75,16 @@ public interface UseCaseHandle {
      * then the use case will abort calling the {@link Actor#onAbort(Object)}
      * </p>
      */
-    void undo(Step step);
-
     void undo();
+
+    /**
+     * Same as {@link #undo()} specifying the step to undo to. This will undo the stack until it reaches
+     * the {@code to} step. The {@code to} will be the last step to get the {@link Actor#onUndo(Step, boolean)}
+     * inclusively. {@link Actor#onUndo(Step, boolean)} will be called for the previous step to the
+     * {@code to} step exclusively.
+     * @param to the step to undo to
+     */
+    void undo(Step to);
 
     /**
      * Signals the use case to abort resulting in a call to the {@link Actor#onAbort(Object)} method

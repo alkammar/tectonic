@@ -974,7 +974,10 @@ public abstract class UseCase<R> {
     private void notifyActorsOfUndo(UndoException e) throws UndoException {
 
         Step step = cache.peak();
+        if (targetStep == step) targetStep = null;
+
         Actor actor = cache.pop();
+
         if (cache.isEmpty() && !primaryActors.contains(actor))
             abort();
         else {

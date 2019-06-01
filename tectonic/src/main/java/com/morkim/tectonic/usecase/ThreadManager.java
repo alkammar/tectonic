@@ -4,13 +4,13 @@ public interface ThreadManager {
 
     boolean isRunning();
 
-    void release() throws InterruptedException;
+    void stop();
 
     void complete();
 
     void start(UseCaseExecution execution);
 
-    void stop();
+    void finish();
 
     void restart();
 

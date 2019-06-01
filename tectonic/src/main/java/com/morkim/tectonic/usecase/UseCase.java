@@ -937,7 +937,7 @@ public abstract class UseCase<R> {
             preconditionsExecuted = false;
             onDestroy();
             ALIVE.remove(getId());
-            getThreadManager().stop();
+            getThreadManager().finish();
 
             completeWhenCompleted(this);
             abortWhenCompleted(this);
@@ -956,7 +956,7 @@ public abstract class UseCase<R> {
             onDestroy();
             ALIVE.remove(getId());
         }
-        getThreadManager().stop();
+        getThreadManager().finish();
     }
 
     private void notifyActorsOfStart(TectonicEvent event) {
@@ -1102,8 +1102,10 @@ public abstract class UseCase<R> {
 
     public static void clearAll() {
 
-        for (UseCase useCase : ALIVE.values())
-            useCase.cache.clear();
+        for (UseCase useCase : ALIVE.values()) {
+//            useCase.cache.clear();
+            useCase.getThreadManager().stop();
+        }
 
         ALIVE.clear();
     }

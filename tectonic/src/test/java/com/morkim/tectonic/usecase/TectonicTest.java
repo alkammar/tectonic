@@ -20,7 +20,7 @@ public abstract class TectonicTest {
             }
 
             @Override
-            public void release() throws InterruptedException {
+            public void stop() throws InterruptedException {
 
             }
 
@@ -41,7 +41,7 @@ public abstract class TectonicTest {
             }
 
             @Override
-            public void stop() {
+            public void finish() {
 
             }
 

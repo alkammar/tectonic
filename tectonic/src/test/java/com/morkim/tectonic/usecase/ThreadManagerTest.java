@@ -79,7 +79,7 @@ public class ThreadManagerTest extends ConcurrentTectonicTest {
 
         sleep();
 
-        threadManager.stop();
+        threadManager.finish();
 
         assertFalse(threadManager.isRunning());
     }
@@ -147,7 +147,7 @@ public class ThreadManagerTest extends ConcurrentTectonicTest {
 
         sleep();
 
-        threadManager.stop();
+        threadManager.finish();
         threadManager.restart();
 
         assertFalse(threadManager.isRunning());
@@ -219,7 +219,7 @@ public class ThreadManagerTest extends ConcurrentTectonicTest {
 
         sleep();
 
-        threadManager.stop();
+        threadManager.finish();
 
         assertFalse(threadManager.isRunning());
     }

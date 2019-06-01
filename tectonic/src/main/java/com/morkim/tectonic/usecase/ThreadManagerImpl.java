@@ -51,7 +51,7 @@ public class ThreadManagerImpl implements ThreadManager {
     }
 
     @Override
-    public void stop() {
+    public void finish() {
         terminated = true;
         thread.interrupt();
     }
@@ -62,8 +62,10 @@ public class ThreadManagerImpl implements ThreadManager {
     }
 
     @Override
-    public void release() throws InterruptedException {
-        terminationLock.wait();
+    public void stop() {
+        running = false;
+        thread.interrupt();
+//        terminationLock.wait();
     }
 
     @Override

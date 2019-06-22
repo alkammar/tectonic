@@ -1103,11 +1103,14 @@ public abstract class UseCase<R> {
     public static void clearAll() {
 
         for (UseCase useCase : ALIVE.values()) {
-//            useCase.cache.clear();
             useCase.getThreadManager().stop();
         }
 
         ALIVE.clear();
+    }
+
+    public static boolean isAlive(String name) {
+        return ALIVE.containsKey(name);
     }
 
     /**

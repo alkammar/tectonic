@@ -2,6 +2,7 @@ package com.morkim.usecase.app;
 
 import android.content.Intent;
 
+import com.morkim.tectonic.flow.Step;
 import com.morkim.tectonic.flow.StepCoordinator;
 import com.morkim.tectonic.flow.StepFactory;
 import com.morkim.usecase.contract.Login;
@@ -28,12 +29,12 @@ public class StepFactoryImpl implements StepFactory {
     }
 
     @Override
-    public <S> S create(Class<S> aClass) {
+    public <S> S create(Class<? extends Step> aClass) {
         return create(aClass, "");
     }
 
     @Override
-    public <S> S create(Class<S> aClass, String instanceId) {
+    public <S> S create(Class<? extends Step> aClass, String instanceId) {
         try {
             if (aClass == Logout.LoginScreen.class) {
                 return createActivity(MainActivity.class,

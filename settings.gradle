@@ -1,1 +1,1 @@
-include ':poc', ':tectonic', ':usecases', ':annotation', ':compiler'
+include ':poc', ':tectonic', ':usecases', ':tectonic-annotations', ':tectonic-compiler'

@@ -35,6 +35,6 @@ dependencies {
     annotationProcessor 'com.google.dagger:dagger-compiler:2.15'
     testImplementation 'junit:junit:4.12'
     implementation project(':usecases')
-    implementation project(':annotation')
-    annotationProcessor project(':compiler')
+    implementation project(':tectonic-annotations')
+    annotationProcessor project(':tectonic-compiler')
 }

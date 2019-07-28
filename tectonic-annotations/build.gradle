@@ -1,5 +1,7 @@
 apply plugin: 'java-library'
 
+group = 'com.github.alkammar'
+
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 }

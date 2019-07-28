@@ -4,10 +4,7 @@ import com.morkim.tectonic.annotation.EventTrigger;
 
 public class EventGroupB {
 
-    @EventTrigger
-    public static final int E0 = 0;
-    @EventTrigger
-    public static final int E1 = 1;
-    @EventTrigger
-    public static final int E2 = 2;
+    @EventTrigger public static final int E0 = 0;
+    @EventTrigger public static final int E1 = 1;
+    @EventTrigger public static final int E2 = 2;
 }

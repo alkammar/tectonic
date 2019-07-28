@@ -5,6 +5,7 @@ import com.morkim.tectonic.annotation.EventTrigger;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Set;
 
 import javax.annotation.processing.AbstractProcessor;
@@ -53,24 +54,28 @@ public final class EventTriggerProcessor extends AbstractProcessor {
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnvironment) {
 
         // Only one annotation, so just use annotations.iterator().next();
-        Set<? extends Element> elements = roundEnvironment.getElementsAnnotatedWith(annotations.iterator().next());
+        try {
+            Set<? extends Element> elements = roundEnvironment.getElementsAnnotatedWith(annotations.iterator().next());
 
-        Set<VariableElement> fields = ElementFilter.fieldsIn(elements);
-        for (VariableElement field : fields) {
+            Set<VariableElement> fields = ElementFilter.fieldsIn(elements);
+            for (VariableElement field : fields) {
 
-            EventParams params = new EventParams();
-            params.value = field.getConstantValue();
-            params.name = field.getSimpleName();
-            params.fileName = field.getEnclosingElement().asType().toString();
+                EventParams params = new EventParams();
+                params.value = field.getConstantValue();
+                params.name = field.getSimpleName();
+                params.fileName = field.getEnclosingElement().asType().toString();
 
-            EventParams existingEvent = events.get(params.value);
-            if (existingEvent != null) {
-                messager.printMessage(Diagnostic.Kind.ERROR, "event " + params.name + " with value " + params.value + " in file " + params.fileName + " already exists with name " + existingEvent.name + " in " + existingEvent.fileName);
-            } else {
-                events.put(field.getConstantValue(), params);
+                EventParams existingEvent = events.get(params.value);
+                if (existingEvent != null) {
+                    messager.printMessage(Diagnostic.Kind.ERROR, "event " + params.name + " with value " + params.value + " in file " + params.fileName + " already exists with name " + existingEvent.name + " in " + existingEvent.fileName);
+                } else {
+                    events.put(field.getConstantValue(), params);
+                }
             }
-        }
 
-        return true;
+            return true;
+        } catch (NoSuchElementException e) {
+            return false;
+        }
     }
 }

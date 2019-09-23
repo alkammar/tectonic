@@ -104,7 +104,7 @@ public class CacheActorTest extends ConcurrentTectonicTest {
 
         assertEquals(1, data1.getAccessCount());
         assertEquals(1, data2.getAccessCount());
-        assertEquals(2, count);
+        assertEquals(3, count);
     }
 
     @Test

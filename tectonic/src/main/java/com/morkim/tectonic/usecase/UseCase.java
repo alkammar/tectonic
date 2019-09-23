@@ -231,6 +231,7 @@ public abstract class UseCase<R> {
     private ResultActor<TectonicEvent, R> containerResultActor;
     private String instanceId;
     private Step targetStep;
+    private boolean waitingForRandom;
 
     /**
      * Same as {@link UseCase#fetch(Class, String)} but without instance ID. This means we are only
@@ -684,6 +685,7 @@ public abstract class UseCase<R> {
 
     private <D> Random<D> waitForRandom(UUID key) {
         //noinspection unchecked
+        waitingForRandom = true;
         return cache.containsKey(key) ? (Random<D>) cache.getValue(key) : new Random<D>();
     }
 
@@ -725,6 +727,7 @@ public abstract class UseCase<R> {
     private <D> D waitFor(@Nonnull Actor actor, Step step, UUID key, Runnable runnable) throws InterruptedException, ExecutionException, UndoException {
 
         if (cache.containsKey(key)) {
+            waitingForRandom = false;
             D d = cache.getValue(key);
             if (d instanceof Exception) {
                 cache.remove(key);
@@ -783,7 +786,10 @@ public abstract class UseCase<R> {
         Synchronizer<D> synchronizer = thread == null ? null : cache.getSynchronizer(key);
         Object cachedData = cache.getValue(key);
 
-        if (synchronizer != null && cachedData != null) {
+        if (!waitingForRandom && synchronizer == null && blockingSynchronizer != null) {
+            cache.put(key, data);
+            blockingSynchronizer.interrupt();
+        } else if (synchronizer != null && cachedData != null) {
             cache.put(key, data);
             synchronizer.interrupt();
         } else if (data instanceof Exception) {

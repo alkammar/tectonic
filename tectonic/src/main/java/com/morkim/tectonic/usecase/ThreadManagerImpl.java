@@ -64,7 +64,7 @@ public class ThreadManagerImpl implements ThreadManager {
     @Override
     public void stop() {
         running = false;
-        thread.interrupt();
+        if (thread != null) thread.interrupt();
 //        terminationLock.wait();
     }
 

@@ -30,7 +30,7 @@ public class CompleteTest extends ConcurrentTectonicTest {
 			}
 
 			@Override
-			public void stop() throws InterruptedException {
+			public void stop() {
 
 			}
 

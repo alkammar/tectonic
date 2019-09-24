@@ -201,7 +201,7 @@ public abstract class UseCase<R> {
     private Thread thread;
     private StepCache cache = new StepCache();
 
-    private Synchronizer<?> blockingSynchronizer;
+    private volatile Synchronizer<?> blockingSynchronizer;
     private boolean running;
 
     private ThreadManager threadManager;
@@ -231,7 +231,7 @@ public abstract class UseCase<R> {
     private ResultActor<TectonicEvent, R> containerResultActor;
     private String instanceId;
     private Step targetStep;
-    private boolean waitingForRandom;
+    private volatile boolean waitingForRandom;
 
     /**
      * Same as {@link UseCase#fetch(Class, String)} but without instance ID. This means we are only
@@ -684,8 +684,8 @@ public abstract class UseCase<R> {
     }
 
     private <D> Random<D> waitForRandom(UUID key) {
-        //noinspection unchecked
         waitingForRandom = true;
+        //noinspection unchecked
         return cache.containsKey(key) ? (Random<D>) cache.getValue(key) : new Random<D>();
     }
 
@@ -709,9 +709,12 @@ public abstract class UseCase<R> {
             }
             return d;
         } else {
-            Synchronizer<D> synchronizer = new Synchronizer<>();
-            cache.put(actor, step, key, synchronizer);
-            blockingSynchronizer = synchronizer;
+            Synchronizer<D> synchronizer;
+            synchronized (this) {
+                synchronizer = new Synchronizer<>();
+                cache.put(actor, step, key, synchronizer);
+                blockingSynchronizer = synchronizer;
+            }
             try {
                 return synchronizer.get();
             } catch (ExecutionException e) {
@@ -727,7 +730,6 @@ public abstract class UseCase<R> {
     private <D> D waitFor(@Nonnull Actor actor, Step step, UUID key, Runnable runnable) throws InterruptedException, ExecutionException, UndoException {
 
         if (cache.containsKey(key)) {
-            waitingForRandom = false;
             D d = cache.getValue(key);
             if (d instanceof Exception) {
                 cache.remove(key);
@@ -738,9 +740,12 @@ public abstract class UseCase<R> {
 
             runnable.run();
 
-            Synchronizer<D> synchronizer = new Synchronizer<>();
-            cache.put(actor, step, key, synchronizer);
-            blockingSynchronizer = synchronizer;
+            Synchronizer<D> synchronizer;
+            synchronized (this) {
+                synchronizer = new Synchronizer<>();
+                cache.put(actor, step, key, synchronizer);
+                blockingSynchronizer = synchronizer;
+            }
             try {
                 return synchronizer.get();
             } catch (ExecutionException e) {
@@ -759,16 +764,18 @@ public abstract class UseCase<R> {
         if (cache.containsKey(key)) {
             return cache.getValue(key);
         } else {
-            Synchronizer<D> synchronizer = new Synchronizer<>();
-
-            cache.put(actor, step, key, synchronizer);
-            blockingSynchronizer = synchronizer;
+            Synchronizer<D> synchronizer;
+            synchronized (this) {
+                synchronizer = new Synchronizer<>();
+                cache.put(actor, step, key, synchronizer);
+                blockingSynchronizer = synchronizer;
+            }
 
             try {
                 return synchronizer.get();
             } catch (ExecutionException e) {
                 for (Class<? extends Exception> ex : exs)
-                    if (e.getCause().getClass() == ex) //noinspection unchecked
+                    if (e.getCause().getClass() == ex)
                         throw new UnexpectedStep(e.getCause());
             }
         }
@@ -786,10 +793,7 @@ public abstract class UseCase<R> {
         Synchronizer<D> synchronizer = thread == null ? null : cache.getSynchronizer(key);
         Object cachedData = cache.getValue(key);
 
-        if (!waitingForRandom && synchronizer == null && blockingSynchronizer != null) {
-            cache.put(key, data);
-            blockingSynchronizer.interrupt();
-        } else if (synchronizer != null && cachedData != null) {
+        if (synchronizer != null && cachedData != null) {
             cache.put(key, data);
             synchronizer.interrupt();
         } else if (data instanceof Exception) {
@@ -797,6 +801,12 @@ public abstract class UseCase<R> {
         } else {
             cache.put(key, data);
             if (synchronizer != null) synchronizer.set(data);
+            else if (!waitingForRandom && this.blockingSynchronizer != null) {
+                Synchronizer<?> blockingSynchronizer = this.blockingSynchronizer;
+                this.blockingSynchronizer = null;
+
+                blockingSynchronizer.interrupt();
+            }
         }
     }
 
@@ -807,10 +817,13 @@ public abstract class UseCase<R> {
     private <D> void replyWithRandom(UUID key, D data) {
 
         Synchronizer synchronizer = cache.getSynchronizer(key);
-        if (synchronizer == blockingSynchronizer) {
+        if (blockingSynchronizer != null && synchronizer == blockingSynchronizer) {
+
             cache.put(key, data);
             blockingSynchronizer.interrupt();
             blockingSynchronizer = null;
+
+            waitingForRandom = false;
         } else {
             replyWith(key, data);
         }

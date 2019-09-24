@@ -42,4 +42,8 @@ public class ConcurrentTectonicTest {
             e.printStackTrace();
         }
     }
+
+    protected void waitForUseCaseToFinish() throws InterruptedException {
+        useCaseThread.join();
+    }
 }

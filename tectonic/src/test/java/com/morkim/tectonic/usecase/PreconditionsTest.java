@@ -37,7 +37,7 @@ public class PreconditionsTest extends ConcurrentTectonicTest {
 		CompletedUseCase useCase = UseCase.fetch(CompletedUseCase.class);
 		useCase.execute();
 
-		useCaseThread.join();
+		waitForUseCaseToFinish();
 
 		assertTrue(useCase.isOnExecuteCalled());
 	}
@@ -76,7 +76,7 @@ public class PreconditionsTest extends ConcurrentTectonicTest {
 //
 //		UseCase.fetch(SimpleUseCase.class).abort();
 
-		useCaseThread.join();
+		waitForUseCaseToFinish();
 
 		assertFalse(useCase.isOnExecuteCalled());
 		assertTrue(onAbortCalled);
@@ -100,7 +100,7 @@ public class PreconditionsTest extends ConcurrentTectonicTest {
 
 //		subThreadManager.thread.join();
 
-		useCaseThread.join();
+		waitForUseCaseToFinish();
 
 		assertTrue(useCase.isOnExecuteCalled());
 	}

@@ -97,7 +97,7 @@ public class SubUseCaseTest extends ConcurrentTectonicTest {
 
         abort();
 
-        useCaseThread.join();
+        waitForUseCaseToFinish();
 
         assertTrue(onUndoCalled);
         assertFalse(onSubCompleteCalled);
@@ -126,7 +126,7 @@ public class SubUseCaseTest extends ConcurrentTectonicTest {
         replySub();
         reply2();
 
-        useCaseThread.join();
+        waitForUseCaseToFinish();
 
         subThreadManager.thread.join();
 
@@ -160,7 +160,7 @@ public class SubUseCaseTest extends ConcurrentTectonicTest {
         replySub();
         abort();
 
-        useCaseThread.join();
+        waitForUseCaseToFinish();
 
         subThreadManager.thread.join();
 
@@ -196,7 +196,7 @@ public class SubUseCaseTest extends ConcurrentTectonicTest {
         reply2();
         replySub();
 
-        useCaseThread.join();
+        waitForUseCaseToFinish();
 
         subThreadManager.thread.join();
 

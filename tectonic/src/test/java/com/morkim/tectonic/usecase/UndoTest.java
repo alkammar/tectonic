@@ -108,7 +108,7 @@ public class UndoTest extends ConcurrentTectonicTest {
         replyPrimaryStep3(new Random<>(new StepData()), new Random<>(new StepData()));
         replySecondaryStep(ACTION_DATA_KEY_9, data6);
 
-        useCaseThread.join();
+        waitForUseCaseToFinish();
 
         assertEquals(1, undoPrimarySteps.size());
         assertEquals(0, undoSecondarySteps.size());
@@ -139,7 +139,7 @@ public class UndoTest extends ConcurrentTectonicTest {
         replyPrimaryStep3(new Random<>(new StepData()), new Random<>(new StepData()));
         replySecondaryStep(ACTION_DATA_KEY_9, data6);
 
-        useCaseThread.join();
+        waitForUseCaseToFinish();
 
         assertEquals(1, undoPrimarySteps.size());
         assertEquals(1, undoSecondarySteps.size());
@@ -170,7 +170,7 @@ public class UndoTest extends ConcurrentTectonicTest {
         replyPrimaryStep3(new Random<>(new StepData()), new Random<>(new StepData()));
         replySecondaryStep(ACTION_DATA_KEY_9, data6);
 
-        useCaseThread.join();
+        waitForUseCaseToFinish();
 
         assertEquals(0, undoPrimarySteps.size());
         assertEquals(0, undoSecondarySteps.size());
@@ -201,7 +201,7 @@ public class UndoTest extends ConcurrentTectonicTest {
         replyPrimaryStep3(new Random<>(new StepData()), new Random<>(new StepData()));
         replySecondaryStep(ACTION_DATA_KEY_9, data6);
 
-        useCaseThread.join();
+        waitForUseCaseToFinish();
 
         assertEquals(2, undoPrimarySteps.size());
         assertEquals(1, undoSecondarySteps.size());
@@ -237,7 +237,7 @@ public class UndoTest extends ConcurrentTectonicTest {
         replyPrimaryStep3(new Random<>(new StepData()), new Random<>(new StepData()));
         replySecondaryStep(ACTION_DATA_KEY_9, data6);
 
-        useCaseThread.join();
+        waitForUseCaseToFinish();
 
         assertEquals(3, undoPrimarySteps.size());
         assertEquals(1, undoSecondarySteps.size());
@@ -274,7 +274,7 @@ public class UndoTest extends ConcurrentTectonicTest {
         replyPrimaryStep3(new Random<>(new StepData()), new Random<>(new StepData()));
         replySecondaryStep(ACTION_DATA_KEY_9, data6);
 
-        useCaseThread.join();
+        waitForUseCaseToFinish();
 
         assertEquals(2, undoPrimarySteps.size());
         assertEquals(0, undoSecondarySteps.size());
@@ -310,7 +310,7 @@ public class UndoTest extends ConcurrentTectonicTest {
         replyPrimaryStep3(new Random<>(new StepData()), new Random<>(new StepData()));
         replySecondaryStep(ACTION_DATA_KEY_9, data6);
 
-        useCaseThread.join();
+        waitForUseCaseToFinish();
 
         assertEquals(3, undoPrimarySteps.size());
         assertEquals(1, undoSecondarySteps.size());
@@ -347,7 +347,7 @@ public class UndoTest extends ConcurrentTectonicTest {
         replyPrimaryStep3(new Random<>(new StepData()), new Random<>(new StepData()));
         replySecondaryStep(ACTION_DATA_KEY_9, data6);
 
-        useCaseThread.join();
+        waitForUseCaseToFinish();
 
         assertEquals(2, undoPrimarySteps.size());
         assertEquals(0, undoSecondarySteps.size());
@@ -378,7 +378,7 @@ public class UndoTest extends ConcurrentTectonicTest {
         replyPrimaryStep3(new Random<>(new StepData()), new Random<>(new StepData()));
         replySecondaryStep(ACTION_DATA_KEY_9, data6);
 
-        useCaseThread.join();
+        waitForUseCaseToFinish();
 
         assertEquals(1, undoPrimarySteps.size());
         assertEquals(1, undoSecondarySteps.size());
@@ -414,7 +414,7 @@ public class UndoTest extends ConcurrentTectonicTest {
         replyPrimaryStep3(new Random<>(new StepData()), new Random<>(new StepData()));
         replySecondaryStep(ACTION_DATA_KEY_9, data6);
 
-        useCaseThread.join();
+        waitForUseCaseToFinish();
 
         assertEquals(1, data1.getAccessCount());
         assertEquals(1, data2.getAccessCount());

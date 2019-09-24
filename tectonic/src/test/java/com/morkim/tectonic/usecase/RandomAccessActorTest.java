@@ -108,7 +108,7 @@ public class RandomAccessActorTest extends ConcurrentTectonicTest {
 
         thread.join();
 
-        useCaseThread.join();
+        waitForUseCaseToFinish();
 
         assertTrue(useCase.isData1Validated());
         assertTrue(useCase.isData2Validated());
@@ -198,7 +198,7 @@ public class RandomAccessActorTest extends ConcurrentTectonicTest {
 //
 //        thread3.join();
 //
-//        useCaseThread.join();
+//        waitForUseCaseToFinish();
 //
 //        assertTrue(useCase.isData1Validated());
 //        assertTrue(useCase.isData2Validated());

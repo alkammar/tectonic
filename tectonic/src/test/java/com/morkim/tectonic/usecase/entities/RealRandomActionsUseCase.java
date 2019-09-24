@@ -10,10 +10,6 @@ public class RealRandomActionsUseCase extends SimpleUseCase {
 
     private Actor actor;
 
-    private boolean data1Validated;
-    private boolean data2Validated;
-    private boolean data3Validated;
-
     @Override
     protected void onAddPrimaryActors(Set<PrimaryActor> actors) {
         super.onAddPrimaryActors(actors);
@@ -53,18 +49,6 @@ public class RealRandomActionsUseCase extends SimpleUseCase {
 
     public void setActor(Actor actor) {
         this.actor = actor;
-    }
-
-    public boolean isData1Validated() {
-        return data1Validated;
-    }
-
-    public boolean isData2Validated() {
-        return data2Validated;
-    }
-
-    public boolean isData3Validated() {
-        return data3Validated;
     }
 
     public interface Actor extends PrimaryActor {

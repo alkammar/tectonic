@@ -104,7 +104,7 @@ public class AbortTest extends ConcurrentTectonicTest {
         useCase.abort();
 
         try {
-            useCaseThread.join();
+            waitForUseCaseToFinish();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -149,7 +149,7 @@ public class AbortTest extends ConcurrentTectonicTest {
         useCase.abort();
 
         try {
-            useCaseThread.join();
+            waitForUseCaseToFinish();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -204,7 +204,7 @@ public class AbortTest extends ConcurrentTectonicTest {
         useCase.execute();
 
         try {
-            useCaseThread.join();
+            waitForUseCaseToFinish();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -258,7 +258,7 @@ public class AbortTest extends ConcurrentTectonicTest {
 
         handle.abort();
 
-        useCaseThread.join();
+        waitForUseCaseToFinish();
 
         assertEquals(0, onAbortCalledCount);
         assertTrue(onCompleteCalled);

@@ -110,7 +110,7 @@ public class ImmediateActionTest extends ConcurrentTectonicTest {
         replyPrimaryStep3(new Random<>(new StepData()), new Random<>(new StepData()));
         replySecondaryStep(ACTION_DATA_KEY_9, data6);
 
-        useCaseThread.join();
+        waitForUseCaseToFinish();
 
         assertEquals(2, undoPrimarySteps.size());
         assertEquals(1, undoSecondarySteps.size());

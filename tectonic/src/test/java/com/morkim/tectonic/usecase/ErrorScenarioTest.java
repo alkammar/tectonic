@@ -108,7 +108,7 @@ public class ErrorScenarioTest extends ConcurrentTectonicTest {
         replyPrimaryStep3(new Random<>(new StepData()), new Random<>(new StepData()));
         replySecondaryStep(ACTION_DATA_KEY_9, data6);
 
-        useCaseThread.join();
+        waitForUseCaseToFinish();
 
         assertEquals(4, requestConfirmation1);
         assertEquals(3, requestConfirmation2);
@@ -144,7 +144,7 @@ public class ErrorScenarioTest extends ConcurrentTectonicTest {
         replyPrimaryStep3(new Random<>(new StepData()), new Random<>(new StepData()));
         replySecondaryStep(ACTION_DATA_KEY_9, data6);
 
-        useCaseThread.join();
+        waitForUseCaseToFinish();
 
         assertEquals(6, requestConfirmation1);
         assertEquals(3, requestConfirmation2);
@@ -179,7 +179,7 @@ public class ErrorScenarioTest extends ConcurrentTectonicTest {
         replyPrimaryStep3(new Random<>(new StepData()), new Random<>(new StepData()));
         replySecondaryStep(ACTION_DATA_KEY_9, data6);
 
-        useCaseThread.join();
+        waitForUseCaseToFinish();
 
 
         assertEquals(6, requestConfirmation1);
@@ -215,7 +215,7 @@ public class ErrorScenarioTest extends ConcurrentTectonicTest {
         replyPrimaryStep3(new Random<>(new StepData()), new Random<>(new StepData()));
         replySecondaryStep(ACTION_DATA_KEY_9, data6);
 
-        useCaseThread.join();
+        waitForUseCaseToFinish();
 
         assertEquals(6, requestConfirmation1);
         assertEquals(3, requestConfirmation2);
@@ -253,7 +253,7 @@ public class ErrorScenarioTest extends ConcurrentTectonicTest {
         replyPrimaryStep3(new Random<>(new StepData()), new Random<>(new StepData()));
         replySecondaryStep(ACTION_DATA_KEY_9, data6);
 
-        useCaseThread.join();
+        waitForUseCaseToFinish();
 
         assertEquals(1, data1.getAccessCount());
         assertEquals(1, data2.getAccessCount());

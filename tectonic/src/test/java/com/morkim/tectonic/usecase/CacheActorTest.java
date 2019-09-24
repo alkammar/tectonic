@@ -100,7 +100,7 @@ public class CacheActorTest extends ConcurrentTectonicTest {
 
         thread2.join();
 
-        useCaseThread.join();
+        waitForUseCaseToFinish();
 
         assertEquals(1, data1.getAccessCount());
         assertEquals(1, data2.getAccessCount());
@@ -187,7 +187,7 @@ public class CacheActorTest extends ConcurrentTectonicTest {
 
         thread3.join();
 
-        useCaseThread.join();
+        waitForUseCaseToFinish();
 
         assertEquals(1, data1.getAccessCount());
         assertEquals(1, data2.getAccessCount());

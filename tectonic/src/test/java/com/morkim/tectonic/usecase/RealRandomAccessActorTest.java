@@ -7,6 +7,7 @@ import com.morkim.tectonic.usecase.entities.StepData;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.AbstractMap;
 import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
@@ -53,7 +54,7 @@ public class RealRandomAccessActorTest extends ConcurrentTectonicTest {
     }
 
     @Test
-    public void submit_in_order_without_delay() throws InterruptedException {
+    public void batch_submit_waiting_for_first() throws InterruptedException {
 
         final StepData data1 = new StepData();
         final StepData data2 = new StepData();
@@ -66,16 +67,51 @@ public class RealRandomAccessActorTest extends ConcurrentTectonicTest {
 
         useCase.execute();
 
-        submit(ACTION_DATA_KEY_1, data1);
-        submit(ACTION_DATA_KEY_2, data2);
-        submit(ACTION_DATA_KEY_3, data3);
+        batchSubmit(
+                new AbstractMap.SimpleEntry<>(ACTION_DATA_KEY_1, data1),
+                new AbstractMap.SimpleEntry<>(ACTION_DATA_KEY_2, data2),
+                new AbstractMap.SimpleEntry<>(ACTION_DATA_KEY_3, data3));
 
         waitForUseCaseToFinish();
 
         assertEquals(1, data1.getAccessCount());
         assertEquals(1, data2.getAccessCount());
         assertEquals(1, data3.getAccessCount());
-        assertEquals(3, count);
+        assertEquals(4, count);
+    }
+
+    @Test
+    public void batch_submit_waiting_for_last() throws InterruptedException {
+
+        final StepData data1 = new StepData();
+        final StepData data2 = new StepData();
+        final StepData data3 = new StepData();
+        final StepData data1_2 = new StepData();
+        final StepData data2_2 = new StepData();
+
+        RealRandomActionsUseCase useCase = UseCase.fetch(RealRandomActionsUseCase.class);
+        RealRandomActionsUseCase.Actor actor = createActor();
+
+        useCase.setActor(actor);
+
+        useCase.execute();
+
+        submit(ACTION_DATA_KEY_1, data1, 100);
+        submit(ACTION_DATA_KEY_2, data2, 100);
+
+        batchSubmit(
+                new AbstractMap.SimpleEntry<>(ACTION_DATA_KEY_1, data1_2),
+                new AbstractMap.SimpleEntry<>(ACTION_DATA_KEY_2, data2_2),
+                new AbstractMap.SimpleEntry<>(ACTION_DATA_KEY_3, data3));
+
+        waitForUseCaseToFinish();
+
+        assertEquals(0, data1.getAccessCount());
+        assertEquals(0, data2.getAccessCount());
+        assertEquals(1, data3.getAccessCount());
+        assertEquals(1, data1_2.getAccessCount());
+        assertEquals(1, data2_2.getAccessCount());
+        assertEquals(6, count);
     }
 
     @Test
@@ -144,6 +180,19 @@ public class RealRandomAccessActorTest extends ConcurrentTectonicTest {
             public void run() {
                 if (delay > 0) sleep(delay);
                 useCaseHandle.replyWith(uuid, data);
+            }
+        });
+        thread.start();
+        thread.join();
+    }
+
+    private void batchSubmit(final AbstractMap.Entry<UUID, StepData>... batch) throws InterruptedException {
+        Thread thread = new Thread(new Runnable() {
+
+            @Override
+            public void run() {
+                sleep();
+                useCaseHandle.submitBatch(batch);
             }
         });
         thread.start();

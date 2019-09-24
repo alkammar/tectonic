@@ -810,6 +810,24 @@ public abstract class UseCase<R> {
         }
     }
 
+    private <D> void submitBatch(Map.Entry<UUID, D>... batch) {
+
+        Synchronizer<D> blockingSynchronizer = null;
+
+        if (this.blockingSynchronizer != null && thread != null) {
+            for (Map.Entry<UUID, D> entry : batch) {
+                @SuppressWarnings("unchecked")
+                Synchronizer<D> synchronizer = cache.getSynchronizer(entry.getKey());
+                if (this.blockingSynchronizer == synchronizer) {
+                    blockingSynchronizer = synchronizer;
+                }
+                cache.put(entry.getKey(), entry.getValue());
+            }
+        }
+
+        if (blockingSynchronizer != null) blockingSynchronizer.interrupt();
+    }
+
     private void replyWithRandom(UUID key) {
         replyWithRandom(key, null);
     }
@@ -1233,6 +1251,11 @@ public abstract class UseCase<R> {
         @Override
         public <D> void replyWith(UUID key, D data) {
             UseCase.this.replyWith(key, data);
+        }
+
+        @Override
+        public <D> void submitBatch(Map.Entry<UUID, D>... batch) {
+            UseCase.this.submitBatch(batch);
         }
 
         @Override

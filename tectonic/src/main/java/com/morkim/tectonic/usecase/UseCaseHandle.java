@@ -2,6 +2,7 @@ package com.morkim.tectonic.usecase;
 
 import com.morkim.tectonic.flow.Step;
 
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
@@ -206,6 +207,8 @@ public interface UseCaseHandle {
      * @param <D> the value data type, this is should match the one defined in the {@code waitFor} method
      */
     <D> void replyWith(UUID key, D data);
+
+    <D> void submitBatch(Map.Entry<UUID, D>... batch);
 
     /**
      * Unblocks the use case thread that is blocked by a call to any of {@code waitFor} of {@code waitForSafe}

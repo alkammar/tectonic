@@ -487,7 +487,8 @@ public abstract class UseCase<R> {
 
             @Override
             public void onUndo(Step step, boolean inclusive) {
-                useCase.cache.pop();
+
+                useCase.undoSubUseCaseLastStep();
                 useCase.getThreadManager().restart();
             }
 
@@ -1060,16 +1061,54 @@ public abstract class UseCase<R> {
         }
     }
 
+    @SuppressWarnings("SuspiciousMethodCalls")
+    private void undoSubUseCaseLastStep() {
+        Step step = cache.peak();
+        if (targetStep == step) targetStep = null;
+
+        Actor actor = cache.pop();
+
+        if (!cache.isEmpty() || primaryActors.contains(actor)) {
+            if (primaryActors.contains(actor)) {
+                Actor original = actor;
+                step = cache.peak();
+                while (step != null) {
+                    actor = cache.getActor(step);
+                    if (!primaryActors.contains(actor)) {
+                        cache.pop();
+                        step = cache.peak();
+                    } else if (targetStep != null) {
+                        if (targetStep == step) targetStep = null;
+                        cache.pop();
+                        step = cache.peak();
+                    } else {
+                        cache.reset(step);
+                        break;
+                    }
+                }
+
+            } else if (!primaryActors.contains(actor)) {
+                Actor original = actor;
+                boolean isPrimary;
+                do {
+                    step = cache.peak();
+                    if (step == null) break;
+                    isPrimary = primaryActors.contains(actor);
+                    if (!isPrimary) cache.pop();
+                    else cache.reset(step);
+                } while (!isPrimary);
+            }
+        }
+    }
+
     private void notifyActorsOfComplete(R result) {
 
         for (PrimaryActor actor : primaryActors)
-            //noinspection SuspiciousMethodCalls
             if (actor != null)
                 //noinspection unchecked
                 actor.onComplete(event);
 
         for (SecondaryActor actor : secondaryActors)
-            //noinspection SuspiciousMethodCalls
             if (actor != null)
                 //noinspection unchecked
                 actor.onComplete(event);

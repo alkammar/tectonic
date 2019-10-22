@@ -1093,6 +1093,7 @@ public abstract class UseCase<R> {
                 do {
                     step = cache.peak();
                     if (step == null) break;
+                    actor = cache.getActor(step);
                     isPrimary = primaryActors.contains(actor);
                     if (!isPrimary) cache.pop();
                     else cache.reset(step);

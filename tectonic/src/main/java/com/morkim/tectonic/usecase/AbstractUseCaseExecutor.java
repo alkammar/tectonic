@@ -92,6 +92,9 @@ public abstract class AbstractUseCaseExecutor<E extends TectonicEvent>
     @Override
     public void onStart(E event, UseCaseHandle handle) {
 
+        Log.d("UseCaseExecutor", "onStart: " + event);
+
+        handles.put(eventInstanceValue(event), handle);
     }
 
     @Override
@@ -104,7 +107,7 @@ public abstract class AbstractUseCaseExecutor<E extends TectonicEvent>
 
         Log.d("UseCaseExecutor", "onComplete: " + event);
 
-        handles.remove(eventValue(event));
+        handles.remove(eventInstanceValue(event));
     }
 
     @Override
@@ -118,13 +121,13 @@ public abstract class AbstractUseCaseExecutor<E extends TectonicEvent>
 
         Log.d("UseCaseExecutor", "onAbort: " + event);
 
-        handles.remove(eventValue(event));
+        handles.remove(eventInstanceValue(event));
         onTerminate(event, eventInstanceId(event));
     }
 
     protected abstract String eventInstanceId(E event);
 
-    protected abstract Integer eventValue(E event);
+    protected abstract Integer eventInstanceValue(E event);
 
     protected abstract E emptyEvent();
 

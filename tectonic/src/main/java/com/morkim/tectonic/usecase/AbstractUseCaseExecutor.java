@@ -70,7 +70,7 @@ public abstract class AbstractUseCaseExecutor<E extends TectonicEvent>
                 .execute(event);
     }
 
-    private void execute(
+    protected void execute(
             @SuppressWarnings("SameParameterValue") Class<? extends UseCase> cls,
             String instanceId,
             E event,

@@ -6,7 +6,7 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 
-import com.morkim.tectonic.flow.StepFactory;
+import com.morkim.tectonic.flow.StepListener;
 import com.morkim.usecase.R;
 import com.morkim.usecase.contract.Secondary;
 import com.morkim.usecase.di.AppInjector;
@@ -22,7 +22,7 @@ import lib.morkim.uc.SpecificBackendError;
 public class SecondaryActivity3 extends AppCompatActivity implements Secondary.Screen3 {
 
     @Inject
-    StepFactory stepFactory;
+    StepListener stepListener;
 
     @Inject
     Secondary.Flow flow;
@@ -42,7 +42,7 @@ public class SecondaryActivity3 extends AppCompatActivity implements Secondary.S
 
         AppInjector.getSecondaryScreen3Component().inject(this);
 
-        stepFactory.onCreated(this);
+        stepListener.onCreated(this);
 
         setContentView(R.layout.screen_secondary_last);
 

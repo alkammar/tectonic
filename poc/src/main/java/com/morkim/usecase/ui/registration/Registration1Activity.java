@@ -7,7 +7,7 @@ import android.text.TextWatcher;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import com.morkim.tectonic.flow.StepFactory;
+import com.morkim.tectonic.flow.StepListener;
 import com.morkim.usecase.R;
 import com.morkim.usecase.contract.Registration;
 import com.morkim.usecase.di.AppInjector;
@@ -21,7 +21,7 @@ import javax.inject.Inject;
 public class Registration1Activity extends AppCompatActivity implements Registration.Step1 {
 
     @Inject
-    StepFactory stepFactory;
+    StepListener stepListener;
 
     @Inject
     Registration.Flow flow;
@@ -43,7 +43,7 @@ public class Registration1Activity extends AppCompatActivity implements Registra
 
         AppInjector.getRegistration1ActivityComponent().inject(this);
 
-        stepFactory.onCreated(this);
+        stepListener.onCreated(this);
 
         setContentView(R.layout.screen_registration_1);
 

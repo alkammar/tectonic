@@ -5,6 +5,7 @@ import android.content.Intent;
 import com.morkim.tectonic.flow.Step;
 import com.morkim.tectonic.flow.StepCoordinator;
 import com.morkim.tectonic.flow.StepFactory;
+import com.morkim.tectonic.flow.StepListener;
 import com.morkim.usecase.contract.Login;
 import com.morkim.usecase.contract.Logout;
 import com.morkim.usecase.contract.Registration;
@@ -19,7 +20,7 @@ import com.morkim.usecase.ui.secondary.SecondaryActivity3;
 
 import java.util.HashMap;
 
-public class StepFactoryImpl implements StepFactory {
+public class StepFactoryImpl implements StepFactory, StepListener {
 
     private static HashMap<Integer, Object> cache;
     private final PoC application;

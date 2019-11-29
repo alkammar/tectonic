@@ -3,6 +3,7 @@ package com.morkim.usecase.di;
 import android.content.Context;
 
 import com.morkim.tectonic.flow.StepFactory;
+import com.morkim.tectonic.flow.StepListener;
 import com.morkim.tectonic.usecase.Triggers;
 import com.morkim.usecase.app.PoC;
 import com.morkim.usecase.app.UseCaseExecutor;
@@ -26,4 +27,6 @@ public interface AppComponent {
     Triggers<UseCaseExecutor.Event> triggers();
 
     StepFactory stepFactory();
+
+    StepListener stepListener();
 }

@@ -4,7 +4,7 @@ import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 import android.widget.EditText;
 
-import com.morkim.tectonic.flow.StepFactory;
+import com.morkim.tectonic.flow.StepListener;
 import com.morkim.usecase.R;
 import com.morkim.usecase.contract.Login;
 import com.morkim.usecase.di.AppInjector;
@@ -19,7 +19,7 @@ public class LoginActivity extends AppCompatActivity implements Login.Screen {
     private EditText password;
 
     @Inject
-    StepFactory stepFactory;
+    StepListener stepListener;
 
     @Inject
     Login.Flow flow;
@@ -36,7 +36,7 @@ public class LoginActivity extends AppCompatActivity implements Login.Screen {
 
         AppInjector.getLoginScreenComponent().inject(this);
 
-        stepFactory.onCreated(this);
+        stepListener.onCreated(this);
 
         setContentView(R.layout.screen_login);
 

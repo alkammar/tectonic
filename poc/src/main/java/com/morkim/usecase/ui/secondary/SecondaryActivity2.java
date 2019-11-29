@@ -4,7 +4,7 @@ import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 import android.widget.EditText;
 
-import com.morkim.tectonic.flow.StepFactory;
+import com.morkim.tectonic.flow.StepListener;
 import com.morkim.usecase.R;
 import com.morkim.usecase.contract.Secondary;
 import com.morkim.usecase.di.AppInjector;
@@ -17,7 +17,7 @@ import javax.inject.Inject;
 public class SecondaryActivity2 extends AppCompatActivity implements Secondary.Screen2 {
 
     @Inject
-    StepFactory stepFactory;
+    StepListener stepListener;
 
     @Inject
     Secondary.Flow flow;
@@ -34,7 +34,7 @@ public class SecondaryActivity2 extends AppCompatActivity implements Secondary.S
 
         AppInjector.getSecondaryScreen2Component().inject(this);
 
-        stepFactory.onCreated(this);
+        stepListener.onCreated(this);
 
         setContentView(R.layout.screen_secondary_1);
 

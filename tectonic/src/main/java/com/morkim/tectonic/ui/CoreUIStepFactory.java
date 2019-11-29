@@ -12,10 +12,11 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import com.morkim.tectonic.flow.Step;
 import com.morkim.tectonic.flow.StepCoordinator;
 import com.morkim.tectonic.flow.StepFactory;
+import com.morkim.tectonic.flow.StepListener;
 
 @SuppressWarnings({"WeakerAccess", "unused", "SameParameterValue"})
 public class CoreUIStepFactory<A extends Activity>
-        implements StepFactory,
+        implements StepFactory, StepListener,
         Application.ActivityLifecycleCallbacks {
 
     public static final String NO_REPLY = "no.reply";

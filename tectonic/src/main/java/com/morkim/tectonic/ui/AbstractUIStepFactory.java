@@ -7,8 +7,7 @@ import com.morkim.tectonic.flow.Step;
 import com.morkim.tectonic.flow.StepFactory;
 
 @SuppressWarnings({"unused", "SameParameterValue"})
-public abstract class AbstractUIStepFactory<A extends Activity>
-        implements StepFactory {
+public abstract class AbstractUIStepFactory<A extends Activity> implements StepFactory {
 
     private CoreUIStepFactory<A> coreUIStepFactory;
 
@@ -17,19 +16,16 @@ public abstract class AbstractUIStepFactory<A extends Activity>
     }
 
     @Override
-    public <S> S create(Class<? extends Step> aClass) {
+    public final <S> S create(Class<? extends Step> aClass) {
         return create(aClass, "");
     }
 
     @Override
-    public <S> void onCreated(S step) {
-        coreUIStepFactory.onCreated(step);
+    public final <S> S create(Class<? extends Step> aClass, String instanceId) {
+        return coreUIStepFactory.create(aClass, instanceId);
     }
 
-    @Override
-    public <S> void onCreated(S step, S impl) {
-        coreUIStepFactory.onCreated(step, impl);
-    }
+    protected abstract <S> S onCreateStep(Class<? extends Step> aClass, String instanceId) throws InterruptedException;
 
     protected <S> S createActivityBlocking(Class<?> cls) throws InterruptedException {
         return coreUIStepFactory.createActivityBlocking(cls);

@@ -9,7 +9,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.morkim.tectonic.flow.Step;
-import com.morkim.tectonic.flow.StepFactory;
+import com.morkim.tectonic.flow.StepListener;
 import com.morkim.tectonic.usecase.UseCaseHandle;
 import com.morkim.tectonic.usecase.Triggers;
 import com.morkim.usecase.R;
@@ -28,7 +28,7 @@ public class MainActivity extends AppCompatActivity implements MainUseCase.UI<Us
     Triggers<UseCaseExecutor.Event> trigger;
 
     @Inject
-    StepFactory stepFactory;
+    StepListener stepListener;
 
     private Button refresh;
     private Button abort;
@@ -50,7 +50,7 @@ public class MainActivity extends AppCompatActivity implements MainUseCase.UI<Us
 
         AppInjector.getMainScreenComponent().inject(this);
 
-        stepFactory.onCreated(this);
+        stepListener.onCreated(this);
 
         setContentView(R.layout.screen_main);
 

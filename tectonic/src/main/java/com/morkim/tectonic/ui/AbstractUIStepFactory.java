@@ -22,7 +22,13 @@ public abstract class AbstractUIStepFactory<A extends Activity> implements StepF
 
     @Override
     public final <S> S create(Class<? extends Step> aClass, String instanceId) {
-        return coreUIStepFactory.create(aClass, instanceId);
+        try {
+            return onCreateStep(aClass, instanceId);
+        } catch (InterruptedException e) {
+            // TODO need to handle if activity creation was interrupted
+            e.printStackTrace();
+            return null;
+        }
     }
 
     protected abstract <S> S onCreateStep(Class<? extends Step> aClass, String instanceId) throws InterruptedException;

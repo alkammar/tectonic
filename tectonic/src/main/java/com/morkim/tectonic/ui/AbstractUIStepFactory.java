@@ -56,4 +56,8 @@ public abstract class AbstractUIStepFactory<A extends Activity> implements StepF
     protected synchronized <S> S retrieveActivity(Class<?> cls) throws InterruptedException {
         return coreUIStepFactory.retrieveActivity(cls);
     }
+
+    protected synchronized <S> S retrieveActivity(Class<?> cls, Bundle data) throws InterruptedException {
+        return coreUIStepFactory.retrieveActivity(cls, data);
+    }
 }

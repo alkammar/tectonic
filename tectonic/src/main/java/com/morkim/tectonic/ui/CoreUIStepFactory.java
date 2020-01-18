@@ -93,7 +93,7 @@ public class CoreUIStepFactory<A extends Activity>
         return retrieveActivity(cls, null);
     }
 
-    private synchronized <S> S retrieveActivity(Class<?> cls, Bundle data) throws InterruptedException {
+    protected synchronized <S> S retrieveActivity(Class<?> cls, Bundle data) throws InterruptedException {
         Intent intent = new Intent(ACTION_FETCH_REFERENCE);
         if (data != null) intent.putExtras(data);
         LocalBroadcastManager.getInstance(app).sendBroadcast(intent);

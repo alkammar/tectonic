@@ -690,7 +690,8 @@ public abstract class UseCase<R> {
         return cache.containsKey(key) ? (Random<D>) cache.getValue(key) : new Random<D>();
     }
 
-    private <D> D waitForSafe(@Nonnull Actor actor, Step step, UUID key) throws InterruptedException, UndoException {
+    private <D> D waitForSafe(@Nonnull Actor actor, Step step, UUID key)
+            throws InterruptedException, UndoException {
         try {
             return waitFor(actor, step, key);
         } catch (ExecutionException e) {
@@ -700,7 +701,8 @@ public abstract class UseCase<R> {
         return null;
     }
 
-    private <D> D waitFor(@Nonnull Actor actor, Step step, UUID key) throws InterruptedException, ExecutionException, UndoException {
+    private <D> D waitFor(@Nonnull Actor actor, Step step, UUID key)
+            throws InterruptedException, ExecutionException, UndoException {
 
         if (cache.containsKey(key)) {
             D d = cache.getValue(key);
@@ -728,7 +730,42 @@ public abstract class UseCase<R> {
         }
     }
 
-    private <D> D waitFor(@Nonnull Actor actor, Step step, UUID key, Runnable runnable) throws InterruptedException, ExecutionException, UndoException {
+    private <D> D waitForSafe(@Nonnull Actor actor, Step step, UUID key, Executable executable)
+            throws InterruptedException, UndoException {
+
+        if (cache.containsKey(key)) {
+            D d = cache.getValue(key);
+            if (d instanceof Exception) {
+                cache.remove(key);
+                ((Exception) d).printStackTrace();
+            }
+            return d;
+        } else {
+
+            executable.execute(key);
+
+            Synchronizer<D> synchronizer;
+            synchronized (this) {
+                synchronizer = new Synchronizer<>();
+                cache.put(actor, step, key, synchronizer);
+                blockingSynchronizer = synchronizer;
+            }
+            try {
+                return synchronizer.get();
+            } catch (ExecutionException e) {
+                if (e.getCause() instanceof InterruptedException)
+                    throw (InterruptedException) e.getCause();
+                if (UndoException.class.equals(e.getCause().getClass()))
+                    throw (UndoException) e.getCause();
+                e.printStackTrace();
+            }
+        }
+
+        return null;
+    }
+
+    private <D> D waitFor(@Nonnull Actor actor, Step step, UUID key, Runnable runnable)
+            throws InterruptedException, ExecutionException, UndoException {
 
         if (cache.containsKey(key)) {
             D d = cache.getValue(key);
@@ -760,7 +797,8 @@ public abstract class UseCase<R> {
     }
 
     @SuppressWarnings("unchecked")
-    private <D> D waitFor(@Nonnull Actor actor, Step step, UUID key, Class<? extends Exception>... exs) throws InterruptedException, UnexpectedStep {
+    private <D> D waitFor(@Nonnull Actor actor, Step step, UUID key, Class<? extends Exception>... exs)
+            throws InterruptedException, UnexpectedStep {
 
         if (cache.containsKey(key)) {
             return cache.getValue(key);
@@ -811,14 +849,14 @@ public abstract class UseCase<R> {
         }
     }
 
-    private <D> void submitBatch(Map.Entry<UUID, D>... batch) {
+    private void submitBatch(Map.Entry<UUID, ?>... batch) {
 
-        Synchronizer<D> blockingSynchronizer = null;
+        Synchronizer<?> blockingSynchronizer = null;
 
         if (this.blockingSynchronizer != null && thread != null) {
-            for (Map.Entry<UUID, D> entry : batch) {
+            for (Map.Entry<UUID, ?> entry : batch) {
                 @SuppressWarnings("unchecked")
-                Synchronizer<D> synchronizer = cache.getSynchronizer(entry.getKey());
+                Synchronizer<?> synchronizer = cache.getSynchronizer(entry.getKey());
                 if (this.blockingSynchronizer == synchronizer) {
                     blockingSynchronizer = synchronizer;
                 }
@@ -1254,6 +1292,11 @@ public abstract class UseCase<R> {
         @Override
         public <D> D waitForSafe(@Nonnull Actor actor, Step step, UUID key) throws UndoException, InterruptedException {
             return UseCase.this.waitForSafe(actor, step, key);
+        }
+
+        @Override
+        public <D> D waitForSafe(@Nonnull Actor actor, Step step, UUID key, Executable executable) throws InterruptedException, UndoException {
+            return UseCase.this.waitForSafe(actor, step, key, executable);
         }
 
         @Override

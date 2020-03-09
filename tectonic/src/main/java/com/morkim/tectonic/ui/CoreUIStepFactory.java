@@ -42,6 +42,16 @@ public class CoreUIStepFactory<A extends Activity>
     }
 
     @Override
+    public <S extends Step> S bind(S step, Class<S> aClass) {
+        return bind(step, aClass, "");
+    }
+
+    @Override
+    public <S extends Step> S bind(S step, Class<S> aClass, String instanceId) {
+        return null;
+    }
+
+    @Override
     public <S> void onCreated(S step) {
         onCreated(step, step);
     }

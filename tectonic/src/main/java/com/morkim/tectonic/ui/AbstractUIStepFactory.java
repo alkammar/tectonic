@@ -6,7 +6,7 @@ import android.os.Bundle;
 import com.morkim.tectonic.flow.Step;
 import com.morkim.tectonic.flow.StepFactory;
 
-@SuppressWarnings({"unused", "SameParameterValue"})
+@SuppressWarnings({"unused", "SameParameterValue", "WeakerAccess"})
 public abstract class AbstractUIStepFactory<A extends Activity> implements StepFactory {
 
     private CoreUIStepFactory<A> coreUIStepFactory;
@@ -22,6 +22,25 @@ public abstract class AbstractUIStepFactory<A extends Activity> implements StepF
 
     @Override
     public final <S> S create(Class<? extends Step> aClass, String instanceId) {
+        try {
+            return onCreateStep(aClass, instanceId);
+        } catch (InterruptedException e) {
+            // TODO need to handle if activity creation was interrupted
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    @Override
+    public <S extends Step> S bind(S step, Class<S> aClass) {
+        return bind(step, aClass, "");
+    }
+
+    @Override
+    public <S extends Step> S bind(S step, Class<S> aClass, String instanceId) {
+
+        if (step != null) return step;
+
         try {
             return onCreateStep(aClass, instanceId);
         } catch (InterruptedException e) {

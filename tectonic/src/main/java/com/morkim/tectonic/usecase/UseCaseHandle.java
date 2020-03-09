@@ -159,6 +159,12 @@ public interface UseCaseHandle {
     <D> D waitForSafe(@Nonnull Actor actor, Step step, UUID key) throws UndoException, InterruptedException;
 
     /**
+     * Same as {@link #waitFor(Actor, Step, UUID, Runnable)} but uses {@link Executable} instead {@link Runnable} to allow passing of UUID without storing it in
+     * the calling code
+     */
+    <D> D waitForSafe(@Nonnull Actor actor, Step step, UUID key, Executable executable) throws InterruptedException, UndoException;
+
+    /**
      * Same as {@link #waitFor(Actor, Step, UUID, Runnable)} but without specifying the associated step
      */
     <D> D waitFor(@Nonnull Actor actor, UUID key, Runnable runnable) throws InterruptedException, ExecutionException, UndoException;

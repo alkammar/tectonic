@@ -36,16 +36,6 @@ public class StepFactoryImpl implements StepFactory, StepListener {
 
     @Override
     public <S> S create(Class<? extends Step> aClass, String instanceId) {
-        return (S) bind(null, aClass, instanceId);
-    }
-
-    @Override
-    public <S extends Step> S bind(S step, Class<S> aClass) {
-        return bind(step, aClass, "");
-    }
-
-    @Override
-    public <S extends Step> S bind(S step, Class<S> aClass, String instanceId) {
         try {
             if (aClass == Logout.LoginScreen.class) {
                 return createActivity(MainActivity.class,

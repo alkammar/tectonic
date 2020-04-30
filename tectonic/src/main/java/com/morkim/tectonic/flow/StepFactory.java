@@ -1,14 +1,15 @@
 package com.morkim.tectonic.flow;
 
+@SuppressWarnings("unused")
 public interface StepFactory {
 
-    @Deprecated
+    /**
+     * Same as {@link #create(Class, String)} with no instance ID.
+     */
     <S> S create(Class<? extends Step> aClass);
 
-    @Deprecated
+    /**
+     * Creates a step.
+     */
     <S> S create(Class<? extends Step> aClass, String instanceId);
-
-    <S extends Step> S bind(S step, Class<S> aClass);
-
-    <S extends Step> S bind(S step, Class<S> aClass, String instanceId);
 }

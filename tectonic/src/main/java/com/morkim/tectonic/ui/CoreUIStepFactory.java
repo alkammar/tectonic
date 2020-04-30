@@ -14,6 +14,9 @@ import com.morkim.tectonic.flow.StepCoordinator;
 import com.morkim.tectonic.flow.StepFactory;
 import com.morkim.tectonic.flow.StepListener;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @SuppressWarnings({"WeakerAccess", "unused", "SameParameterValue"})
 public class CoreUIStepFactory<A extends Activity>
         implements StepFactory, StepListener,
@@ -23,6 +26,7 @@ public class CoreUIStepFactory<A extends Activity>
     public static final String ACTION_FETCH_REFERENCE = "action.fetch.reference";
 
     private A topActivity;
+    private Map<Class<? extends Activity>, UIStep> stepsMap = new HashMap<>();
 
     private Application app;
 
@@ -42,16 +46,6 @@ public class CoreUIStepFactory<A extends Activity>
     }
 
     @Override
-    public <S extends Step> S bind(S step, Class<S> aClass) {
-        return bind(step, aClass, "");
-    }
-
-    @Override
-    public <S extends Step> S bind(S step, Class<S> aClass, String instanceId) {
-        return null;
-    }
-
-    @Override
     public <S> void onCreated(S step) {
         onCreated(step, step);
     }
@@ -63,19 +57,22 @@ public class CoreUIStepFactory<A extends Activity>
         StepCoordinator.replyWith(step.getClass().hashCode(), impl);
     }
 
-    protected <S> S createActivityBlocking(Class<?> cls) throws InterruptedException {
+    protected <S extends UIStep> S createActivityBlocking(Class<? extends Activity> cls) throws InterruptedException {
         return createActivityBlocking(cls, 0);
     }
 
-    protected synchronized <S> S createActivityBlocking(Class<?> cls, int flags) throws InterruptedException {
+    protected synchronized <S extends UIStep> S createActivityBlocking(Class<? extends Activity> cls, int flags) throws InterruptedException {
         return createActivityBlocking(cls, flags, null);
     }
 
-    protected synchronized <S> S createActivityBlocking(Class<?> cls, int flags, Bundle data) throws InterruptedException {
+    protected synchronized <S extends UIStep> S createActivityBlocking(Class<? extends Activity> cls, int flags, Bundle data) throws InterruptedException {
 
         createActivity(cls, flags, data == null ? new Bundle() : data);
         Log.d("StepFactoryImpl", "wait for: " + cls);
-        return StepCoordinator.waitFor(cls.hashCode());
+        S step = StepCoordinator.waitFor(cls.hashCode());
+
+        stepsMap.put(cls, step);
+        return step;
     }
 
     protected void createActivity(Class<?> cls) {
@@ -110,6 +107,21 @@ public class CoreUIStepFactory<A extends Activity>
         return StepCoordinator.waitFor(cls.hashCode());
     }
 
+    protected synchronized <S extends UIStep> S retrieveView(Class<? extends Activity> cls, Bundle data) throws InterruptedException {
+
+        UIStep step = stepsMap.get(cls);
+        if (step != null) {
+            step = step.onNewReference(data);
+        }
+
+        if (step == null) {
+            return createActivityBlocking(cls, Intent.FLAG_ACTIVITY_SINGLE_TOP, data);
+        } else {
+            //noinspection unchecked
+            return (S) step;
+        }
+    }
+
     @Override
     public void onActivityCreated(Activity activity, Bundle savedInstanceState) {
 
@@ -128,10 +140,15 @@ public class CoreUIStepFactory<A extends Activity>
     @Override
     public void onActivityPaused(Activity activity) {
 
+        if (activity.isFinishing())
+            stepsMap.remove(activity.getClass());
     }
 
     @Override
     public void onActivityStopped(Activity activity) {
+
+        if (activity.isFinishing())
+            stepsMap.remove(activity.getClass());
 
     }
 
@@ -142,7 +159,7 @@ public class CoreUIStepFactory<A extends Activity>
 
     @Override
     public void onActivityDestroyed(Activity activity) {
-
+        stepsMap.remove(activity.getClass());
     }
 
 }

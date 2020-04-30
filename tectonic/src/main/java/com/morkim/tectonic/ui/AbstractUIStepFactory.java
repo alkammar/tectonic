@@ -31,36 +31,17 @@ public abstract class AbstractUIStepFactory<A extends Activity> implements StepF
         }
     }
 
-    @Override
-    public <S extends Step> S bind(S step, Class<S> aClass) {
-        return bind(step, aClass, "");
-    }
-
-    @Override
-    public <S extends Step> S bind(S step, Class<S> aClass, String instanceId) {
-
-        if (step != null) return step;
-
-        try {
-            return onCreateStep(aClass, instanceId);
-        } catch (InterruptedException e) {
-            // TODO need to handle if activity creation was interrupted
-            e.printStackTrace();
-            return null;
-        }
-    }
-
     protected abstract <S> S onCreateStep(Class<? extends Step> aClass, String instanceId) throws InterruptedException;
 
-    protected <S> S createActivityBlocking(Class<?> cls) throws InterruptedException {
+    protected <S extends UIStep> S createActivityBlocking(Class<? extends Activity> cls) throws InterruptedException {
         return coreUIStepFactory.createActivityBlocking(cls);
     }
 
-    protected synchronized <S> S createActivityBlocking(Class<?> cls, int flags) throws InterruptedException {
+    protected synchronized <S extends UIStep> S createActivityBlocking(Class<? extends Activity> cls, int flags) throws InterruptedException {
         return coreUIStepFactory.createActivityBlocking(cls, flags);
     }
 
-    protected synchronized <S> S createActivityBlocking(Class<?> cls, int flags, Bundle data) throws InterruptedException {
+    protected synchronized <S extends UIStep> S createActivityBlocking(Class<? extends Activity> cls, int flags, Bundle data) throws InterruptedException {
         return coreUIStepFactory.createActivityBlocking(cls, flags, data);
     }
 

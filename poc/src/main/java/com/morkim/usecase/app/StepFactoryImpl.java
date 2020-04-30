@@ -6,6 +6,7 @@ import com.morkim.tectonic.flow.Step;
 import com.morkim.tectonic.flow.StepCoordinator;
 import com.morkim.tectonic.flow.StepFactory;
 import com.morkim.tectonic.flow.StepListener;
+import com.morkim.tectonic.ui.UIStep;
 import com.morkim.usecase.contract.Login;
 import com.morkim.usecase.contract.Logout;
 import com.morkim.usecase.contract.Registration;
@@ -30,12 +31,12 @@ public class StepFactoryImpl implements StepFactory, StepListener {
     }
 
     @Override
-    public <S> S create(Class<? extends Step> aClass) {
+    public <S extends UIStep> S create(Class<? extends Step> aClass) {
         return create(aClass, "");
     }
 
     @Override
-    public <S> S create(Class<? extends Step> aClass, String instanceId) {
+    public <S extends UIStep> S create(Class<? extends Step> aClass, String instanceId) {
         try {
             if (aClass == Logout.LoginScreen.class) {
                 return createActivity(MainActivity.class,

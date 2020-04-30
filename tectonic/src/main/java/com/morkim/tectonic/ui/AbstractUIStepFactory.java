@@ -16,12 +16,12 @@ public abstract class AbstractUIStepFactory<A extends Activity> implements StepF
     }
 
     @Override
-    public final <S> S create(Class<? extends Step> aClass) {
+    public final <S extends UIStep> S create(Class<? extends Step> aClass) {
         return create(aClass, "");
     }
 
     @Override
-    public final <S> S create(Class<? extends Step> aClass, String instanceId) {
+    public final <S extends UIStep> S create(Class<? extends Step> aClass, String instanceId) {
         try {
             return onCreateStep(aClass, instanceId);
         } catch (InterruptedException e) {
@@ -31,7 +31,7 @@ public abstract class AbstractUIStepFactory<A extends Activity> implements StepF
         }
     }
 
-    protected abstract <S> S onCreateStep(Class<? extends Step> aClass, String instanceId) throws InterruptedException;
+    protected abstract <S extends UIStep> S onCreateStep(Class<? extends Step> aClass, String instanceId) throws InterruptedException;
 
     protected <S extends UIStep> S createActivityBlocking(Class<? extends Activity> cls) throws InterruptedException {
         return coreUIStepFactory.createActivityBlocking(cls);
@@ -59,5 +59,9 @@ public abstract class AbstractUIStepFactory<A extends Activity> implements StepF
 
     protected synchronized <S> S retrieveActivity(Class<?> cls, Bundle data) throws InterruptedException {
         return coreUIStepFactory.retrieveActivity(cls, data);
+    }
+
+    protected synchronized <S extends UIStep> S retrieveView(Class<? extends Activity> cls, Bundle data) throws InterruptedException {
+        return coreUIStepFactory.retrieveView(cls, data);
     }
 }

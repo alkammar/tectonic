@@ -36,12 +36,12 @@ public class CoreUIStepFactory<A extends Activity>
     }
 
     @Override
-    public <S> S create(Class<? extends Step> aClass) {
+    public <S extends UIStep> S create(Class<? extends Step> aClass) {
         return create(aClass, "");
     }
 
     @Override
-    public <S> S create(Class<? extends Step> aClass, String instanceId) {
+    public <S extends UIStep> S create(Class<? extends Step> aClass, String instanceId) {
         return null;
     }
 

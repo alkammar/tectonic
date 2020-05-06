@@ -46,8 +46,8 @@ public abstract class AbstractUIStepFactory<A extends Activity> implements StepF
         return coreUIStepFactory.createActivityBlocking(cls, flags, data);
     }
 
-    protected synchronized <S extends UIStep> S createFragmentBlocking(Class<?> activityClass, Class<?> fragmentClass, int flags, Bundle data) throws InterruptedException {
-        return coreUIStepFactory.createFragmentBlocking(activityClass, fragmentClass, flags, data);
+    protected synchronized <S extends UIStep> S createFragment(Class<?> activityClass, Class<?> fragmentClass, int flags, Bundle data) throws InterruptedException {
+        return coreUIStepFactory.createFragment(activityClass, fragmentClass, flags, data);
     }
 
     protected void createActivity(Class<?> cls) {

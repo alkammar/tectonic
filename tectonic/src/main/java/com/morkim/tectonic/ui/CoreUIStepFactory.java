@@ -76,7 +76,7 @@ public class CoreUIStepFactory<A extends Activity>
         return step;
     }
 
-    protected synchronized <S extends UIStep> S createFragmentBlocking(Class<?> ActivityClass, Class<?> fragmentClass, int flags, Bundle data) throws InterruptedException {
+    protected synchronized <S extends UIStep> S createFragment(Class<?> ActivityClass, Class<?> fragmentClass, int flags, Bundle data) throws InterruptedException {
 
         data = data == null ? new Bundle() : data;
         data.putString(FRAGMENT, fragmentClass.getName());

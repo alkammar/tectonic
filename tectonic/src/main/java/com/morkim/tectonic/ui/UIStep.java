@@ -24,5 +24,10 @@ public interface UIStep extends Step {
         void onGoBack();
     }
 
-    void onTerminated();
+    void setOnTerminatedListener(OnGoBackListener onGoBackListener);
+
+    interface OnTerminatedListener {
+
+        void onTerminated();
+    }
 }

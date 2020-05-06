@@ -19,7 +19,9 @@ import java.util.Map;
 
 @SuppressWarnings({"WeakerAccess", "unused", "SameParameterValue"})
 public class CoreUIStepFactory<A extends Activity>
-        implements StepFactory, StepListener,
+        implements StepFactory,
+        StepListener,
+        UIStep.OnTerminatedListener,
         Application.ActivityLifecycleCallbacks {
 
     public static final String NO_REPLY = "no.reply";
@@ -72,6 +74,7 @@ public class CoreUIStepFactory<A extends Activity>
         Log.d("StepFactoryImpl", "wait for: " + cls);
         S step = StepCoordinator.waitFor(cls.hashCode());
 
+        step.setOnTerminatedListener(this);
         stepsMap.put(cls, step);
         return step;
     }
@@ -83,6 +86,7 @@ public class CoreUIStepFactory<A extends Activity>
         createActivity(ActivityClass, flags, data);
         Log.d("StepFactoryImpl", "wait for: " + fragmentClass);
         S step = StepCoordinator.waitFor(fragmentClass.hashCode());
+        step.setOnTerminatedListener(this);
 
         stepsMap.put(fragmentClass, step);
         return step;
@@ -155,15 +159,15 @@ public class CoreUIStepFactory<A extends Activity>
     @Override
     public void onActivityPaused(Activity activity) {
 
-        if (activity.isFinishing())
-            stepsMap.remove(activity.getClass());
+//        if (activity.isFinishing())
+//            stepsMap.remove(activity.getClass());
     }
 
     @Override
     public void onActivityStopped(Activity activity) {
 
-        if (activity.isFinishing())
-            stepsMap.remove(activity.getClass());
+//        if (activity.isFinishing())
+//            stepsMap.remove(activity.getClass());
 
     }
 
@@ -177,4 +181,8 @@ public class CoreUIStepFactory<A extends Activity>
         stepsMap.remove(activity.getClass());
     }
 
+    @Override
+    public void onTerminated(Class<?> cls) {
+        stepsMap.remove(cls);
+    }
 }

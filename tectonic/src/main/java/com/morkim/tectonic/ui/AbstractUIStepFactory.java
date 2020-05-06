@@ -1,7 +1,6 @@
 package com.morkim.tectonic.ui;
 
 import android.app.Activity;
-import android.app.Fragment;
 import android.os.Bundle;
 
 import com.morkim.tectonic.flow.Step;

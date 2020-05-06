@@ -57,6 +57,7 @@ public abstract class AbstractUIStepFactory<A extends Activity> implements StepF
         coreUIStepFactory.createActivity(cls, flags);
     }
 
+    @Deprecated
     protected synchronized <S> S retrieveActivity(Class<?> cls) throws InterruptedException {
         return coreUIStepFactory.retrieveActivity(cls);
     }
@@ -66,7 +67,6 @@ public abstract class AbstractUIStepFactory<A extends Activity> implements StepF
         return coreUIStepFactory.retrieveActivity(cls, data);
     }
 
-    @Deprecated
     protected synchronized <S extends UIStep> S retrieveView(Class<? extends Activity> cls, Bundle data) throws InterruptedException {
         return coreUIStepFactory.retrieveView(cls, data);
     }

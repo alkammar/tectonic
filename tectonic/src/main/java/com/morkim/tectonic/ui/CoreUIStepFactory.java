@@ -178,7 +178,7 @@ public class CoreUIStepFactory<A extends Activity>
 
     @Override
     public void onActivityDestroyed(Activity activity) {
-        stepsMap.remove(activity.getClass());
+//        stepsMap.remove(activity.getClass());
     }
 
     @Override

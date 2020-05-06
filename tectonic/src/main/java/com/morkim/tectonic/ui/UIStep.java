@@ -23,4 +23,6 @@ public interface UIStep extends Step {
 
         void onGoBack();
     }
+
+    void onTerminated();
 }

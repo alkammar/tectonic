@@ -24,9 +24,10 @@ public class CoreUIStepFactory<A extends Activity>
 
     public static final String NO_REPLY = "no.reply";
     public static final String ACTION_FETCH_REFERENCE = "action.fetch.reference";
+    public static final String FRAGMENT = "fragment";
 
     private A topActivity;
-    private Map<Class<? extends Activity>, UIStep> stepsMap = new HashMap<>();
+    private Map<Class<?>, UIStep> stepsMap = new HashMap<>();
 
     private Application app;
 
@@ -57,21 +58,33 @@ public class CoreUIStepFactory<A extends Activity>
         StepCoordinator.replyWith(step.getClass().hashCode(), impl);
     }
 
-    protected <S extends UIStep> S createActivityBlocking(Class<? extends Activity> cls) throws InterruptedException {
+    protected <S extends UIStep> S createActivityBlocking(Class<?> cls) throws InterruptedException {
         return createActivityBlocking(cls, 0);
     }
 
-    protected synchronized <S extends UIStep> S createActivityBlocking(Class<? extends Activity> cls, int flags) throws InterruptedException {
+    protected synchronized <S extends UIStep> S createActivityBlocking(Class<?> cls, int flags) throws InterruptedException {
         return createActivityBlocking(cls, flags, null);
     }
 
-    protected synchronized <S extends UIStep> S createActivityBlocking(Class<? extends Activity> cls, int flags, Bundle data) throws InterruptedException {
+    protected synchronized <S extends UIStep> S createActivityBlocking(Class<?> cls, int flags, Bundle data) throws InterruptedException {
 
         createActivity(cls, flags, data == null ? new Bundle() : data);
         Log.d("StepFactoryImpl", "wait for: " + cls);
         S step = StepCoordinator.waitFor(cls.hashCode());
 
         stepsMap.put(cls, step);
+        return step;
+    }
+
+    protected synchronized <S extends UIStep> S createFragmentBlocking(Class<?> ActivityClass, Class<?> fragmentClass, int flags, Bundle data) throws InterruptedException {
+
+        data = data == null ? new Bundle() : data;
+        data.putString(FRAGMENT, fragmentClass.getName());
+        createActivity(ActivityClass, flags, data);
+        Log.d("StepFactoryImpl", "wait for: " + fragmentClass);
+        S step = StepCoordinator.waitFor(fragmentClass.hashCode());
+
+        stepsMap.put(fragmentClass, step);
         return step;
     }
 
@@ -96,10 +109,12 @@ public class CoreUIStepFactory<A extends Activity>
         }
     }
 
+    @Deprecated
     protected synchronized <S> S retrieveActivity(Class<?> cls) throws InterruptedException {
         return retrieveActivity(cls, null);
     }
 
+    @Deprecated
     protected synchronized <S> S retrieveActivity(Class<?> cls, Bundle data) throws InterruptedException {
         Intent intent = new Intent(ACTION_FETCH_REFERENCE);
         if (data != null) intent.putExtras(data);
@@ -107,7 +122,7 @@ public class CoreUIStepFactory<A extends Activity>
         return StepCoordinator.waitFor(cls.hashCode());
     }
 
-    protected synchronized <S extends UIStep> S retrieveView(Class<? extends Activity> cls, Bundle data) throws InterruptedException {
+    protected synchronized <S extends UIStep> S retrieveView(Class<?> cls, Bundle data) throws InterruptedException {
 
         UIStep step = stepsMap.get(cls);
         if (step != null) {

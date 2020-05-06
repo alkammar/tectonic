@@ -1,6 +1,7 @@
 package com.morkim.tectonic.ui;
 
 import android.app.Activity;
+import android.app.Fragment;
 import android.os.Bundle;
 
 import com.morkim.tectonic.flow.Step;
@@ -33,16 +34,20 @@ public abstract class AbstractUIStepFactory<A extends Activity> implements StepF
 
     protected abstract <S extends UIStep> S onCreateStep(Class<? extends Step> aClass, String instanceId) throws InterruptedException;
 
-    protected <S extends UIStep> S createActivityBlocking(Class<? extends Activity> cls) throws InterruptedException {
+    protected <S extends UIStep> S createActivityBlocking(Class<?> cls) throws InterruptedException {
         return coreUIStepFactory.createActivityBlocking(cls);
     }
 
-    protected synchronized <S extends UIStep> S createActivityBlocking(Class<? extends Activity> cls, int flags) throws InterruptedException {
+    protected synchronized <S extends UIStep> S createActivityBlocking(Class<?> cls, int flags) throws InterruptedException {
         return coreUIStepFactory.createActivityBlocking(cls, flags);
     }
 
-    protected synchronized <S extends UIStep> S createActivityBlocking(Class<? extends Activity> cls, int flags, Bundle data) throws InterruptedException {
+    protected synchronized <S extends UIStep> S createActivityBlocking(Class<?> cls, int flags, Bundle data) throws InterruptedException {
         return coreUIStepFactory.createActivityBlocking(cls, flags, data);
+    }
+
+    protected synchronized <S extends UIStep> S createFragmentBlocking(Class<?> activityClass, Class<?> fragmentClass, int flags, Bundle data) throws InterruptedException {
+        return coreUIStepFactory.createFragmentBlocking(activityClass, fragmentClass, flags, data);
     }
 
     protected void createActivity(Class<?> cls) {
@@ -57,10 +62,12 @@ public abstract class AbstractUIStepFactory<A extends Activity> implements StepF
         return coreUIStepFactory.retrieveActivity(cls);
     }
 
+    @Deprecated
     protected synchronized <S> S retrieveActivity(Class<?> cls, Bundle data) throws InterruptedException {
         return coreUIStepFactory.retrieveActivity(cls, data);
     }
 
+    @Deprecated
     protected synchronized <S extends UIStep> S retrieveView(Class<? extends Activity> cls, Bundle data) throws InterruptedException {
         return coreUIStepFactory.retrieveView(cls, data);
     }
